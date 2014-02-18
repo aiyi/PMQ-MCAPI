@@ -26,7 +26,9 @@ int main()
     mcapi_endpoint_t send_point;
     mcapi_endpoint_t recv_point;
 
-    printf( "Sender here!\n");
+    printf( "Node 0: Sender here!\n");
+    //sleep to better illustrate the communication
+    usleep( 3000000 );
 
     //We are sender! Onitialize with our domain id and node id
     mcapi_initialize( THE_DOMAIN, RED_NODE, 0, 0, &info,
@@ -35,34 +37,45 @@ int main()
     //THIS IS HOW YOU CONVERT STATUS CODE TO STRING:
     mcapi_display_status( status, status_msg, MCAPI_MAX_STATUS_MSG_LEN );
     //print it:
-    printf( "Result of sender initialization: %s\n", status_msg );
+    printf( "Node 0: Result of initialization: %s\n", status_msg );
+
+    printf( "Node 0: creating sending endpoint\n" );
 
     //create our channel endpoint with our port id
     send_point = mcapi_endpoint_create( RED_SCL_OUT, &status );
     //get their channel message endpoint, with their domain, node and port id
-    recv_point = mcapi_endpoint_get( THE_DOMAIN,
-    YELLOW_NODE, YELLOW_SCL_IN, TIMEOUT, &status );
+    printf( "Node 0: obtaining receiving endpoint\n" );
+    recv_point = mcapi_endpoint_get( THE_DOMAIN, YELLOW_NODE, YELLOW_SCL_IN,
+    TIMEOUT, &status );
 
     //form the scalar channel
+    printf( "Node 0: connecting the channel\n" );
     mcapi_sclchan_connect_i( send_point, recv_point, &request, &status );
     //wait for it to happen
     mcapi_wait( &request, &size, TIMEOUT, &status );
     //open our end of it
+    printf( "Node 0: opening the sending end of the channel\n" );
     mcapi_sclchan_send_open_i( &handy, send_point, &request, &status );
     //wait for it to happen
     mcapi_wait( &request, &size, TIMEOUT, &status );
 
-    printf( "Sender: sending %hX\n", value );
+    printf( "Node 0: sending %hX\n", value );
     
     //send the scalar value via channel
     mcapi_sclchan_send_uint16( handy, value, &status );
 
-    printf( "Sender: sent\n" );
+    printf( "Node 0: sent\n" );
+
+    usleep( 3000000 );
+
+    printf( "Node 0: closing!\n" );
 
     //close our end
     mcapi_sclchan_send_close_i( handy, &request, &status );
     //wait for it to happen
     mcapi_wait( &request, &size, TIMEOUT, &status );
+
+    printf( "Node 0: closed!\n" );
 
     //finalize at the end
     mcapi_finalize( &status );

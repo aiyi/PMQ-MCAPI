@@ -17,4 +17,7 @@ beginning with "PROCESSES".
 If you make modifications to example, the make will try to run all processes
 even if one of them does not compile.
 
+Sleeps are inserted to example code, so that the flow of the communication
+is better illustrated.
+
 MORE DETAILS IN DETAILS.txt 

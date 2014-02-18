@@ -25,7 +25,9 @@ int main()
     //handle used in channel communication
     mcapi_sclchan_recv_hndl_t handy;
 
-    printf( "Receiver here!\n");
+    printf( "Node 1: Receiver here!\n");
+    //sleep to better illustrate the communication
+    usleep( 3000000 );
 
     //We are receiver! Initialize with our domain and node id
     mcapi_initialize( THE_DOMAIN, YELLOW_NODE, 0, 0, &info, &status );
@@ -33,26 +35,40 @@ int main()
     //THIS IS HOW YOU CONVERT STATUS CODE TO STRING:
     mcapi_display_status( status, status_msg, MCAPI_MAX_STATUS_MSG_LEN );
     //print it:
-    printf( "Result of receiver initialization: %s\n", status_msg );
+    printf( "Node 1: Result of initialization: %s\n", status_msg );
 
     //create our end point with our port id
+    printf( "Node 0: creating receiving endpoint\n" );
+    usleep( 3000000 );
     recv_point = mcapi_endpoint_create( YELLOW_SCL_IN, &status );
+
+    usleep( 3000000 );
+
     //open our end of channel, let sender form connection
+    printf( "Node 0: opening the receiving end of the channel\n" );
     mcapi_sclchan_recv_open_i( &handy, recv_point, &request, &status );
     //wait for it to happen
     mcapi_wait( &request, &size, TIMEOUT, &status );
 
-    printf( "Receiver: receiving\n" );
+    printf( "Node 1: receiving\n" );
+
+    usleep( 3000000 );
 
     //receive a scalar value from channel
     value = mcapi_sclchan_recv_uint16( handy, &status );
 
-    printf( "Receiver: received %hX\n", value );
+    printf( "Node 1: received %hX\n", value );
+
+    usleep( 3000000 );
+
+    printf( "Node 1: closing!\n" );
 
     //close our end
     mcapi_sclchan_recv_close_i( handy, &request, &status );
     //wait for it to happen
     mcapi_wait( &request, &size, TIMEOUT, &status );
+
+    printf( "Node 1: closed!\n" );
 
     //shut-down
     mcapi_finalize( &status );

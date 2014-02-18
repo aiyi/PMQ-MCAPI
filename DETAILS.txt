@@ -201,7 +201,7 @@ THIS IMPLEMENTATION SHOULD RUN ON ANY LINUX FEATURING POSIX MESSAGE QUEUE,
 C-COMPILER AND MAKE. However, tests were executed successfully in system
 described below. Flag -lrt must be provided to compiler so that it will
 be able to access the POSIX message queues. The implementation expects that
-the comment notation "//" is supported by the compiler.
+the comment notation "//" is supported by the compiler. Also usleep if used.
 
     Operating system: CentOS Release 6.5 (Final)
     Kernel Linux 2.6.32-431.3.1.el6.x86_64

@@ -26,7 +26,7 @@ char status_msg[MCAPI_MAX_STATUS_MSG_LEN];
 mcapi_request_t request1;
 mcapi_request_t request2;
 //size parameter required in some calls
-size_t size;
+size_t size = 1;
 //recv-handle used in channel-messaging
 mcapi_pktchan_recv_hndl_t handy1;
 //send-handle used in channel-messaging

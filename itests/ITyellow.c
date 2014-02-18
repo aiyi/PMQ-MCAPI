@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     //the status code converted to string
     char status_msg[MCAPI_MAX_STATUS_MSG_LEN];
     //size parameter required in some calls
-    size_t size;
+    size_t size = 1;
     //an iterator used in loops
     unsigned int i = 0;
     //request handle is used to operate wait-calls

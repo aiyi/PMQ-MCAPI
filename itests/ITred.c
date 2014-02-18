@@ -31,13 +31,11 @@ int main(int argc, char *argv[])
     //request handle is used to operate wait-calls
     mcapi_request_t request;
     //size parameter required in somecalls
-    size_t size;
+    size_t size = 1;
     //send-handle used in channel-messaging
     mcapi_sclchan_send_hndl_t handy;
     //how many scalars we are goint to send
     char count = 17;
-    //pid is used to identify process
-    pid_t pid;
 
     //the endpoints used in message-oriented communication
     mcapi_endpoint_t red_msg_point;

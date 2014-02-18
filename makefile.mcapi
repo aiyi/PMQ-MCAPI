@@ -1,0 +1,29 @@
+#compiler used
+CC=gcc
+#flags: includes and posix message queue, latter needed to access IPC
+CFLAGS=-I$(IDIR) -lrt
+
+#folders of most files needed
+IDIR=include
+ODIR=obj
+SDIR=src
+
+#the header files
+_DEPS = mca.h mcapi.h mca_config.h node.h endpointdef.h endpointlist.h channel.h
+DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
+
+#object files
+_OBJ = endpoint.o msg.o node.o packet.o endpointdef.o channel.o scalar.o
+OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
+
+#rule to create object files
+$(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+.PHONY: clean
+
+make: $(OBJ)
+
+#rule to clean away object files and test executables
+clean:
+	rm -f $(OBJ); 

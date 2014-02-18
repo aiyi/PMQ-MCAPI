@@ -231,6 +231,8 @@ are not implemented either.
 Other non-implemented functions include mcapi_pktchan_release_test,
 mcapi_wait_any and mcapi_cancel.
 
+The timeouts are expressed in milliseconds.
+
 ***INTERNAL STRUCTURE OF IMPLEMENTATION***
 
 Below tree illustrates dependencies between modules. Modules below are

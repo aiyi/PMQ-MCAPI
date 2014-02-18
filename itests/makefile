@@ -1,5 +1,5 @@
 #INSERT PROCESSES HERE IN THE ORDER THEY ARE LAUNCHED. SUPPORTS ARGUMENTS.
-PROCESSES = ./ITflimsy & ./ITsturdy & nice -n 11 ./ITcyan & nice -n 11 ./ITmag & nice -n 10 ./ITgreen & nice -n 10 ./ITyellow & nice -n 10 ./ITred 32 & nice -n 10 ./ITblue 32
+PROCESSES = ./ITflimsy.exe & ./ITsturdy.exe & nice -n 11 ./ITcyan.exe & nice -n 11 ./ITmag.exe & nice -n 10 ./ITgreen.exe & nice -n 10 ./ITyellow.exe & nice -n 10 ./ITred.exe 32 & nice -n 10 ./ITblue.exe 32
 
 #INSERT BUILD RULES FOR PROCESSES HERE IF SUCH IS NEEDED
 PBUILD = cd ..; make -f makefile.mcapi; cd $(ITDIR); make ITcyan; make ITmag; make ITgreen; make ITblue; make ITred; make ITyellow; make ITsturdy; make ITflimsy
@@ -24,16 +24,17 @@ CBUILD = $(CC) -o ../$(CNAME) $(SDIR)/cleaner.c -lrt -I$(IDIR) -DMAKE_EXECUTABLE
 
 #rule to create integration tests: every target beginning IT is seen as such
 IT%:
-	$(CC) -o $@ $@.c $(ODIR)/*.o $(CFLAGS)
+	$(CC) -o $@.exe $@.c $(ODIR)/*.o $(CFLAGS)
 
-#(re)creates cleaner, then it is ran and then the apps
+#(re)creates cleaner, then it is ran and then the apps. apps are also removed
 make:
 	$(CBUILD); \
 	$(PBUILD); \
     ../$(CNAME); \
     $(PROCESSES); \
     wait $!; \
-    ../$(CNAME)
+    ../$(CNAME); \
+    rm -f *.exe
 
 .PHONY: clean
 

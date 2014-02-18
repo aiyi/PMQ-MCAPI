@@ -1,11 +1,11 @@
 #INSERT PROCESSES HERE IN THE ORDER THEY ARE LAUNCHED. SUPPORTS ARGUMENTS.
-PROCESSES = nice -n 11 ./esender & nice -n 11 ./ereceiver
+PROCESSES = nice -n 11 ./esender.exe & nice -n 11 ./ereceiver.exe
 
 #INSERT BUILD RULES FOR PROCESSES HERE IF SUCH IS NEEDED
 PBUILD = make -f makefile.mcapi; $(ESENDER); $(ERECEIVER)
 #build rules for individual processes
-ESENDER = gcc -o esender example/example_sender.c $(ODIR)/*.o -I$(IDIR) -lrt
-ERECEIVER = gcc -o ereceiver example/example_receiver.c $(ODIR)/*.o -I$(IDIR) -lrt
+ESENDER = gcc -o esender.exe example/example_sender.c $(ODIR)/*.o -I$(IDIR) -lrt
+ERECEIVER = gcc -o ereceiver.exe example/example_receiver.c $(ODIR)/*.o -I$(IDIR) -lrt
 
 #compiler used
 CC=gcc

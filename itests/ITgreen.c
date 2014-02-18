@@ -33,6 +33,8 @@ int main()
     size_t size = 1;
     //send-handle used in channel-messaging
     mcapi_pktchan_send_hndl_t handy;
+    //a separate receive buffer used for messages
+    char recv_msg[MAX_MSG_LEN];
     //get our stuff here. tip: if signed were used, it bastardized the values
     unsigned char* recv_buf;
 
@@ -55,7 +57,7 @@ int main()
     green_msg_point = mcapi_endpoint_create( green_msg.port_id, &status );
     check( MCAPI_SUCCESS, status );
     //wait for the start signal
-    mcapi_msg_recv(green_msg_point, recv_buf, MAX_MSG_LEN, &size,
+    mcapi_msg_recv(green_msg_point, recv_msg, MAX_MSG_LEN, &size,
     &status );
     check( MCAPI_SUCCESS, status );
     printf(COLOR "signal received, starting to connect & open\n");

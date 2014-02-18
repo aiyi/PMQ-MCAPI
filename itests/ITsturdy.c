@@ -32,7 +32,7 @@ int main()
     //request handle is used to operate wait-calls
     mcapi_request_t request;
     //size parameter required in some calls
-    size_t size;
+    size_t size = 1;
     //send-handle used in channel-messaging
     mcapi_pktchan_send_hndl_t handy;
     //pid is used to identify process

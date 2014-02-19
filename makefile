@@ -21,8 +21,9 @@ SDIR=src
 #below shell command is used to compile the cleaner
 CRUN = make -f makefile.cleaner
 
-#(re)creates cleaner, then it is ran and then the apps
+#(re)creates the obj folder, (re)creates cleaner, then it is ran and then the apps
 make:
+    mkdir $(ODIR); \
 	$(CRUN); \
 	$(PBUILD); \
     $(PROCESSES); \

@@ -4,9 +4,6 @@ PROCESSES = ./ITflimsy.exe & ./ITsturdy.exe & nice -n 11 ./ITcyan.exe & nice -n 
 #INSERT BUILD RULES FOR PROCESSES HERE IF SUCH IS NEEDED
 PBUILD = cd ..; make -f makefile.mcapi; cd $(ITDIR); make ITcyan; make ITmag; make ITgreen; make ITblue; make ITred; make ITyellow; make ITsturdy; make ITflimsy
 
-#name of the cleaner executable
-CNAME = cleaner
-
 #compiler used
 CC=gcc
 
@@ -19,8 +16,8 @@ ODIR=../obj
 SDIR=../src
 ITDIR=itests
 
-#below shell command is used to compile the cleaner
-CBUILD = $(CC) -o ../$(CNAME) $(SDIR)/cleaner.c -lrt -I$(IDIR) -DMAKE_EXECUTABLE
+#below shell command is used to compile and run the cleaner
+CRUN = cd ..; make -f makefile.cleaner; cd $(ITDIR)
 
 #rule to create integration tests: every target beginning IT is seen as such
 IT%:
@@ -28,17 +25,14 @@ IT%:
 
 #(re)creates cleaner, then it is ran and then the apps. apps are also removed
 make:
-	$(CBUILD); \
+	$(CRUN); \
 	$(PBUILD); \
-    ../$(CNAME); \
     $(PROCESSES); \
     wait $!; \
-    ../$(CNAME); \
     rm -f *.exe
 
 .PHONY: clean
 
 #make clean would cause cleaner compile and run
 clean:
-	$(CBUILD); \
-	../$(CNAME)
+	$(CRUN)

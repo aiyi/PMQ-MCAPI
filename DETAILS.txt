@@ -5,7 +5,7 @@
     LAUNCHING PROCESSES
     DEFINING ENDPOINTS
     CLEANER
-    THE OTHER MAKEFILE
+    THE OTHER MAKEFILES
     THREAD SAFETY
     TEST ENVIRONMENT AND DEPENDENCIES
     IMPLEMENTATION SPECIFIC BEHAVIOR
@@ -33,6 +33,7 @@ makefile        | Script to build and launch application processes.
                   More details in chapter LAUNCHING PROCESSES (below)
 makefile.mcapi  | Script to build the implementation object files
                   More details in chapter THE OTHER MAKEFILE (below)
+makefile.cleaner| Script to build and run the cleaner executable.
 
 FOLDERS:
 
@@ -177,9 +178,9 @@ recompiled every time they are changed.
 
     example: ./clean
 
-***THE OTHER MAKEFILE***
+***THE OTHER MAKEFILES***
 
-The other makefile, "makefile.mcapi", contains the build instruction for the
+Other makefile, "makefile.mcapi", contains the build instruction for the
 implementation object files. It is not intended to produce any kind of
 standalone executable, but instead produce the object files to be statically
 linked with the applications. The file has also a clean command, which
@@ -187,6 +188,9 @@ will remove the implementation object files from directory "obj".
 
     example: make -f makefile.mcapi
     example: make -f makefile.mcapi clean
+
+The third makefile, "makefile.cleaner", contains instructions to build and
+run the cleaner. More details are in the above chapter, "Cleaner".
 
 ***THREAD SAFETY***
 

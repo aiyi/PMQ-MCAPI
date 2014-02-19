@@ -19,21 +19,19 @@ ODIR=obj
 SDIR=src
 
 #below shell command is used to compile the cleaner
-CBUILD = $(CC) -o $(CNAME) $(SDIR)/cleaner.c -lrt -I$(IDIR) -DMAKE_EXECUTABLE
+CRUN = make -f makefile.cleaner
 
 #(re)creates cleaner, then it is ran and then the apps
 make:
-	$(CBUILD); \
+	$(CRUN); \
 	$(PBUILD); \
-    ./$(CNAME); \
     $(PROCESSES); \
     wait $!; \
     ./$(CNAME)
 
 .PHONY: clean
 
-#make clean would cause cleaner compile and run
+#make clean would cause cleaner compile and run and also implementation cleanerd
 clean:
-	$(CBUILD); \
-	./$(CNAME); \
+	$(CRUN); \
 	make -f makefile.mcapi clean; 

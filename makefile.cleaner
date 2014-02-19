@@ -1,0 +1,17 @@
+#compiler used
+CC=gcc
+
+#name of the cleaner executable
+CNAME = cleaner
+
+#folders of most files except executable
+IDIR=include
+SDIR=src
+
+#below shell command is used to compile the cleaner
+CBUILD = $(CC) -o $(CNAME) $(SDIR)/cleaner.c -lrt -I$(IDIR) -DMAKE_EXECUTABLE
+
+#(re)creates cleaner, then it is ran and then the apps
+make:
+	$(CBUILD); \
+    ./$(CNAME)

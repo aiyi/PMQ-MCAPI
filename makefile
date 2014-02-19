@@ -23,8 +23,8 @@ CRUN = make -f makefile.cleaner
 
 #(re)creates the obj folder, (re)creates cleaner, then it is ran and then the apps
 make:
-    mkdir $(ODIR); \
 	$(CRUN); \
+    mkdir -p $(ODIR); \
 	$(PBUILD); \
     $(PROCESSES); \
     wait $!; \

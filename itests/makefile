@@ -26,7 +26,7 @@ IT%:
 #(re)creates cleaner, then it is ran and then the apps. apps are also removed
 make:
 	$(CRUN); \
-    mkdir $(ODIR); \
+    mkdir -p $(ODIR); \
 	$(PBUILD); \
     $(PROCESSES); \
     wait $!; \

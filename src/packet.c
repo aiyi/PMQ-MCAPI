@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
+#include <time.h>
 #include "channel.h"
 
 //keyvalue-pair used in buffer handling
@@ -119,8 +120,6 @@ void mcapi_pktchan_send(
 {
     //timeout used by the posix function: actually no time at all
     struct timespec time_limit = { 0, 0 };
-    //how close we are to timeout
-    uint32_t ticks = 0;
     //the result of action
     mqd_t result = -1;
     //timeout of the operation as whole
@@ -149,7 +148,7 @@ void mcapi_pktchan_send(
     }
 
     //buffer must be usable
-    if ( !mcapi_trans_valid_buffer_param(buffer) && size > 0 )
+    if ( !mcapi_trans_valid_buffer_param(buffer) || size < 0 )
     {
         *mcapi_status = MCAPI_ERR_PARAMETER;
         return;
@@ -165,26 +164,27 @@ void mcapi_pktchan_send(
     //timeout of sending endpoint is used
     timeout = send_handle.us->time_out;
 
-    //skip the sleep at first iteration
-    goto send_action;
-
-    do
+    if ( timeout == MCAPI_TIMEOUT_INFINITE )
     {
-        //sleep a millisecond between iterations
-        usleep(1000);
-
-        send_action:
-
-        //sending the message, priority is max + 1 to ensure its ahead
-        //any out-of-place messages
-        result = mq_timedsend( send_handle.us->chan_msgq_id, buffer, size,
+        //sending the message, priority is inversed, because it works that way in msgq
+        result = mq_timedsend(send_handle.us->chan_msgq_id, buffer, size,
             MCAPI_MAX_PRIORITY+1, &time_limit );
-
-        //closer for time out!
-        ++ticks;
     }
-    while ( result == -1 && ( timeout == MCAPI_TIMEOUT_INFINITE || 
-    ticks < timeout ) );
+    else
+    {
+        //specify timeout for the call: first take the current time
+        clock_gettime( CLOCK_MONOTONIC, &time_limit );
+        //and then add the needed seconds
+        time_t seconds = timeout/1000;
+        time_limit.tv_sec += seconds;
+        //and needed millis
+        long millis = (timeout%1000)*1000;
+        time_limit.tv_nsec += millis;
+
+        //sending the message, priority is inversed, because it works that way in msgq
+        result = mq_timedsend(send_handle.us->chan_msgq_id, buffer, size,
+            MCAPI_MAX_PRIORITY+1, &time_limit );
+    }
 
     //if it was a timeout, we shall return with timeout
     if ( result == -1 )
@@ -272,33 +272,34 @@ void mcapi_pktchan_recv(
     }
 
     //if it was a timeout, we shall return with timeout
-    if ( bo == MCAPI_NULL )
+    if ( bo == MCAPI_NULL || (timeout-ticks) < 0  )
     {
         *mcapi_status = MCAPI_TIMEOUT;
 
         return;
     }
 
-    //ticks are not reset, as we are working same timeout
-
-    //skip the sleep at first iteration
-    goto recv_action;
-
-    do
+    if ( timeout == MCAPI_TIMEOUT_INFINITE )
     {
-        //sleep a millisecond between iterations
-        usleep(1000);
+        //sending the message, priority is inversed, because it works that way in msgq
+        mslen = mq_receive(receive_handle.us->chan_msgq_id, bo->data,
+            MCAPI_MAX_PKT_SIZE, &msg_prio);
+    }
+    else
+    {
+        //specify timeout for the call: first take the current time
+        clock_gettime( CLOCK_MONOTONIC, &time_limit );
+        //and then add the needed seconds. passed ticks are subtrackted
+        time_t seconds = (timeout-ticks)/1000;
+        time_limit.tv_sec += seconds;
+        //and needed millis
+        long millis = (timeout%1000)*1000;
+        time_limit.tv_nsec += millis;
 
-        recv_action:
-        //try to receive.
+        //sending the message, priority is inversed, because it works that way in msgq
         mslen = mq_timedreceive(receive_handle.us->chan_msgq_id, bo->data,
             MCAPI_MAX_PKT_SIZE, &msg_prio, &time_limit);
-
-        //closer for time out!
-        ++ticks;
     }
-    while ( mslen == -1 && ( timeout == MCAPI_TIMEOUT_INFINITE || 
-    ticks < timeout ) );
 
     //if it was a timeout, we shall return with timeout
     if ( mslen == -1 )

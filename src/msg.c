@@ -71,14 +71,14 @@ void mcapi_msg_send(
 
     if ( timeout == MCAPI_TIMEOUT_INFINITE )
     {
-        //sending the message, priority is inversed, because it works that way in msgq
-        result = mq_timedsend(receive_endpoint->msgq_id, buffer, buffer_size,
-            MCAPI_MAX_PRIORITY - priority, &time_limit );
+        //sending the message, priority is inversed, as it works that way in msgq
+        result = mq_send(receive_endpoint->msgq_id, buffer, buffer_size,
+            MCAPI_MAX_PRIORITY - priority );
     }
     else
     {
         //specify timeout for the call: first take the current time
-        clock_gettime( CLOCK_MONOTONIC, &time_limit );
+        clock_gettime( CLOCK_REALTIME, &time_limit );
         //and then add the needed seconds
         time_t seconds = timeout/1000;
         time_limit.tv_sec += seconds;
@@ -86,7 +86,7 @@ void mcapi_msg_send(
         long millis = (timeout%1000)*1000;
         time_limit.tv_nsec += millis;
 
-        //sending the message, priority is inversed, because it works that way in msgq
+        //sending the message, priority is inversed, as it works that way in msgq
         result = mq_timedsend(receive_endpoint->msgq_id, buffer, buffer_size,
             MCAPI_MAX_PRIORITY - priority, &time_limit );
     }
@@ -171,14 +171,14 @@ void mcapi_msg_recv(
 
     if ( timeout == MCAPI_TIMEOUT_INFINITE )
     {
-        //sending the message, priority is inversed, because it works that way in msgq
+        //sending the message, priority is inversed, as it works that way in msgq
         mslen = mq_receive(receive_endpoint->msgq_id, recv_buf,
             MCAPI_MAX_MSG_SIZE, &msg_prio);
     }
     else
     {
         //specify timeout for the call: first take the current time
-        clock_gettime( CLOCK_MONOTONIC, &time_limit );
+        clock_gettime( CLOCK_REALTIME, &time_limit );
         //and then add the needed seconds
         time_t seconds = timeout/1000;
         time_limit.tv_sec += seconds;
@@ -186,7 +186,7 @@ void mcapi_msg_recv(
         long millis = (timeout%1000)*1000;
         time_limit.tv_nsec += millis;
 
-        //sending the message, priority is inversed, because it works that way in msgq
+        //sending the message, priority is inversed, as it works that way in msgq
         mslen = mq_timedreceive(receive_endpoint->msgq_id, recv_buf,
             MCAPI_MAX_MSG_SIZE, &msg_prio, &time_limit);
     }

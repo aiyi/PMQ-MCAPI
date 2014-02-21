@@ -91,8 +91,8 @@ test(scl_send_recv_timeout)
         mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
         sender = mcapi_endpoint_create( us_id.port_id, &status );
 
-        mcapi_endpoint_set_attribute( sender, MCAPI_ENDP_ATTR_TIMEOUT, &timeout,
-        sizeof(mcapi_timeout_t), &status );
+        mcapi_endpoint_set_attribute( sender, MCAPI_ENDP_ATTR_TIMEOUT, 
+        &timeout, sizeof(mcapi_timeout_t), &status );
         sassert( MCAPI_SUCCESS, status );
 
         mcapi_sclchan_send_open_i( &handy, sender, &request, &status );
@@ -101,7 +101,7 @@ test(scl_send_recv_timeout)
         mcapi_wait( &request, &size, 1001, &status );
         sassert( MCAPI_SUCCESS, status );
 
-        for ( ; i < 10; ++i )
+        for ( i = 0; i < 10; ++i )
         {
             mcapi_sclchan_send_uint64( handy, send, &status );
             sassert( MCAPI_SUCCESS, status );
@@ -124,8 +124,8 @@ test(scl_send_recv_timeout)
         sender = mcapi_endpoint_get( them_id.domain_id, them_id.node_id,
         them_id.port_id, 1000, &status );
 
-        mcapi_endpoint_set_attribute( receiver, MCAPI_ENDP_ATTR_TIMEOUT, &timeout,
-        sizeof(mcapi_timeout_t), &status );
+        mcapi_endpoint_set_attribute( receiver, MCAPI_ENDP_ATTR_TIMEOUT, 
+        &timeout, sizeof(mcapi_timeout_t), &status );
         sassert( MCAPI_SUCCESS, status );
         
         mcapi_sclchan_connect_i( sender, receiver, &request, &status );
@@ -141,7 +141,7 @@ test(scl_send_recv_timeout)
 
         wait(NULL);
 
-        for ( ; i < 10; ++i )
+        for ( i = 0; i < 10; ++i )
         {
             recv = mcapi_sclchan_recv_uint64( handy, &status );
             sassert( MCAPI_SUCCESS, status );

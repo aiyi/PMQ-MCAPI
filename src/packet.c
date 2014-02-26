@@ -11,7 +11,7 @@ struct bufObject
     //the endpoint currently using the buffer: MCAPI_NULL if unused
     mcapi_endpoint_t endpoint;
     //the data contained in the buffer
-    char data[MCAPI_MAX_PKT_SIZE+sizeof(unsigned int)];
+    unsigned char data[MCAPI_MAX_PKT_SIZE+sizeof(unsigned int)];
 };
 
 //the all buffers within the use of this node
@@ -217,8 +217,6 @@ void mcapi_pktchan_recv(
     unsigned msg_prio;
     //timeout used by posix-function: actually no time at all
     struct timespec time_limit = { 0, 0 };
-    //how close we are to timeout
-    uint32_t ticks = 0;
     //timeout of the operation as whole
     mcapi_timeout_t timeout;
 
@@ -257,31 +255,17 @@ void mcapi_pktchan_recv(
     //reserve buffer AFTER the initial pit holes
     bo = bufFindEmpty();
 
-    while ( bo == MCAPI_NULL && ( timeout == MCAPI_TIMEOUT_INFINITE || 
-    ticks < timeout ) )
-    {
-        //sleep a millisecond between iterations
-        usleep(1000);
-
-        buf_action:
-        //failure to reserve means retry, as call blocks until availiable
-        bo = bufFindEmpty();
-
-        //closer for time out!
-        ++ticks;
-    }
-
-    //if it was a timeout, we shall return with timeout
-    if ( bo == MCAPI_NULL || (timeout-ticks) < 0  )
+    //in princible, we ought to wait for an availiable buffer here,
+    //but since no one can free one for us, we must return with timeout
+    if ( bo == MCAPI_NULL )
     {
         *mcapi_status = MCAPI_TIMEOUT;
-
         return;
     }
 
     if ( timeout == MCAPI_TIMEOUT_INFINITE )
     {
-        //sending the message, priority is inversed, because it works that way in msgq
+        //sending the message, priority is inversed, as it works that way in msgq
         mslen = mq_receive(receive_handle.us->chan_msgq_id, bo->data,
             MCAPI_MAX_PKT_SIZE, &msg_prio);
     }
@@ -290,13 +274,13 @@ void mcapi_pktchan_recv(
         //specify timeout for the call: first take the current time
         clock_gettime( CLOCK_REALTIME, &time_limit );
         //and then add the needed seconds. passed ticks are subtrackted
-        time_t seconds = (timeout-ticks)/1000;
+        time_t seconds = timeout/1000;
         time_limit.tv_sec += seconds;
         //and needed millis
         long millis = (timeout%1000)*1000;
         time_limit.tv_nsec += millis;
 
-        //sending the message, priority is inversed, because it works that way in msgq
+        //sending the message, priority is inversed, as it works that way in msgq
         mslen = mq_timedreceive(receive_handle.us->chan_msgq_id, bo->data,
             MCAPI_MAX_PKT_SIZE, &msg_prio, &time_limit);
     }

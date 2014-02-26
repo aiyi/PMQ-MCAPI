@@ -94,6 +94,11 @@ mcapi_boolean_t mcapi_chan_wait_connect( void* data )
         perror("When obtaining channel msq attributes for check");
         return MCAPI_FALSE;
     }
+
+    //Close this end of the queue so that no residual is left in any case.
+    //In the other hand, if this node needs it later, it shall reopen it
+    //at open-calls.
+    mq_close( msgq_id );
     
     //...and check if match
     if ( attr.mq_flags != uattr.mq_flags || attr.mq_maxmsg != uattr.mq_maxmsg
@@ -102,11 +107,6 @@ mcapi_boolean_t mcapi_chan_wait_connect( void* data )
         fprintf(stderr, "Set channel sq attributes do not match!\n");
         return MCAPI_FALSE;
     }
-
-    //Close this end of the queue so that no residual is left in any case.
-    //In the other hand, if this node needs it later, it shall reopen it
-    //at open-calls.
-    mq_close( msgq_id );
 
     //done
     return MCAPI_TRUE;

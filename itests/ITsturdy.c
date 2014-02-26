@@ -101,7 +101,12 @@ int main()
             //and reopen
             mcapi_pktchan_recv_open_i( &handy, sturdy_point, &request, &status );
             mcapi_wait( &request, &size, TIMEOUT, &status );
-            check( MCAPI_SUCCESS, status );
+
+            //timeout AGAIN -> go home
+            if ( status == MCAPI_TIMEOUT )
+            {
+                break;
+            }
 
             //printf(COLOR "reconnection success\n" );
         }
@@ -122,17 +127,14 @@ int main()
     mcapi_pktchan_recv_close_i( handy, &request, &status );
     //wait for it to happen
     mcapi_wait( &request, &size, TIMEOUT, &status );
-    check( MCAPI_SUCCESS, status );
 
     printf(COLOR "closed, release and shut down\n");
 
     //release
     mcapi_pktchan_release( recv_buf, &status );
-    check( MCAPI_SUCCESS, status );
 
     //finalize at the end, regardless of which process we are
     mcapi_finalize( &status );
-    check( MCAPI_SUCCESS, status );
 
     return EXIT_SUCCESS;
 }

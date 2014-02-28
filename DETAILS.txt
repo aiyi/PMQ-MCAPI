@@ -6,6 +6,7 @@
     DEFINING ENDPOINTS
     CLEANER
     THE OTHER MAKEFILES
+    CONFIGURATION FILE
     THREAD SAFETY
     TEST ENVIRONMENT AND DEPENDENCIES
     IMPLEMENTATION SPECIFIC BEHAVIOR
@@ -43,6 +44,7 @@ FOLDERS:
 /src            | Source files of the MCAPI implementation
 /obj            | Object files of MCAPI implementation.
                    ***WARNING*** provided makefiles may delete contents.
+                  The folder may be recreated by makefiles.
 /utests         | Unit tests: Contains its own README with more details
 /itests         | Integration tests: Contains its own README with more details
 
@@ -148,8 +150,10 @@ example of scalar channel definition:
 
     #define YELLOW_SIN {1, 13, 1}
     #define RED_SIN {1, 14, 1}
-    #define YELLOW_SIN_DEF { YELLOW_SIN, MCAPI_SCL_CHAN, CHAN_DIR_RECV, RED_SIN, 2 }
-    #define RED_SIN_DEF { RED_SIN, MCAPI_SCL_CHAN, CHAN_DIR_SEND, YELLOW_SIN, 2 }
+    #define YELLOW_SIN_DEF { YELLOW_SIN, MCAPI_SCL_CHAN, CHAN_DIR_RECV, \
+    RED_SIN, 2 }
+    #define RED_SIN_DEF { RED_SIN, MCAPI_SCL_CHAN, CHAN_DIR_SEND, \
+    YELLOW_SIN, 2 }
 
 example of packet channel definition:
 
@@ -183,14 +187,23 @@ recompiled every time they are changed.
 Other makefile, "makefile.mcapi", contains the build instruction for the
 implementation object files. It is not intended to produce any kind of
 standalone executable, but instead produce the object files to be statically
-linked with the applications. The file has also a clean command, which
-will remove the implementation object files from directory "obj".
+linked with the applications. The file has also a clean command, which will 
+remove the implementation object files from directory "obj".
 
     example: make -f makefile.mcapi
     example: make -f makefile.mcapi clean
 
 The third makefile, "makefile.cleaner", contains instructions to build and
 run the cleaner. More details are in the above chapter, "Cleaner".
+
+***CONFIGURATION FILE***
+
+The include/mca_config.h is a file containing configurations definable by
+application. This includes numbers of endpoints, nodes, domains and packet
+receive buffers and sizes for both messages and packets. Both implementation
+and application must be recompiled every time these values are changed or
+undefined behavior will occur. The file contains more details about each
+define.
 
 ***THREAD SAFETY***
 
@@ -205,10 +218,10 @@ THIS IMPLEMENTATION SHOULD RUN ON ANY LINUX FEATURING POSIX MESSAGE QUEUE,
 C-COMPILER AND MAKE. However, tests were executed successfully in system
 described below. Flag -lrt must be provided to compiler so that it will
 be able to access the POSIX message queues. The implementation expects that
-the comment notation "//" is supported by the compiler. Also usleep if used.
+the comment notation "//" is supported by the compiler. Also usleep is used.
 
     Operating system: CentOS Release 6.5 (Final)
-    Kernel Linux 2.6.32-431.3.1.el6.x86_64
+    Kernel: Linux 2.6.32-431.5.1.el6.x86_64
 
     Processor: Intel(R) Core(TM)2 Quad CPU Q9650 @ 3.00GHZ
 
@@ -242,7 +255,7 @@ The timeouts are expressed in milliseconds.
 Below tree illustrates dependencies between modules. Modules below are
 dependent on those modules above which they are connected to with a line.
 Indirect dependencies are culled out for simplicity. Names with extension ".h"
-are merely headers, while extension-less names are modules with their own
+are merely headers, while extensionless names are modules with their own
 implemented functions.
 
                    mca.h
@@ -265,12 +278,11 @@ implemented functions.
 
 ***IMPLEMENTATION SPECIFIC ERRORS***
 
-All error codes used may be found in MCAPI specification. However, some errors
-may occur on implementation specific situations. As a general rule, code
-MCAPI_ERR_GENERAL is produced, if there was some bug in implementation or
-an unexpected external disturbance. MCAPI_ERR_TRANSMISSION is produced usually
-for same reasons. Usually MCAPI_ERR_GENERAL is accompanied by a print to the
-standard error stream.
+All error codes used may be found within MCAPI specification. However, some 
+errors may occur on implementation specific situations. As a general rule, code
+MCAPI_ERR_GENERAL is produced, if there was some bug in implementation, an unexpected external disturbance or application misused the API or 
+implementation. MCAPI_ERR_TRANSMISSION is produced usually for same reasons. 
+Usually MCAPI_ERR_GENERAL is accompanied by a print to standard error stream.
 
 Calling mcapi_wait may also cause error prints, but in those cases it will
 return MCAPI_TIMEOUT instead of any error code.

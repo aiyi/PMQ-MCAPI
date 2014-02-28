@@ -4,8 +4,8 @@
 //time these values are changed.
 
 //How many buffers there are in total availiable for packet receive.
-//As a fist rule, one for each receiving packet channel, but only if previous
-//buffer is released before receive is called again.
+//As a fist rule, one for each receiving packet endpoint, but only if
+//previously obtained buffer is released before receive is called again.
 #define MCAPI_MAX_BUFFERS 32
 
 //Maximum lenght of a message in bytes. NOTICE: must not be shorter than

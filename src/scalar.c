@@ -61,7 +61,7 @@ void mcapi_sclchan_send_close_i(
     MCAPI_SCL_CHAN, CHAN_DIR_SEND );
 }
 
-void mcapi_sclchan_send(
+inline void mcapi_sclchan_send(
  	MCAPI_IN mcapi_sclchan_send_hndl_t send_handle, 
  	MCAPI_IN mcapi_uint64_t dataword,
  	MCAPI_OUT mcapi_status_t* mcapi_status,
@@ -176,7 +176,7 @@ void mcapi_sclchan_send_uint8(
     mcapi_sclchan_send( send_handle, dataword, mcapi_status, 1 );
 }
 
-mcapi_uint64_t mcapi_sclchan_recv(
+inline mcapi_uint64_t mcapi_sclchan_recv(
  	MCAPI_IN mcapi_sclchan_recv_hndl_t receive_handle,
  	MCAPI_OUT mcapi_status_t* mcapi_status,
     size_t bytes)

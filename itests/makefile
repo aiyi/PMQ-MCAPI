@@ -1,8 +1,8 @@
 #INSERT PROCESSES HERE IN THE ORDER THEY ARE LAUNCHED. SUPPORTS ARGUMENTS.
-PROCESSES = ./ITflimsy.exe & ./ITsturdy.exe & nice -n 11 ./ITcyan.exe & nice -n 11 ./ITmag.exe & nice -n 10 ./ITgreen.exe & nice -n 10 ./ITyellow.exe & nice -n 10 ./ITred.exe 32 & nice -n 10 ./ITblue.exe 32
+PROCESSES = nice -n 11 ./ITcyan.exe & nice -n 11 ./ITmag.exe & nice -n 10 ./ITgreen.exe & nice -n 10 ./ITyellow.exe & nice -n 10 ./ITred.exe 32 & nice -n 10 ./ITblue.exe 32
 
 #INSERT BUILD RULES FOR PROCESSES HERE IF SUCH IS NEEDED
-PBUILD = cd ..; make -f makefile.mcapi; cd $(ITDIR); make ITcyan; make ITmag; make ITgreen; make ITblue; make ITred; make ITyellow; make ITsturdy; make ITflimsy
+PBUILD = cd ..; make -f makefile.mcapi; cd $(ITDIR); make ITcyan; make ITmag; make ITgreen; make ITblue; make ITred; make ITyellow
 
 #compiler used
 CC=gcc

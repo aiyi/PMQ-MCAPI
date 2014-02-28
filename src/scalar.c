@@ -89,20 +89,6 @@ inline void mcapi_sclchan_send(
         return;
     }
 
-    //must be open
-    if ( send_handle.us->open != 1 )
-    {
-        *mcapi_status = MCAPI_ERR_GENERAL;
-        return;
-    }
-
-    //must be same size
-    if ( bytes != send_handle.us->defs->scalar_size )
-    {
-        *mcapi_status = MCAPI_ERR_GENERAL;
-        return;
-    }
-
     //timeout of sending endpoint is used
     timeout = send_handle.us->time_out;
 
@@ -209,20 +195,6 @@ inline mcapi_uint64_t mcapi_sclchan_recv(
         return -1;
     }
 
-    //must be open
-    if ( receive_handle.us->open != 1 )
-    {
-        *mcapi_status = MCAPI_ERR_GENERAL;
-        return -1;
-    }
-
-    //must be same size
-    if ( bytes != receive_handle.us->defs->scalar_size )
-    {
-        *mcapi_status = MCAPI_ERR_GENERAL;
-        return -1;
-    }
-
     //timeout of sending endpoint is used
     timeout = receive_handle.us->time_out;
 
@@ -260,15 +232,6 @@ inline mcapi_uint64_t mcapi_sclchan_recv(
             *mcapi_status = MCAPI_ERR_GENERAL;
 
         return;
-    }
-
-    //pardon? wrong priority indicates wrong sort of traffic
-    if( msg_prio != MCAPI_MAX_PRIORITY+1 )
-    {
-        fprintf(stderr,"Received scalar message with wrong priority!");
-        *mcapi_status = MCAPI_ERR_GENERAL;
-
-        return -1;
     }
 
     //success: return the received value
@@ -318,11 +281,9 @@ MCAPI_OUT mcapi_status_t* mcapi_status )
     return mcapi_chan_available( receive_handle, mcapi_status );
 }
 
-mcapi_boolean_t mcapi_trans_valid_sclchan_send_handle( mcapi_sclchan_send_hndl_t handle)
+inline mcapi_boolean_t mcapi_trans_valid_sclchan_send_handle( mcapi_sclchan_send_hndl_t handle)
 {
-    if ( handle.us == MCAPI_NULL || handle.us->inited != 1 ||
-    handle.us->defs == MCAPI_NULL || handle.us->defs->dir != CHAN_DIR_SEND ||
-    handle.us->defs->type != MCAPI_SCL_CHAN )
+    if ( handle.us == MCAPI_NULL )
     {
         return MCAPI_FALSE;
     }
@@ -331,11 +292,9 @@ mcapi_boolean_t mcapi_trans_valid_sclchan_send_handle( mcapi_sclchan_send_hndl_t
 }
 
 
-mcapi_boolean_t mcapi_trans_valid_sclchan_recv_handle( mcapi_sclchan_recv_hndl_t handle)
+inline mcapi_boolean_t mcapi_trans_valid_sclchan_recv_handle( mcapi_sclchan_recv_hndl_t handle)
 {
-    if ( handle.us == MCAPI_NULL || handle.us->inited != 1 ||
-    handle.us->defs == MCAPI_NULL || handle.us->defs->dir != CHAN_DIR_RECV ||
-    handle.us->defs->type != MCAPI_SCL_CHAN )
+    if ( handle.us == MCAPI_NULL )
     {
         return MCAPI_FALSE;
     }

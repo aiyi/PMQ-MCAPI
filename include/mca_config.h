@@ -12,7 +12,7 @@
 //string defines in channel.h or channel open and close shall fail.
 #define MCAPI_MAX_MSG_SIZE 128
 
-//Maximum lenght of a packet in bytes
+//Maximum length of a packet in bytes
 #define MCAPI_MAX_PKT_SIZE 1024
 
 //How many endpoints each node may have.

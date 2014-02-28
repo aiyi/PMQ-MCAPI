@@ -24,8 +24,3 @@ inspects them from magenta.
 
 Itmag: One thread receives packets from cyan and another increments each byte
 by one and send them back cyan as a packet.
-
-ITflimsy and ITsturdy: ITflimsy will send packets to ITsturdy and then close
-the connection randomly. Will produce messages as ITstudy will respond by
-closing its own end of connection and form a new one. ITflimsy will likewise
-reopen its own end.

@@ -210,7 +210,9 @@ define.
 This implementation IS NOT THREAD SAFE. However, if endpoints, channels,
 buffers and other resources are not accessed by multiple threads of same
 process at the same time, it should work. This was tested as a part of
-integration tests.
+integration tests. Furthermore, there must be no simultaneous packet receives
+or packet buffer releases, unless it can be guaranteed that they are using
+different buffers.
 
 ***TEST ENVIRONMENT AND DEPENDENCIES***
 
@@ -218,7 +220,8 @@ THIS IMPLEMENTATION SHOULD RUN ON ANY LINUX FEATURING POSIX MESSAGE QUEUE,
 C-COMPILER AND MAKE. However, tests were executed successfully in system
 described below. Flag -lrt must be provided to compiler so that it will
 be able to access the POSIX message queues. The implementation expects that
-the comment notation "//" is supported by the compiler. Also usleep is used.
+the comment notation "//" is supported by the compiler. Also usleep,
+clock_gettime and CLOCK_REALTIME are used.
 
     Operating system: CentOS Release 6.5 (Final)
     Kernel: Linux 2.6.32-431.5.1.el6.x86_64
@@ -248,7 +251,7 @@ are not implemented either.
 Other non-implemented functions include mcapi_pktchan_release_test,
 mcapi_wait_any and mcapi_cancel.
 
-The timeouts are expressed in milliseconds.
+The timeout datatype mcapi_timeout_t is defined as milliseconds.
 
 ***INTERNAL STRUCTURE OF IMPLEMENTATION***
 
@@ -329,22 +332,16 @@ mcapi_pktchan_recv:
     An error print will accompany this status code.
     MCAPI_ERR_GENERAL, if received POSIX message has unexpected priority.
 
-mcapi_sclchan_send_uint64:
-mcapi_sclchan_send_uint32:
-mcapi_sclchan_send_uint16:
-mcapi_sclchan_send_uint8:
-    MCAPI_ERR_GENERAL, if the channel is not open, is used for operation of
-    wrong scalar size or the POSIX call fails. Accompanies an error print
-    only if the latter case is not because of timeout.
-
 mcapi_sclchan_recv_uint64:
 mcapi_sclchan_recv_uint32:
 mcapi_sclchan_recv_uint16:
 mcapi_sclchan_recv_uint8:
-    MCAPI_ERR_GENERAL, if the channel is not open, is used for operation of
-    wrong scalar size or the POSIX call fails. Accompanies an error print
-    only if the latter case is not timeout or it is deemed failure because of 
-    unexpected POSIX message priority.
+mcapi_sclchan_send_uint64:
+mcapi_sclchan_send_uint32:
+mcapi_sclchan_send_uint16:
+mcapi_sclchan_send_uint8:
+    MCAPI_ERR_GENERAL, if POSIX call fails. Accompanies an error print
+    only if the latter case is not because of timeout.
 
 mcapi_msg_available:
 mcapi_pktchan_available:

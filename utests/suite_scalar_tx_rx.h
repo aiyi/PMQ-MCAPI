@@ -168,65 +168,20 @@ test(scl_send_recv_init)
 
 //channel handlers must be valid
 test(scl_send_recv_inva_chan)
-    pid = fork();
+    struct endPointID us_id = SSCL;
+    mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
+    mcapi_sclchan_send_hndl_t handy1;
+    mcapi_sclchan_recv_hndl_t handy2;
 
-    if ( pid == 0 )
-    {
-        mcapi_sclchan_send_hndl_t handy;
-        struct endPointID us_id = SSCL;
-        struct endPointID them_id = RSCL;
+    handy1.us = MCAPI_NULL;
+    handy2.us = MCAPI_NULL;
 
-        mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
-        sender = mcapi_endpoint_create( us_id.port_id, &status );
-        receiver = mcapi_endpoint_get( them_id.domain_id, them_id.node_id,
-        them_id.port_id, 1000, &status );
+    mcapi_sclchan_send_uint64( handy1, send, &status );
+    sassert( MCAPI_ERR_CHAN_INVALID, status );
+    mcapi_sclchan_recv_uint64( handy2, &status );
+    sassert( MCAPI_ERR_CHAN_INVALID, status );
 
-        mcapi_sclchan_send_open_i( &handy, sender, &request, &status );
-        sassert( MCAPI_PENDING, status );
-
-        mcapi_wait( &request, &size, 1001, &status );
-        sassert( MCAPI_SUCCESS, status );
-
-        handy.us = receiver;
-        mcapi_sclchan_send_uint64( handy, send, &status );
-        sassert( MCAPI_ERR_CHAN_INVALID, status );
-
-        mcapi_finalize( &status );
-        exit(0);
-    }
-    else if ( pid != -1 )
-    {
-        mcapi_sclchan_recv_hndl_t handy;
-        struct endPointID us_id = RSCL;
-        struct endPointID them_id = SSCL;
-
-        mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
-        receiver = mcapi_endpoint_create( us_id.port_id, &status );
-        sender = mcapi_endpoint_get( them_id.domain_id, them_id.node_id,
-        them_id.port_id, 1000, &status );
-        
-        mcapi_sclchan_connect_i( sender, receiver, &request, &status );
-        mcapi_wait( &request, &size, 1001, &status );
-        sassert( MCAPI_SUCCESS, status );
-
-        mcapi_sclchan_recv_open_i( &handy, receiver, &request, &status );
-        sassert( MCAPI_PENDING, status );
-
-        mcapi_wait( &request, &size, 1000, &status );
-        sassert( MCAPI_SUCCESS, status );
-
-        handy.us = sender;
-        mcapi_sclchan_recv_uint64( handy, &status );
-        sassert( MCAPI_ERR_CHAN_INVALID, status );
-
-        wait(NULL);
-
-        mcapi_finalize( &status );
-    }
-    else
-    {
-        perror("fork");
-    }
+    mcapi_finalize( &status );
 }
 
 //see that close works
@@ -690,7 +645,7 @@ test(scl_not_avail)
     }
 }
 
-//incompatible sizes are unacceptable
+//does produce errors if too long for posix message queue
 test(scl_wrong_size)
 
     pid = fork();
@@ -698,8 +653,8 @@ test(scl_wrong_size)
     if ( pid == 0 )
     {
         mcapi_sclchan_send_hndl_t handy;
-        struct endPointID us_id = SSCL;
-        struct endPointID them_id = RSCL;
+        struct endPointID us_id = SSCL16;
+        struct endPointID them_id = RSCL16;
 
         mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
         sender = mcapi_endpoint_create( us_id.port_id, &status );
@@ -719,8 +674,69 @@ test(scl_wrong_size)
     else if ( pid != -1 )
     {
         mcapi_sclchan_recv_hndl_t handy;
-        struct endPointID us_id = RSCL;
-        struct endPointID them_id = SSCL;
+        struct endPointID us_id = RSCL16;
+        struct endPointID them_id = SSCL16;
+
+        mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
+        receiver = mcapi_endpoint_create( us_id.port_id, &status );
+        sender = mcapi_endpoint_get( them_id.domain_id, them_id.node_id,
+        them_id.port_id, 1000, &status );
+        
+        mcapi_sclchan_connect_i( sender, receiver, &request, &status );
+        sassert( MCAPI_PENDING, status );
+        mcapi_wait( &request, &size, 1000, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_sclchan_recv_open_i( &handy, receiver, &request, &status );
+        sassert( MCAPI_PENDING, status );
+
+        mcapi_wait( &request, &size, 1000, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        recv = mcapi_sclchan_recv_uint8( handy, &status );
+        sassert( MCAPI_ERR_GENERAL, status );
+
+        wait(NULL);
+
+        mcapi_finalize( &status );
+    }
+    else
+    {
+        perror("fork");
+    }
+}
+
+//does not produce errors, but must not crash either
+test(scl_wrong_size_2)
+
+    pid = fork();
+
+    if ( pid == 0 )
+    {
+        mcapi_sclchan_send_hndl_t handy;
+        struct endPointID us_id = SSCL16;
+        struct endPointID them_id = RSCL16;
+
+        mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
+        sender = mcapi_endpoint_create( us_id.port_id, &status );
+
+        mcapi_sclchan_send_open_i( &handy, sender, &request, &status );
+        sassert( MCAPI_PENDING, status );
+
+        mcapi_wait( &request, &size, 1001, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_sclchan_send_uint8( handy, send, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_finalize( &status );
+        exit(0);
+    }
+    else if ( pid != -1 )
+    {
+        mcapi_sclchan_recv_hndl_t handy;
+        struct endPointID us_id = RSCL16;
+        struct endPointID them_id = SSCL16;
 
         mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
         receiver = mcapi_endpoint_create( us_id.port_id, &status );
@@ -739,7 +755,7 @@ test(scl_wrong_size)
         sassert( MCAPI_SUCCESS, status );
 
         recv = mcapi_sclchan_recv_uint32( handy, &status );
-        sassert( MCAPI_ERR_GENERAL, status );
+        sassert( MCAPI_SUCCESS, status );
 
         wait(NULL);
 
@@ -765,4 +781,5 @@ void suite_scalar_tx_rx()
     dotest(scl_avail)
     dotest(scl_not_avail)
     dotest(scl_wrong_size)
+    dotest(scl_wrong_size_2)
 }

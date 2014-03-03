@@ -415,7 +415,9 @@ test(msg_recreate_send_not_avail)
     mcapi_msg_send( sender, receiver, send_buf, MAX_MSG_LEN, 0, &status );
 
     mcapi_endpoint_delete( ureceiver, &status );
-    receiver = mcapi_endpoint_get( 1, 2, 1, 1000, &status );
+    sassert( MCAPI_SUCCESS, status );
+    ureceiver = mcapi_endpoint_create( 1, &status );
+    sassert( MCAPI_SUCCESS, status );
 
     count = mcapi_msg_available( ureceiver, &status );
     sassert( MCAPI_SUCCESS, status );

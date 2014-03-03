@@ -50,7 +50,8 @@ void utest##NAME() \
     if ( excpt != got ) { \
         char status_msg[MCAPI_MAX_STATUS_MSG_LEN]; \
         mcapi_display_status( got, status_msg, MCAPI_MAX_STATUS_MSG_LEN ); \
-        printf( "UNIT TEST FAILURE: %s got: %s expected: %s\n", names, status_msg, #excpt ); \
+        printf( "UNIT TEST FAILURE AT %u: %s got: %s expected: %s\n", __LINE__,\
+        names, status_msg, #excpt ); \
         addError(); }
 
 #endif

@@ -328,6 +328,10 @@ void mcapi_endpoint_delete(
     }
     while ( mslen != -1 );
     
+    //close and unlink the queue
+    mq_close( endpoint->msgq_id );
+    mq_unlink( endpoint->defs->msg_name );
+    endpoint->msgq_id = -1;
     //mark the endpoint uninited
     endpoint->inited = -1;
     *mcapi_status = MCAPI_SUCCESS;

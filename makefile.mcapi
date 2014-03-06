@@ -1,7 +1,7 @@
 #compiler used
 CC=gcc
 #flags: includes and posix message queue, latter needed to access IPC
-CFLAGS=-I$(IDIR) -lrt
+CFLAGS=-I$(IDIR) -lrt -DNDEBUG
 
 #folders of most files needed
 IDIR=include

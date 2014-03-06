@@ -13,6 +13,15 @@ static size_t size;
 static pid_t pid;
 static mcapi_request_t request;
 static mcapi_timeout_t timeout = 100;
+static mcapi_sclchan_recv_hndl_t nullhand;
+
+//must be inited
+test(scl_send_recv_fail_init)
+    mcapi_sclchan_send_uint64( nullhand, 0, &status );
+    sassert( MCAPI_ERR_NODE_NOTINIT, status );
+    mcapi_sclchan_recv_uint64( nullhand, &status );
+    sassert( MCAPI_ERR_NODE_NOTINIT, status );
+}
 
 //see that 64-bit send and receive works
 test(scl_send_recv)
@@ -65,6 +74,115 @@ test(scl_send_recv)
         recv = mcapi_sclchan_recv_uint64( handy, &status );
         sassert( MCAPI_SUCCESS, status );
         uassert( send == recv );
+
+        wait(NULL);
+
+        mcapi_finalize( &status );
+    }
+    else
+    {
+        perror("fork");
+    }
+}
+
+//stuff just stops at middle, must recover
+//NOTICE: did not work without timeout in send!
+test(scl_send_recv_fail_trans)
+
+    strncpy(send_buf, TEST_MESSAGE, MAX_MSG_LEN);
+
+    pid = fork();
+
+    if ( pid == 0 )
+    {
+        mcapi_sclchan_send_hndl_t handy;
+        struct endPointID us_id = SSCL;
+        struct endPointID them_id = RSCL;
+        unsigned int i = 0;
+
+        mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
+        sender = mcapi_endpoint_create( us_id.port_id, &status );
+
+        mcapi_endpoint_set_attribute( sender, MCAPI_ENDP_ATTR_TIMEOUT, &timeut,
+        sizeof(mcapi_timeout_t), &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_sclchan_send_open_i( &handy, sender, &request, &status );
+        sassert( MCAPI_PENDING, status );
+
+        mcapi_wait( &request, &size, 1001, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        do
+        {
+            mcapi_sclchan_send_uint64( handy, 0xAA, &status );
+            ++i; 
+
+            uassert( i < 20 );
+        }
+        while( status == MCAPI_SUCCESS );
+
+        mcapi_sclchan_send_close_i( handy, &request, &status );
+        sassert( MCAPI_PENDING, status );
+        mcapi_wait( &request, &size, 1000, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_sclchan_send_open_i( &handy, sender, &request, &status );
+        sassert( MCAPI_PENDING, status );
+
+        mcapi_wait( &request, &size, 1001, &status );
+        sassert( MCAPI_SUCCESS, status );
+        
+        mcapi_sclchan_send_uint64( handy, 0xAA, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_finalize( &status );
+        exit(0);
+    }
+    else if ( pid != -1 )
+    {
+        mcapi_sclchan_recv_hndl_t handy;
+        struct endPointID us_id = RSCL;
+        struct endPointID them_id = SSCL;
+
+        mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
+        receiver = mcapi_endpoint_create( us_id.port_id, &status );
+        sender = mcapi_endpoint_get( them_id.domain_id, them_id.node_id,
+        them_id.port_id, 1000, &status );
+        
+        mcapi_sclchan_connect_i( sender, receiver, &request, &status );
+        sassert( MCAPI_PENDING, status );
+
+        mcapi_wait( &request, &size, 1000, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_sclchan_recv_open_i( &handy, receiver, &request, &status );
+        sassert( MCAPI_PENDING, status );
+
+        mcapi_wait( &request, &size, 1000, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_sclchan_recv_uint64( handy, &status );
+
+        mcapi_sclchan_recv_close_i( handy, &request, &status );
+        sassert( MCAPI_PENDING, status );
+        mcapi_wait( &request, &size, 1000, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_sclchan_connect_i( sender, receiver, &request, &status );
+        sassert( MCAPI_PENDING, status );
+
+        mcapi_wait( &request, &size, 1000, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_sclchan_recv_open_i( &handy, receiver, &request, &status );
+        sassert( MCAPI_PENDING, status );
+
+        mcapi_wait( &request, &size, 1000, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_sclchan_recv_uint64( handy, &status );
+        sassert( MCAPI_SUCCESS, status );
 
         wait(NULL);
 
@@ -307,7 +425,7 @@ test(scl_re_open)
         mcapi_sclchan_recv_close_i( handy, &request, &status );
         sassert( MCAPI_ERR_CHAN_NOTOPEN, status );
 
-        mcapi_pktchan_connect_i( sender, receiver, &request, &status );
+        mcapi_sclchan_connect_i( sender, receiver, &request, &status );
         mcapi_wait( &request, &size, 1001, &status );
 
         mcapi_sclchan_recv_open_i( &handy, receiver, &request, &status );
@@ -769,7 +887,11 @@ test(scl_wrong_size_2)
 
 void suite_scalar_tx_rx()
 {
+    nullhand.us = MCAPI_NULL;
+
+    dotest(scl_send_recv_fail_init)
     dotest(scl_send_recv)
+    dotest(scl_send_recv_fail_trans)
     dotest(scl_send_recv_timeout)
     dotest(scl_send_recv_init)
     dotest(scl_send_recv_inva_chan)

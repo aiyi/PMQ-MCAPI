@@ -35,6 +35,14 @@ test(pkt_release_fail_buf)
     mcapi_finalize( &status );
 }
 
+//must be inited
+test(pkt_send_recv_fail_init)
+    mcapi_pktchan_send( nullhand, NULL, MAX_MSG_LEN, &status );
+    sassert( MCAPI_ERR_NODE_NOTINIT, status );
+    mcapi_pktchan_recv( nullhand, NULL, &size, &status );
+    sassert( MCAPI_ERR_NODE_NOTINIT, status );
+}
+
 //successfull send & receive
 test(pkt_send_recv)
 
@@ -91,6 +99,116 @@ test(pkt_send_recv)
         uassert( size == MAX_MSG_LEN );
         uassert2( 0, memcmp( send_buf, recv_buf, MAX_MSG_LEN ) );
         mcapi_pktchan_release( recv_buf, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        wait(NULL);
+
+        mcapi_finalize( &status );
+    }
+    else
+    {
+        perror("fork");
+    }
+}
+
+//stuff just stops at middle, must recover
+//NOTICE: did not work without timeout in send!
+test(pkt_send_recv_fail_trans)
+
+    strncpy(send_buf, TEST_MESSAGE, MAX_MSG_LEN);
+
+    pid = fork();
+
+    if ( pid == 0 )
+    {
+        mcapi_pktchan_send_hndl_t handy;
+        struct endPointID us_id = FOO;
+        struct endPointID them_id = BAR;
+        unsigned int i = 0;
+
+        mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
+        sender = mcapi_endpoint_create( us_id.port_id, &status );
+
+        mcapi_endpoint_set_attribute( sender, MCAPI_ENDP_ATTR_TIMEOUT, &timeut,
+        sizeof(mcapi_timeout_t), &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_pktchan_send_open_i( &handy, sender, &request, &status );
+        sassert( MCAPI_PENDING, status );
+
+        mcapi_wait( &request, &size, 1001, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        do
+        {
+            mcapi_pktchan_send( handy, send_buf, MAX_MSG_LEN, &status );
+            ++i; 
+
+            uassert( i < 20 );
+        }
+        while( status == MCAPI_SUCCESS );
+
+        mcapi_pktchan_send_close_i( handy, &request, &status );
+        sassert( MCAPI_PENDING, status );
+        mcapi_wait( &request, &size, 1000, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_pktchan_send_open_i( &handy, sender, &request, &status );
+        sassert( MCAPI_PENDING, status );
+
+        mcapi_wait( &request, &size, 1001, &status );
+        sassert( MCAPI_SUCCESS, status );
+        
+        mcapi_pktchan_send( handy, send_buf, MAX_MSG_LEN, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_finalize( &status );
+        exit(0);
+    }
+    else if ( pid != -1 )
+    {
+        mcapi_pktchan_recv_hndl_t handy;
+        struct endPointID us_id = BAR;
+        struct endPointID them_id = FOO;
+
+        mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
+        receiver = mcapi_endpoint_create( us_id.port_id, &status );
+        sender = mcapi_endpoint_get( them_id.domain_id, them_id.node_id,
+        them_id.port_id, 1000, &status );
+        
+        mcapi_pktchan_connect_i( sender, receiver, &request, &status );
+        sassert( MCAPI_PENDING, status );
+
+        mcapi_wait( &request, &size, 1000, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_pktchan_recv_open_i( &handy, receiver, &request, &status );
+        sassert( MCAPI_PENDING, status );
+
+        mcapi_wait( &request, &size, 1000, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_pktchan_recv( handy, &recv_buf, &size, &status );
+        mcapi_pktchan_release( recv_buf, &status );
+
+        mcapi_pktchan_recv_close_i( handy, &request, &status );
+        sassert( MCAPI_PENDING, status );
+        mcapi_wait( &request, &size, 1000, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_pktchan_connect_i( sender, receiver, &request, &status );
+        sassert( MCAPI_PENDING, status );
+
+        mcapi_wait( &request, &size, 1000, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_pktchan_recv_open_i( &handy, receiver, &request, &status );
+        sassert( MCAPI_PENDING, status );
+
+        mcapi_wait( &request, &size, 1000, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_pktchan_recv( handy, &recv_buf, &size, &status );
         sassert( MCAPI_SUCCESS, status );
 
         wait(NULL);
@@ -1151,7 +1269,9 @@ void suite_packet_tx_rx()
 
     dotest(pkt_release_fail_init)
     dotest(pkt_release_fail_buf)
+    dotest(pkt_send_recv_fail_init)
     dotest(pkt_send_recv)
+    dotest(pkt_send_recv_fail_trans)
     dotest(pkt_send_recv_timeout)
     dotest(dele_con_fail)
     dotest(pkt_send_recv_big)

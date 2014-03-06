@@ -317,16 +317,6 @@ void mcapi_endpoint_delete(
         *mcapi_status = MCAPI_ERR_ENDP_NOTOWNER;
         return;
     }
-
-    //now we must empty the message queue
-    //otherwise the messagequeue is left as it is, in case it is reused
-    do
-    {
-        //take the message from queue to the intermediate buffer, while rec
-        mslen = mq_timedreceive(endpoint->msgq_id, recv_buf,
-            MCAPI_MAX_MSG_SIZE, NULL, &time_limit);
-    }
-    while ( mslen != -1 );
     
     //close and unlink the queue
     mq_close( endpoint->msgq_id );

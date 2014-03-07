@@ -1,5 +1,4 @@
 #include "node.h"
-#include <linux/limits.h>
 #include <string.h>
 
 //1 = is initialized, else not

@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 //Wait about five seconds before timeout
-#define TIMEOUT 5000
+#define TIMEOUT 15000
 //NOTICE: other defines, like THE_DOMAIN are defines in file ../include/endpointlist.h!
 
 int main()
@@ -38,8 +38,10 @@ int main()
     mcapi_display_status( status, status_msg, MCAPI_MAX_STATUS_MSG_LEN );
     //print it:
     printf( "Node 0: Result of initialization: %s\n", status_msg );
+    usleep( 1500000 );
 
     printf( "Node 0: creating sending endpoint\n" );
+    usleep( 1500000 );
 
     //create our channel endpoint with our port id
     send_point = mcapi_endpoint_create( RED_SCL_OUT, &status );
@@ -47,6 +49,7 @@ int main()
     printf( "Node 0: obtaining receiving endpoint\n" );
     recv_point = mcapi_endpoint_get( THE_DOMAIN, YELLOW_NODE, YELLOW_SCL_IN,
     TIMEOUT, &status );
+    usleep( 1500000 );
 
     //form the scalar channel
     printf( "Node 0: connecting the channel\n" );
@@ -54,12 +57,14 @@ int main()
     //wait for it to happen
     mcapi_wait( &request, &size, TIMEOUT, &status );
     //open our end of it
+    usleep( 1500000 );
     printf( "Node 0: opening the sending end of the channel\n" );
     mcapi_sclchan_send_open_i( &handy, send_point, &request, &status );
     //wait for it to happen
     mcapi_wait( &request, &size, TIMEOUT, &status );
 
-    printf( "Node 0: sending %hX\n", value );
+    printf( "Node 0: sending 0x%hX\n", value );
+    usleep( 1500000 );
     
     //send the scalar value via channel
     mcapi_sclchan_send_uint16( handy, value, &status );
@@ -75,6 +80,7 @@ int main()
     //wait for it to happen
     mcapi_wait( &request, &size, TIMEOUT, &status );
 
+    usleep( 1000000 );
     printf( "Node 0: closed!\n" );
 
     //finalize at the end

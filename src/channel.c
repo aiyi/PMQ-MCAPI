@@ -1,6 +1,7 @@
 #include "channel.h"
 #include <errno.h>
 #include <stdio.h>
+#include <sys/stat.h>
 
 mcapi_boolean_t mcapi_chan_wait_connect( void* data )
 {

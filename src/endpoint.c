@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <sys/fcntl.h>
 
 /* checks if the endpoint handle refers to a valid endpoint */
 mcapi_boolean_t mcapi_trans_valid_endpoint (mcapi_endpoint_t endpoint)

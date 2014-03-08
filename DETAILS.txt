@@ -219,6 +219,9 @@ integration tests. Furthermore, there must be no simultaneous packet receives
 or packet buffer releases, unless it can be guaranteed that they are using
 different buffers.
 
+In Cygwin, multithreaded integration tests did not work, and functioned
+properly only after said tests were made single threaded.
+
 ***DEPENDENCIES***
 
 THIS IMPLEMENTATION SHOULD RUN ON ANY LINUX FEATURING POSIX MESSAGE QUEUE,
@@ -347,10 +350,10 @@ mcapi_sclchan_available:
 
 ***TEST ENVIRONMENTS***
 
-The tests were successfully executed in following test environments. The
-only exception is the cygwin, where threaded integration tests did not work.
-Furthermore, defines like O_WRONLY and S_IRUSR had to be defined manually.
-The first in the list was also the implementation environment.
+The tests were successfully executed in following test environments. 
+Multithreaded integration tests may fail in some environments. See chapter
+THREAD SAFETY for more details. The first in the list was also the 
+implementation environment.
 
 SYSTEM #1:
     Operating system: CentOS Release 6.5 (Final)
@@ -363,7 +366,7 @@ SYSTEM #1:
     Make: GNU Make 3.81
 
 SYSTEM #2:
-    Additional layer: Oracle VM VirtualbBox 4.2.6 Edition
+    Additional layer: Oracle VM VirtualBox 4.2.6 Edition
     Operating system: Linux Mint 14 Nadia
     Kernel: Linux 3.5.0-17-generic (x86_64)
 

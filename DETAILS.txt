@@ -432,12 +432,13 @@ SYSTEM #8:
     Kernel: Linux 2.6.32-431.5.1.el6.x86_64
 
     Processor: 2x Intel(R) Core(TM)2 Duo CPU E8400 @ 3.00GHz
-    Memory: 3.6GiB
+    Memory: 3.6 GiB
 
     Compiler: gcc (GCC) 4.8.1
     Make: GNU Make 3.81
 
 SYSTEM #9:
+    Additional layer: Oracle VM VirtualBox 4.3.6 Edition
     Operating system: archlinux-2014.03.01-x86_64
     Kernel: Linux archiso 3.13.5-1-ARCH
     
@@ -446,3 +447,14 @@ SYSTEM #9:
 
     Compiler: gcc (GCC) 4.8.2 20140206 (prerelease)
     Make: GNU Make 4.0
+
+SYSTEM #10:
+    Additional layer: Oracle VM VirtualBox 4.3.6 Edition
+    Operating system: Linux Mint 16 Petra
+    Kernel: Linux 3.11.0-12-generic
+    
+    Processor: Intel(R) Core(TM)2 Quad CPU Q9650 @ 3.00GHZ
+    Memory: 1 GiB
+
+    Compiler: gcc (Ubuntu/Linaro 4.8.1-10ubuntu8) 4.8.1
+    Make: GNU Make 3.81

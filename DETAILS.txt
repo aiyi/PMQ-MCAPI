@@ -409,7 +409,7 @@ SYSTEM #5:
 
 SYSTEM #6:
     Additional layer: Cygwin 1.7.28
-    Operating system: CYGWIN_NT-6.1
+    Kernel: CYGWIN_NT-6.1
 
     Processor: Intel(R) Core(TM) Duo CPU P7350 @ 2.00GHz
     Memory: 3066 MiB
@@ -436,3 +436,13 @@ SYSTEM #8:
 
     Compiler: gcc (GCC) 4.8.1
     Make: GNU Make 3.81
+
+SYSTEM #9:
+    Operating system: archlinux-2014.03.01-x86_64
+    Kernel: Linux archiso 3.13.5-1-ARCH
+    
+    Processor: 2x Intel(R) Core(TM)2 Quad CPU Q9650 @ 3.00GHZ
+    Memory: 1 GiB
+
+    Compiler: gcc (GCC) 4.8.2 20140206 (prerelease)
+    Make: GNU Make 4.0

@@ -20,10 +20,9 @@ FOR THE LICENSE OF THIS SOFTWARE SEE LICENSE.txt
 
 ***PACKAGE CONTENTS***
 
-Includes a POSIX message queue based MCAPI implementation, where each node is
-supposed to be its own process. A "hello world" level example is provided as
-well as unit tests and integration tests. Files and folders are explained in
-more detail below:
+Includes a POSIX message queue based MCAPI implementation. A "hello world"
+level example is provided as well as unit tests and integration tests. Files 
+and folders are explained in more detail below:
 
 FILES:
 
@@ -224,14 +223,17 @@ properly only after said tests were made single threaded.
 
 ***DEPENDENCIES***
 
-THIS IMPLEMENTATION SHOULD RUN ON ANY LINUX FEATURING POSIX MESSAGE QUEUE,
+THIS IMPLEMENTATION SHOULD RUN ON ANY LINUX FEATURING POSIX MESSAGE QUEUES,
 C-COMPILER AND MAKE. However, tests were executed successfully in systems
 described in chapter TEST ENVIRONMENTS. Flag -lrt must be provided to compiler 
 so that it will be able to access the POSIX message queues. The implementation 
 expects that the comment notation "//" is supported by the compiler. Also
-usleep, clock_gettime and CLOCK_REALTIME are used.
+usleep, clock_gettime and CLOCK_REALTIME are used. Files sys/stat.h and
+sys/fcntl.h are needed for some defines.
 
 ***IMPLEMENTATION SPECIFIC BEHAVIOR***
+
+Within this implementation each node is supposed to be one process. Domains are user defined, but within the same processor.
 
 Most of of the non-blocking functions are not implemented. Notable exceptions
 are calls oriented with connecting, opening and closing channels. However,

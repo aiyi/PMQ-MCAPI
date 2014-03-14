@@ -166,7 +166,7 @@ void mcapi_pktchan_send(
 
     if ( timeout == MCAPI_TIMEOUT_INFINITE )
     {
-        //sending the message, priority is inversed, as it works that way in msgq
+        //sending the message, priority is fixed
         result = mq_send(send_handle.us->chan_msgq_id, buffer, size,
             MCAPI_MAX_PRIORITY+1 );
     }
@@ -181,7 +181,7 @@ void mcapi_pktchan_send(
         long millis = (timeout%1000)*1000;
         time_limit.tv_nsec += millis;
 
-        //sending the message, priority is inversed, as it works that way in msgq
+        //sending the message, priority is fixed
         result = mq_timedsend(send_handle.us->chan_msgq_id, buffer, size,
             MCAPI_MAX_PRIORITY+1, &time_limit );
     }
@@ -265,7 +265,7 @@ void mcapi_pktchan_recv(
 
     if ( timeout == MCAPI_TIMEOUT_INFINITE )
     {
-        //sending the message, priority is inversed, as it works that way in msgq
+        //receiving the message
         mslen = mq_receive(receive_handle.us->chan_msgq_id, bo->data,
             MCAPI_MAX_PKT_SIZE, &msg_prio);
     }
@@ -280,7 +280,7 @@ void mcapi_pktchan_recv(
         long millis = (timeout%1000)*1000;
         time_limit.tv_nsec += millis;
 
-        //sending the message, priority is inversed, as it works that way in msgq
+        //receiving the message
         mslen = mq_timedreceive(receive_handle.us->chan_msgq_id, bo->data,
             MCAPI_MAX_PKT_SIZE, &msg_prio, &time_limit);
     }

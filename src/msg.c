@@ -71,7 +71,7 @@ void mcapi_msg_send(
 
     if ( timeout == MCAPI_TIMEOUT_INFINITE )
     {
-        //sending the message, priority is inversed, as it works that way in msgq
+        //sending the message, priority is ascending in msgq
         result = mq_send(receive_endpoint->msgq_id, buffer, buffer_size,
             MCAPI_MAX_PRIORITY - priority );
     }
@@ -86,7 +86,7 @@ void mcapi_msg_send(
         long millis = (timeout%1000)*1000;
         time_limit.tv_nsec += millis;
 
-        //sending the message, priority is inversed, as it works that way in msgq
+        //sending the message, priority is ascending in msgq
         result = mq_timedsend(receive_endpoint->msgq_id, buffer, buffer_size,
             MCAPI_MAX_PRIORITY - priority, &time_limit );
     }
@@ -171,7 +171,7 @@ void mcapi_msg_recv(
 
     if ( timeout == MCAPI_TIMEOUT_INFINITE )
     {
-        //sending the message, priority is inversed, as it works that way in msgq
+        //receiving the message
         mslen = mq_receive(receive_endpoint->msgq_id, recv_buf,
             MCAPI_MAX_MSG_SIZE, &msg_prio);
     }
@@ -186,7 +186,7 @@ void mcapi_msg_recv(
         long millis = (timeout%1000)*1000;
         time_limit.tv_nsec += millis;
 
-        //sending the message, priority is inversed, as it works that way in msgq
+        //receiving the message
         mslen = mq_timedreceive(receive_endpoint->msgq_id, recv_buf,
             MCAPI_MAX_MSG_SIZE, &msg_prio, &time_limit);
     }

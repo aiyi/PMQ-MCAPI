@@ -1,7 +1,9 @@
 #compiler used
 CC=gcc
+#a custom define, for example, size of packets
+DEFINE=CUSTOM_DEFINE
 #flags: includes and posix message queue, latter needed to access IPC
-CFLAGS=-I$(IDIR) -lrt -DNDEBUG
+CFLAGS=-I$(IDIR) -lrt -DNDEBUG -D$(DEFINE)
 
 #folders of most files needed
 IDIR=include

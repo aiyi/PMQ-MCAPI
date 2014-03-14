@@ -94,7 +94,7 @@ inline void mcapi_sclchan_send(
 
     if ( timeout == MCAPI_TIMEOUT_INFINITE )
     {
-        //sending the message, priority is inversed, as it works that way in msgq
+        //sending the message, priority is fixed
         result = mq_send(send_handle.us->chan_msgq_id, (void*)&dataword, 
         bytes, MCAPI_MAX_PRIORITY+1 );
     }
@@ -109,7 +109,7 @@ inline void mcapi_sclchan_send(
         long millis = (timeout%1000)*1000;
         time_limit.tv_nsec += millis;
 
-        //sending the message, priority is inversed, as it works that way in msgq
+        //sending the message, priority is fixed
         result = mq_timedsend(send_handle.us->chan_msgq_id, (void*)&dataword, 
         bytes, MCAPI_MAX_PRIORITY+1, &time_limit );
     }
@@ -200,7 +200,7 @@ inline mcapi_uint64_t mcapi_sclchan_recv(
 
     if ( timeout == MCAPI_TIMEOUT_INFINITE )
     {
-        //sending the message, priority is inversed, as it works that way in msgq
+        //receiving the message
         mslen = mq_receive(receive_handle.us->chan_msgq_id, (void*)&value,
             bytes, &msg_prio);
     }
@@ -215,7 +215,7 @@ inline mcapi_uint64_t mcapi_sclchan_recv(
         long millis = (timeout%1000)*1000;
         time_limit.tv_nsec += millis;
 
-        //sending the message, priority is inversed, as it works that way in msgq
+        //receiving the message
         mslen = mq_timedreceive(receive_handle.us->chan_msgq_id, (void*)&value,
             bytes, &msg_prio, &time_limit);
     }

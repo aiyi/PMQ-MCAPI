@@ -30,6 +30,6 @@ $(ODIR)/%.o: $(SDIR)/%.c $(DEPS) $(UTESTS)
 #rule to create unit test runner. object files are also cleaned away as arent really needed
 make: $(OBJ)
 	$(CC) -o $(UEXE) $(OBJ) $(CFLAGS); \
-    rm -f $(ODIR)/*.o; \
-    ./$(UEXE); \
-    rm $(UEXE)
+	rm -f $(ODIR)/*.o; \
+	./$(UEXE); \
+	rm $(UEXE)

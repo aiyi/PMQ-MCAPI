@@ -114,6 +114,31 @@ test(msg_send_recv_fail_endp_null)
     mcapi_finalize( &status );
 }
 
+//must not succeed, if endpoints are not inited
+test(msg_send_recv_fail_endp_inva)
+    mcapi_endpoint_t sender;
+    mcapi_endpoint_t receiver;
+    char send_buf[MAX_MSG_LEN];
+    char recv_buf[MAX_MSG_LEN];
+    size_t received_size;
+
+    mcapi_initialize( 1, 2, 0, 0, &info, &status );
+
+    sender = mcapi_endpoint_create( 0, &status );
+    sassert( MCAPI_SUCCESS, status );
+    receiver = mcapi_endpoint_create( 1, &status );
+    sassert( MCAPI_SUCCESS, status );
+    sender->inited = -1;
+    receiver->inited = -1;
+
+    mcapi_msg_send( sender, receiver, send_buf, MAX_MSG_LEN, 0, &status );
+    sassert( MCAPI_ERR_ENDP_INVALID, status );
+    mcapi_msg_recv( receiver, recv_buf, MAX_MSG_LEN, &received_size, &status );
+    sassert( MCAPI_ERR_ENDP_INVALID, status );
+
+    mcapi_finalize( &status );
+}
+
 //must not accept null buffer
 test(msg_send_recv_fail_buff)
     mcapi_endpoint_t sender;
@@ -343,9 +368,11 @@ test(msg_send_recv_big)
     sender = mcapi_endpoint_create( 0, &status );
     ureceiver = mcapi_endpoint_create( 1, &status );
     receiver = mcapi_endpoint_get( 1, 2, 1, 1000, &status );
-    mcapi_msg_send( sender, receiver, send_buf, MCAPI_MAX_MSG_SIZE, 0, &status );
+    mcapi_msg_send( sender, receiver, send_buf, MCAPI_MAX_MSG_SIZE, 0, 
+    &status );
     sassert( MCAPI_SUCCESS, status );
-    mcapi_msg_recv( ureceiver, recv_buf, MCAPI_MAX_MSG_SIZE, &received_size, &status );
+    mcapi_msg_recv( ureceiver, recv_buf, MCAPI_MAX_MSG_SIZE, &received_size, 
+    &status );
 
     sassert( MCAPI_SUCCESS, status );
     uassert( received_size == MCAPI_MAX_MSG_SIZE );
@@ -510,6 +537,7 @@ void suite_msg()
     dotest(msg_send_recv_timeout)
     dotest(msg_send_recv_fail_init)
     dotest(msg_send_recv_fail_endp_null)
+    dotest(msg_send_recv_fail_endp_inva)
     dotest(msg_send_recv_fail_buff)
     dotest(msg_send_recv_fail_size)
     dotest(msg_send_recv_fail_chan)

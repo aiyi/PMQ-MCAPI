@@ -4,8 +4,8 @@ PROCESSES = nice -n 11 ./esender.exe & nice -n 11 ./ereceiver.exe
 #INSERT BUILD RULES FOR PROCESSES HERE IF SUCH IS NEEDED
 PBUILD = make -f makefile.mcapi; $(ESENDER); $(ERECEIVER)
 #build rules for individual processes
-ESENDER = gcc -o esender.exe example/example_sender.c $(ODIR)/*.o -I$(IDIR) -lrt
-ERECEIVER = gcc -o ereceiver.exe example/example_receiver.c $(ODIR)/*.o -I$(IDIR) -lrt
+ESENDER = $(CC) -o esender.exe example/example_sender.c $(ODIR)/*.o -I$(IDIR) -lrt
+ERECEIVER = $(CC) -o ereceiver.exe example/example_receiver.c $(ODIR)/*.o -I$(IDIR) -lrt
 
 #compiler used
 CC=gcc
@@ -24,15 +24,15 @@ CRUN = make -f makefile.cleaner
 #(re)creates the obj folder, (re)creates cleaner, then it is ran and then the apps
 make:
 	$(CRUN); \
-    mkdir -p $(ODIR); \
+	mkdir -p $(ODIR); \
 	$(PBUILD); \
-    $(PROCESSES); \
-    wait $!; \
-    ./$(CNAME)
+	$(PROCESSES); \
+	wait $!; \
+	./$(CNAME)
 
 .PHONY: clean
 
-#make clean would cause cleaner compile and run and also implementation cleanerd
+#make clean would cause cleaner compile and run
 clean:
 	$(CRUN); \
 	make -f makefile.mcapi clean; 

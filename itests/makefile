@@ -26,11 +26,11 @@ IT%:
 #(re)creates cleaner, then it is ran and then the apps. apps are also removed
 make:
 	$(CRUN); \
-    mkdir -p $(ODIR); \
+	mkdir -p $(ODIR); \
 	$(PBUILD); \
-    $(PROCESSES); \
-    wait $!; \
-    rm -f *.exe
+	$(PROCESSES); \
+	wait $!; \
+	rm -f *.exe
 
 .PHONY: clean
 

@@ -152,7 +152,7 @@ mcapi_endpoint_t mcapi_endpoint_get(
     {
         if ( errno != ENOENT )
         {
-            perror("mq_send_msg");
+            perror("When opening msq from get");
             *mcapi_status = MCAPI_ERR_GENERAL;
         }
         else

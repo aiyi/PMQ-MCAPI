@@ -20,8 +20,8 @@ FOR THE LICENSE OF THIS SOFTWARE SEE LICENSE.txt
 
 ***PACKAGE CONTENTS***
 
-Includes a POSIX message queue based MCAPI implementation. The observed 
-implementation version is 2.015. A "hello world" level example is provided as 
+Includes a POSIX message queue based MCAPI implementation. The observed version
+of the API specification is 2.015. A "hello world" level example is provided as
 well as unit tests and integration tests. Files and folders are explained in 
 more detail below:
 

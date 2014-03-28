@@ -226,7 +226,7 @@ test(scl_send_recv_timeout)
         }
 
         mcapi_sclchan_send_uint64( handy, send, &status );
-        sassert( MCAPI_ERR_GENERAL, status );
+        sassert( MCAPI_TIMEOUT, status );
 
         mcapi_finalize( &status );
         exit(0);
@@ -266,7 +266,7 @@ test(scl_send_recv_timeout)
         }
 
         recv = mcapi_sclchan_recv_uint64( handy, &status );
-        sassert( MCAPI_ERR_GENERAL, status );
+        sassert( MCAPI_TIMEOUT, status );
 
         mcapi_finalize( &status );
     }
@@ -784,7 +784,7 @@ test(scl_wrong_size)
         sassert( MCAPI_SUCCESS, status );
 
         mcapi_sclchan_send_uint32( handy, send, &status );
-        sassert( MCAPI_ERR_GENERAL, status );
+        sassert( MCAPI_ERR_TRANSMISSION, status );
 
         mcapi_finalize( &status );
         exit(0);
@@ -812,7 +812,7 @@ test(scl_wrong_size)
         sassert( MCAPI_SUCCESS, status );
 
         recv = mcapi_sclchan_recv_uint8( handy, &status );
-        sassert( MCAPI_ERR_GENERAL, status );
+        sassert( MCAPI_ERR_TRANSMISSION, status );
 
         wait(NULL);
 

@@ -67,13 +67,6 @@ inline void mcapi_sclchan_send(
  	MCAPI_OUT mcapi_status_t* mcapi_status,
     size_t bytes)
 {
-    //timeout used by the posix function: actually no time at all
-    struct timespec time_limit = { 0, 0 };
-    //the result of action
-    mqd_t result = -1;
-    //timeout of the operation as whole
-    mcapi_timeout_t timeout;
-
     //check for initialization
     if ( mcapi_trans_initialized() == MCAPI_FALSE )
     {
@@ -89,45 +82,10 @@ inline void mcapi_sclchan_send(
         return;
     }
 
-    //timeout of sending endpoint is used
-    timeout = send_handle.us->time_out;
-
-    if ( timeout == MCAPI_TIMEOUT_INFINITE )
-    {
-        //sending the message, priority is fixed
-        result = mq_send(send_handle.us->chan_msgq_id, (void*)&dataword, 
-        bytes, MCAPI_MAX_PRIORITY+1 );
-    }
-    else
-    {
-        //specify timeout for the call: first take the current time
-        clock_gettime( CLOCK_REALTIME, &time_limit );
-        //and then add the needed seconds
-        time_t seconds = timeout/1000;
-        time_limit.tv_sec += seconds;
-        //and needed millis
-        long millis = (timeout%1000)*1000;
-        time_limit.tv_nsec += millis;
-
-        //sending the message, priority is fixed
-        result = mq_timedsend(send_handle.us->chan_msgq_id, (void*)&dataword, 
-        bytes, MCAPI_MAX_PRIORITY+1, &time_limit );
-    }
-
-    //if it was a timeout, we shall return with timeout
-    if ( result == -1 )
-    {
-        if ( errno != ETIMEDOUT )
-        {
-            perror("mq send scalar");
-            *mcapi_status = MCAPI_ERR_GENERAL;
-        }
-        else
-            *mcapi_status = MCAPI_ERR_GENERAL;
-
-        return;
-    }
-    *mcapi_status = MCAPI_SUCCESS; 
+    //POSIX will handle the rest, timeout of sending endpoint is used
+    //priority is fixed to that expected of channel traffic
+    *mcapi_status = pmq_send( send_handle.us->chan_msgq_id, (void*)&dataword,
+    bytes, MCAPI_MAX_PRIORITY+1, send_handle.us->time_out );
 }
 
 void mcapi_sclchan_send_uint64(
@@ -167,18 +125,12 @@ inline mcapi_uint64_t mcapi_sclchan_recv(
  	MCAPI_OUT mcapi_status_t* mcapi_status,
     size_t bytes)
 {
-    //how long message we got in bytes
-    size_t mslen;
-    //the received value
-    mcapi_uint64_t value;
     //the priority obtained
     unsigned msg_prio;
-    //timeout used by posix-function: actually no time at all
-    struct timespec time_limit = { 0, 0 };
-    //how close we are to timeout
-    uint32_t ticks = 0;
-    //timeout of the operation as whole
-    mcapi_timeout_t timeout;
+    //the received value
+    mcapi_uint64_t value;
+    //how long message we got in bytes
+    size_t mslen;
 
     //check for initialization
     if ( !mcapi_trans_initialized() )
@@ -195,47 +147,10 @@ inline mcapi_uint64_t mcapi_sclchan_recv(
         return -1;
     }
 
-    //timeout of sending endpoint is used
-    timeout = receive_handle.us->time_out;
+    //POSIX will handle the recv, timeout of receiving endpoint is used
+    *mcapi_status = pmq_recv( receive_handle.us->chan_msgq_id, (void*)&value,
+    bytes, &mslen, &msg_prio, receive_handle.us->time_out );
 
-    if ( timeout == MCAPI_TIMEOUT_INFINITE )
-    {
-        //receiving the message
-        mslen = mq_receive(receive_handle.us->chan_msgq_id, (void*)&value,
-            bytes, &msg_prio);
-    }
-    else
-    {
-        //specify timeout for the call: first take the current time
-        clock_gettime( CLOCK_REALTIME, &time_limit );
-        //and then add the needed seconds
-        time_t seconds = timeout/1000;
-        time_limit.tv_sec += seconds;
-        //and needed millis
-        long millis = (timeout%1000)*1000;
-        time_limit.tv_nsec += millis;
-
-        //receiving the message
-        mslen = mq_timedreceive(receive_handle.us->chan_msgq_id, (void*)&value,
-            bytes, &msg_prio, &time_limit);
-    }
-
-    //if it was a timeout, there is no need for action
-    if ( mslen == -1 )
-    {
-        if ( errno != ETIMEDOUT )
-        {
-            perror("mq receive scalar");
-            *mcapi_status = MCAPI_ERR_GENERAL;
-        }
-        else
-            *mcapi_status = MCAPI_ERR_GENERAL;
-
-        return;
-    }
-
-    //success: return the received value
-    *mcapi_status = MCAPI_SUCCESS;
     return value;
 }
 

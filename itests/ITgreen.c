@@ -42,19 +42,15 @@ int main()
     mcapi_endpoint_t green_chan;
     mcapi_endpoint_t yellow_chan;
     mcapi_endpoint_t green_msg_point;
-    //the identifiers of above endpoints
-    struct endPointID green_pkt = GREEN_PKT;
-    struct endPointID yellow_pkt = YELLOW_PKT;
-    struct endPointID green_msg = GREEN_MSG;
 
     printf( COLOR "here\n");
 
     //we are the green
-    mcapi_initialize( green_pkt.domain_id, green_pkt.node_id, 0, 0, &info, &status );
+    mcapi_initialize( THE_DOMAIN, GREEN_NODE, 0, 0, &info, &status );
     check( MCAPI_SUCCESS, status );
 
     //create our message endpoint
-    green_msg_point = mcapi_endpoint_create( green_msg.port_id, &status );
+    green_msg_point = mcapi_endpoint_create( GREEN_MSG, &status );
     check( MCAPI_SUCCESS, status );
     //wait for the start signal
     mcapi_msg_recv(green_msg_point, recv_msg, MAX_MSG_LEN, &size,
@@ -63,11 +59,11 @@ int main()
     printf(COLOR "signal received, starting to connect & open\n");
 
     //create our channel message endpoint
-    green_chan = mcapi_endpoint_create( green_pkt.port_id, &status );
+    green_chan = mcapi_endpoint_create( GREEN_PKT, &status );
     check( MCAPI_SUCCESS, status );
     //get their channel message endpoint
-    yellow_chan = mcapi_endpoint_get( yellow_pkt.domain_id,
-    yellow_pkt.node_id, yellow_pkt.port_id, TIMEOUT, &status );
+    yellow_chan = mcapi_endpoint_get( THE_DOMAIN,
+    YELLOW_NODE, YELLOW_PKT, TIMEOUT, &status );
     check( MCAPI_SUCCESS, status );
     //form the channel
     mcapi_pktchan_connect_i( yellow_chan, green_chan, &request, &status );

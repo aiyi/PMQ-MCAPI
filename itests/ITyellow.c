@@ -27,13 +27,6 @@ int main(int argc, char *argv[])
     mcapi_endpoint_t yellow_sin_chan;
     mcapi_endpoint_t yellow_cos_chan;
     mcapi_endpoint_t yellow_pkt_chan;
-    //the identifiers of above endpoints
-    struct endPointID yellow_msg = YELLOW_MSG;
-    struct endPointID yellow_sin = YELLOW_SIN;
-    struct endPointID yellow_cos = YELLOW_COS;
-    struct endPointID red_msg = RED_MSG;
-    struct endPointID green_msg = GREEN_MSG;
-    struct endPointID yellow_pkt = YELLOW_PKT;
     //status message received in almost all MCAPI-calls
     mcapi_status_t status;
     //info-struct received in initialization
@@ -62,14 +55,14 @@ int main(int argc, char *argv[])
     printf(COLOR "here\n");
 
     //We are yellow! initialize accordingly
-    mcapi_initialize( yellow_msg.domain_id, yellow_msg.node_id, 0, 0, &info, &status );
+    mcapi_initialize( THE_DOMAIN, YELLOW_NODE, 0, 0, &info, &status );
     check( MCAPI_SUCCESS, status );
     //create our side of messaging
-    yellow_msg_point = mcapi_endpoint_create( yellow_msg.port_id, &status );
+    yellow_msg_point = mcapi_endpoint_create( YELLOW_MSG, &status );
     check( MCAPI_SUCCESS, status );
     //obtain the red message point
-    red_msg_point = mcapi_endpoint_get( red_msg.domain_id,
-    red_msg.node_id, red_msg.port_id, TIMEOUT, &status );
+    red_msg_point = mcapi_endpoint_get( THE_DOMAIN,
+    RED_NODE, RED_MSG, TIMEOUT, &status );
     check( MCAPI_SUCCESS, status );
 
     printf(COLOR "start-up messaging\n");
@@ -93,15 +86,17 @@ int main(int argc, char *argv[])
     size, count );
 
     //open our channel endpoint to sin
-    yellow_sin_chan = mcapi_endpoint_create( yellow_sin.port_id, &status );
+    yellow_sin_chan = mcapi_endpoint_create( YELLOW_SIN, &status );
     check( MCAPI_SUCCESS, status );
     //open our channel endpoint to cos
-    yellow_cos_chan = mcapi_endpoint_create( yellow_cos.port_id, &status );
+    yellow_cos_chan = mcapi_endpoint_create( YELLOW_COS, &status );
     check( MCAPI_SUCCESS, status );
     //open our ends, let senders form connection
-    mcapi_sclchan_recv_open_i( &sin_handle, yellow_sin_chan, &request, &status );
+    mcapi_sclchan_recv_open_i( &sin_handle, yellow_sin_chan, &request, 
+    &status );
     check( MCAPI_PENDING, status );
-    mcapi_sclchan_recv_open_i( &cos_handle, yellow_cos_chan, &request2, &status );
+    mcapi_sclchan_recv_open_i( &cos_handle, yellow_cos_chan, &request2, 
+    &status );
     check( MCAPI_PENDING, status );
     //wait for it to happen
     mcapi_wait( &request, &size, TIMEOUT, &status );
@@ -131,7 +126,8 @@ int main(int argc, char *argv[])
             //put to buf
             send_buf[j*2] = sumval;
             send_buf[j*2+1] = sumval >> 8;
-            //printf( COLOR "%hX %hhX %hhX\n", sumval, send_buf[j*2], send_buf[j*2+1] );
+            //printf( COLOR "%hX %hhX %hhX\n", sumval, send_buf[j*2],
+            //send_buf[j*2+1] );
         }
     }
 
@@ -151,8 +147,8 @@ int main(int argc, char *argv[])
     printf(COLOR "closed, informing green\n");
 
     //obtain their endpoint
-    green_msg_point = mcapi_endpoint_get( green_msg.domain_id,
-    green_msg.node_id, green_msg.port_id, TIMEOUT, &status );
+    green_msg_point = mcapi_endpoint_get( THE_DOMAIN,
+    GREEN_NODE, GREEN_MSG, TIMEOUT, &status );
     check( MCAPI_SUCCESS, status );
     //send the message
     mcapi_msg_send( yellow_msg_point, green_msg_point, send_buf, 1,
@@ -162,10 +158,11 @@ int main(int argc, char *argv[])
     printf(COLOR "informed, opening packet channel\n");
 
     //open our channel endpoint to green
-    yellow_pkt_chan = mcapi_endpoint_create( yellow_pkt.port_id, &status );
+    yellow_pkt_chan = mcapi_endpoint_create( YELLOW_PKT, &status );
     check( MCAPI_SUCCESS, status );
     //open our end, let receiver form connection
-    mcapi_pktchan_send_open_i( &pkt_handle, yellow_pkt_chan, &request, &status );
+    mcapi_pktchan_send_open_i( &pkt_handle, yellow_pkt_chan, &request, 
+    &status );
     check( MCAPI_PENDING, status );
     //wait for it to happen
     mcapi_wait( &request, &size, TIMEOUT, &status );

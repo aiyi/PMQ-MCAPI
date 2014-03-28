@@ -344,8 +344,9 @@ mcapi_sclchan_send_uint64:
 mcapi_sclchan_send_uint32:
 mcapi_sclchan_send_uint16:
 mcapi_sclchan_send_uint8:
-    MCAPI_ERR_GENERAL, if POSIX call fails. Accompanies an error print
-    only if it failed for other reason than timeout.
+    MCAPI_TIMEOUT, when POSIX call failed for timeout.
+    MCAPI_ERR_TRANSMISSION, when POSIX call failed for other reason than 
+    timeout. An error print will accompany this status code.
 
 mcapi_msg_available:
 mcapi_pktchan_available:

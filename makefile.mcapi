@@ -11,11 +11,11 @@ ODIR=obj
 SDIR=src
 
 #the header files
-_DEPS = mca.h mcapi.h mca_config.h node.h endpointdef.h endpointlist.h channel.h
+_DEPS = mca.h mcapi.h mca_config.h node.h endpointdef.h endpointlist.h channel.h pmq_trans.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 #object files
-_OBJ = endpoint.o msg.o node.o packet.o endpointdef.o channel.o scalar.o
+_OBJ = endpoint.o msg.o node.o packet.o endpointdef.o channel.o scalar.o pmq_trans.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 #rule to create object files

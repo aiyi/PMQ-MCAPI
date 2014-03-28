@@ -40,9 +40,6 @@ int main(int argc, char *argv[])
     //the endpoints used in message-oriented communication
     mcapi_endpoint_t red_msg_point;
     mcapi_endpoint_t yellow_msg_point;
-    //the identifiers of above endpoints
-    struct endPointID red_msg = RED_MSG;
-    struct endPointID yellow_msg = YELLOW_MSG;
     //buffer of data sent in messages
     char send_buf[MAX_MSG_LEN];
     //buffer of data received in messages
@@ -57,17 +54,17 @@ int main(int argc, char *argv[])
     printf(COLOR "here\n");
 
     //We are red! initialize accordingly
-    mcapi_initialize( red_msg.domain_id, red_msg.node_id, 0, 0, &info,
+    mcapi_initialize( THE_DOMAIN, RED_NODE, 0, 0, &info,
     &status );
     check( MCAPI_SUCCESS, status );
 
     printf(COLOR "start-up messaging\n");
     //...and thus create our message precense
-    red_msg_point = mcapi_endpoint_create( red_msg.port_id, &status );
+    red_msg_point = mcapi_endpoint_create( RED_MSG, &status );
     check( MCAPI_SUCCESS, status );
     //obtain the yellow message point
-    yellow_msg_point = mcapi_endpoint_get( yellow_msg.domain_id,
-    yellow_msg.node_id, yellow_msg.port_id, TIMEOUT, &status );
+    yellow_msg_point = mcapi_endpoint_get( THE_DOMAIN,
+    YELLOW_NODE, YELLOW_MSG, TIMEOUT, &status );
     check( MCAPI_SUCCESS, status );
 
     //now we will tell how many scalars we will send
@@ -87,16 +84,13 @@ int main(int argc, char *argv[])
     //the endpoints used in channel-oriented communication
     mcapi_endpoint_t red_chan;
     mcapi_endpoint_t yellow_chan;
-    //the identifiers of above endpoints
-    struct endPointID red_sin = RED_SIN;
-    struct endPointID yellow_sin = YELLOW_SIN;
 
     //create our channel endpoint
-    red_chan = mcapi_endpoint_create( red_sin.port_id, &status );
+    red_chan = mcapi_endpoint_create( RED_SIN, &status );
     check( MCAPI_SUCCESS, status );
     //get their channel message endpoint
-    yellow_chan = mcapi_endpoint_get( yellow_sin.domain_id,
-    yellow_sin.node_id, yellow_sin.port_id, TIMEOUT, &status );
+    yellow_chan = mcapi_endpoint_get( THE_DOMAIN,
+    YELLOW_NODE, YELLOW_SIN, TIMEOUT, &status );
     check( MCAPI_SUCCESS, status );
     //form the channel
     mcapi_sclchan_connect_i( red_chan, yellow_chan, &request, &status );

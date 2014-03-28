@@ -121,33 +121,26 @@ int main()
     //an iterator used in loops
     unsigned int i = 0;
 
-    //the identifiers of endpoints mentioned earlier in module
-    struct endPointID id_mag_cyan_send = MAG_CYAN_SEND;
-    struct endPointID id_mag_cyan_recv = MAG_CYAN_RECV;
-    struct endPointID id_cyan_mag_send = CYAN_MAG_SEND;
-    struct endPointID id_cyan_mag_recv = CYAN_MAG_RECV;
-
     printf(COLOR "here\n");
 
     //we are the cyan
-    mcapi_initialize( id_mag_cyan_recv.domain_id, id_mag_cyan_recv.node_id, 0,
-    0, &info, &status );
+    mcapi_initialize( THE_DOMAIN, CYAN_NODE, 0, 0, &info, &status );
     check( MCAPI_SUCCESS, status );
 
     //create our receiving channel endpoint
-    mag_cyan_recv = mcapi_endpoint_create( id_mag_cyan_recv.port_id, &status );
+    mag_cyan_recv = mcapi_endpoint_create( CYAN_RECV, &status );
     check( MCAPI_SUCCESS, status );
     //get their sending channel endpoint
-    mag_cyan_send = mcapi_endpoint_get( id_mag_cyan_send.domain_id,
-    id_mag_cyan_send.node_id, id_mag_cyan_send.port_id, TIMEOUT, &status );
+    mag_cyan_send = mcapi_endpoint_get( THE_DOMAIN,
+    MAG_NODE, MAG_SEND, TIMEOUT, &status );
     check( MCAPI_SUCCESS, status );
 
     //create our sending channel endpoint
-    cyan_mag_send = mcapi_endpoint_create( id_cyan_mag_send.port_id, &status );
+    cyan_mag_send = mcapi_endpoint_create( CYAN_SEND, &status );
     check( MCAPI_SUCCESS, status );
     //get their receiving channel endpoint
-    cyan_mag_recv = mcapi_endpoint_get( id_cyan_mag_recv.domain_id,
-    id_cyan_mag_recv.node_id, id_cyan_mag_recv.port_id, TIMEOUT, &status );
+    cyan_mag_recv = mcapi_endpoint_get( THE_DOMAIN,
+    MAG_NODE, MAG_RECV, TIMEOUT, &status );
     check( MCAPI_SUCCESS, status );
 
     //form the sending channel

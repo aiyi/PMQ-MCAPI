@@ -259,7 +259,7 @@ test(msg_recv_fail_trunc)
     mcapi_msg_recv( ureceiver, recv_buf, 1, &received_size, &status );
 
     sassert( MCAPI_ERR_MSG_TRUNCATED, status );
-    uassert( received_size == 2 );
+    uassert( received_size == 1 );
     uassert2( 0, memcmp( send_buf, recv_buf, 1 ) );
 
     mcapi_endpoint_delete( sender, &status );

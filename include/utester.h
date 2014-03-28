@@ -54,5 +54,44 @@ void utest##NAME() \
         names, status_msg, #excpt ); \
         addError(); }
 
+//These endpoint defines are to be used in tests. Put here to avoid overwrite.
+#define MSG_PAUL {1, 2, 0}
+#define MSG_PAT {1, 2, 1}
+
+#define FOO {0, 5, 1}
+#define BAR {0, 6, 2}
+#define SEND {0, 8, 4}
+#define RECV {0, 8, 6}
+
+#define SSCL {0, 13, 2}
+#define RSCL {0, 14, 3}
+#define SSCL8 {0, 13, 4}
+#define RSCL8 {0, 14, 5}
+#define SSCL16 {0, 13, 6}
+#define RSCL16 {0, 14, 7}
+#define SSCL32 {0, 13, 8}
+#define RSCL32 {0, 14, 9}
+
+#define MSG_PAUL_DEF { MSG_PAUL, MCAPI_NO_CHAN, CHAN_NO_DIR, MSG_PAT, 0 }
+#define MSG_PAT_DEF { MSG_PAT, MCAPI_NO_CHAN, CHAN_NO_DIR, MSG_PAUL, 0 }
+
+#define FOO_DEF { FOO, MCAPI_PKT_CHAN, CHAN_DIR_SEND, BAR, 0 }
+#define BAR_DEF { BAR, MCAPI_PKT_CHAN, CHAN_DIR_RECV, FOO, 0 }
+#define SEND_DEF { SEND, MCAPI_PKT_CHAN, CHAN_DIR_SEND, RECV, 0 }
+#define RECV_DEF { RECV, MCAPI_PKT_CHAN, CHAN_DIR_RECV, SEND, 0 }
+
+#define SSCL_DEF { SSCL, MCAPI_SCL_CHAN, CHAN_DIR_SEND, RSCL, 8 }
+#define RSCL_DEF { RSCL, MCAPI_SCL_CHAN, CHAN_DIR_RECV, SSCL, 8 }
+#define SSCL_DEF8 { SSCL8, MCAPI_SCL_CHAN, CHAN_DIR_SEND, RSCL8, 1 }
+#define RSCL_DEF8 { RSCL8, MCAPI_SCL_CHAN, CHAN_DIR_RECV, SSCL8, 1 }
+#define SSCL_DEF16 { SSCL16, MCAPI_SCL_CHAN, CHAN_DIR_SEND, RSCL16, 2 }
+#define RSCL_DEF16 { RSCL16, MCAPI_SCL_CHAN, CHAN_DIR_RECV, SSCL16, 2 }
+#define SSCL_DEF32 { SSCL32, MCAPI_SCL_CHAN, CHAN_DIR_SEND, RSCL32, 4 }
+#define RSCL_DEF32 { RSCL32, MCAPI_SCL_CHAN, CHAN_DIR_RECV, SSCL32, 4 }
+
+#define DEF_LIST { MSG_PAUL_DEF, MSG_PAT_DEF, FOO_DEF, BAR_DEF, SEND_DEF, \
+RECV_DEF, SSCL_DEF, RSCL_DEF, SSCL_DEF8, RSCL_DEF8, SSCL_DEF16, \
+RSCL_DEF16, SSCL_DEF32, RSCL_DEF32 }
+
 #endif
 #endif

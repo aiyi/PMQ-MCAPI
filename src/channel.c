@@ -536,6 +536,7 @@ void mcapi_chan_close(
         return;
     }
 
+    //must not be pending open
     if ( handle.us->pend_open == 1 )
     {
         *mcapi_status = MCAPI_ERR_CHAN_OPENPENDING;
@@ -580,15 +581,10 @@ void mcapi_chan_close(
     request->data = (void*)handle.us;
 }
 
-mcapi_uint_t mcapi_chan_available(
+inline mcapi_uint_t mcapi_chan_available(
     MCAPI_IN mcapi_pktchan_recv_hndl_t receive_handle,
     MCAPI_OUT mcapi_status_t* mcapi_status )
 {
-    //the queue of endpoint
-    mqd_t msgq_id;
-    //the retrieved attributes are obtained here for the check
-    struct mq_attr uattr;
-
     //check for initialization
     if ( mcapi_trans_initialized() == MCAPI_FALSE )
     {
@@ -597,20 +593,5 @@ mcapi_uint_t mcapi_chan_available(
         return MCAPI_NULL;
     }
 
-    //take id from endpoint
-    msgq_id = receive_handle.us->chan_msgq_id;
-
-    //try to open the attributes...
-    if (mq_getattr(msgq_id, &uattr) == -1)
-    {
-        perror("When obtaining msq attributes to check message count");
-        *mcapi_status = MCAPI_ERR_GENERAL;
-        return MCAPI_NULL;
-    }
-
-    //success
-    *mcapi_status = MCAPI_SUCCESS;
-
-    //and return the count
-    return uattr.mq_curmsgs;
+    return pmq_avail( receive_handle.us->chan_msgq_id, mcapi_status );
 }

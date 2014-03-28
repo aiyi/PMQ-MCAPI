@@ -42,9 +42,6 @@ int main(int argc, char *argv[])
     //the endpoints used in channel-oriented communication
     mcapi_endpoint_t blue_chan;
     mcapi_endpoint_t yellow_chan;
-    //the identifiers of above endpoints
-    struct endPointID blue_cos = BLUE_COS;
-    struct endPointID yellow_cos = YELLOW_COS;
 
     //take the count from arguments, if none given use the default
     if ( argc > 1 )
@@ -55,14 +52,14 @@ int main(int argc, char *argv[])
     printf(COLOR "here\n");
 
     //we are the blue
-    mcapi_initialize( blue_cos.domain_id, blue_cos.node_id, 0, 0, &info, &status );
+    mcapi_initialize( THE_DOMAIN, BLUE_NODE, 0, 0, &info, &status );
     check( MCAPI_SUCCESS, status );
     //create our channel message endpoint
-    blue_chan = mcapi_endpoint_create( blue_cos.port_id, &status );
+    blue_chan = mcapi_endpoint_create( BLUE_COS, &status );
     check( MCAPI_SUCCESS, status );
     //get their channel message endpoint
-    yellow_chan = mcapi_endpoint_get( yellow_cos.domain_id,
-    yellow_cos.node_id, yellow_cos.port_id, TIMEOUT, &status );
+    yellow_chan = mcapi_endpoint_get( THE_DOMAIN,
+    YELLOW_NODE, YELLOW_COS, TIMEOUT, &status );
     check( MCAPI_SUCCESS, status );
     //form the channel
     mcapi_sclchan_connect_i( blue_chan, yellow_chan, &request, &status );

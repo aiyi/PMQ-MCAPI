@@ -1,8 +1,6 @@
 //This module has functions used in packet MCAPI-communication.
 #include <string.h>
 #include <stdio.h>
-#include <errno.h>
-#include <time.h>
 #include "channel.h"
 
 //keyvalue-pair used in buffer handling
@@ -118,13 +116,6 @@ void mcapi_pktchan_send(
  	MCAPI_IN size_t size, 
  	MCAPI_OUT mcapi_status_t* mcapi_status)
 {
-    //timeout used by the posix function: actually no time at all
-    struct timespec time_limit = { 0, 0 };
-    //the result of action
-    mqd_t result = -1;
-    //timeout of the operation as whole
-    mcapi_timeout_t timeout;
-
     //check for initialization
     if ( mcapi_trans_initialized() == MCAPI_FALSE )
     {
@@ -161,46 +152,10 @@ void mcapi_pktchan_send(
         return;
     }
 
-    //timeout of sending endpoint is used
-    timeout = send_handle.us->time_out;
-
-    if ( timeout == MCAPI_TIMEOUT_INFINITE )
-    {
-        //sending the message, priority is fixed
-        result = mq_send(send_handle.us->chan_msgq_id, buffer, size,
-            MCAPI_MAX_PRIORITY+1 );
-    }
-    else
-    {
-        //specify timeout for the call: first take the current time
-        clock_gettime( CLOCK_REALTIME, &time_limit );
-        //and then add the needed seconds
-        time_t seconds = timeout/1000;
-        time_limit.tv_sec += seconds;
-        //and needed millis
-        long millis = (timeout%1000)*1000;
-        time_limit.tv_nsec += millis;
-
-        //sending the message, priority is fixed
-        result = mq_timedsend(send_handle.us->chan_msgq_id, buffer, size,
-            MCAPI_MAX_PRIORITY+1, &time_limit );
-    }
-
-    //if it was a timeout, we shall return with timeout
-    if ( result == -1 )
-    {
-        if ( errno != ETIMEDOUT )
-        {
-            perror("mq_send packet");
-            *mcapi_status = MCAPI_ERR_TRANSMISSION;
-        }
-        else
-            *mcapi_status = MCAPI_TIMEOUT;
-
-        return;
-    }
-
-    *mcapi_status = MCAPI_SUCCESS; 
+    //POSIX will handle the rest, timeout of sending endpoint is used
+    //priority is fixed to that expected of channel traffic
+    *mcapi_status = pmq_send( send_handle.us->chan_msgq_id, buffer,
+    size, MCAPI_MAX_PRIORITY+1, send_handle.us->time_out );
 }
 
 void mcapi_pktchan_recv(
@@ -209,16 +164,10 @@ void mcapi_pktchan_recv(
  	MCAPI_OUT size_t* received_size, 
  	MCAPI_OUT mcapi_status_t* mcapi_status)
 {
-    //how long message we got in bytes
-    size_t mslen;
     //the buffer for receiving.
     struct bufObject* bo;
     //the priority obtained
     unsigned msg_prio;
-    //timeout used by posix-function: actually no time at all
-    struct timespec time_limit = { 0, 0 };
-    //timeout of the operation as whole
-    mcapi_timeout_t timeout;
 
     //check for initialization
     if ( !mcapi_trans_initialized() )
@@ -249,9 +198,6 @@ void mcapi_pktchan_recv(
         return;
     }
 
-    //timeout of receiving endpoint is used
-    timeout = receive_handle.us->time_out;
-
     //reserve buffer AFTER the initial pit holes
     bo = bufFindEmpty();
 
@@ -263,39 +209,13 @@ void mcapi_pktchan_recv(
         return;
     }
 
-    if ( timeout == MCAPI_TIMEOUT_INFINITE )
-    {
-        //receiving the message
-        mslen = mq_receive(receive_handle.us->chan_msgq_id, bo->data,
-            MCAPI_MAX_PKT_SIZE, &msg_prio);
-    }
-    else
-    {
-        //specify timeout for the call: first take the current time
-        clock_gettime( CLOCK_REALTIME, &time_limit );
-        //and then add the needed seconds. passed ticks are subtrackted
-        time_t seconds = timeout/1000;
-        time_limit.tv_sec += seconds;
-        //and needed millis
-        long millis = (timeout%1000)*1000;
-        time_limit.tv_nsec += millis;
+    //POSIX will handle the recv, timeout of receiving endpoint is used
+    *mcapi_status = pmq_recv( receive_handle.us->chan_msgq_id, bo->data,
+    MCAPI_MAX_PKT_SIZE, received_size, &msg_prio,
+    receive_handle.us->time_out );
 
-        //receiving the message
-        mslen = mq_timedreceive(receive_handle.us->chan_msgq_id, bo->data,
-            MCAPI_MAX_PKT_SIZE, &msg_prio, &time_limit);
-    }
-
-    //if it was a timeout, we shall return with timeout
-    if ( mslen == -1 )
+    if ( *mcapi_status != MCAPI_SUCCESS )
     {
-        if ( errno != ETIMEDOUT )
-        {
-            perror("mq receive packet");
-            *mcapi_status = MCAPI_ERR_TRANSMISSION;
-        }
-        else
-            *mcapi_status = MCAPI_TIMEOUT;
-
         return;
     }
 
@@ -311,8 +231,6 @@ void mcapi_pktchan_recv(
     //succée: mark ownership and pass the buffer to caller
     bo->endpoint = receive_handle.us;
     *buffer = &bo->data;
-    //and how much we received
-    *received_size = mslen;
 
     *mcapi_status = MCAPI_SUCCESS; 
 }

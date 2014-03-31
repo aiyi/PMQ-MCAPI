@@ -189,7 +189,9 @@ test(pkt_send_recv_fail_trans)
         sassert( MCAPI_SUCCESS, status );
 
         mcapi_pktchan_recv( handy, &recv_buf, &size, &status );
+        sassert( MCAPI_SUCCESS, status );
         mcapi_pktchan_release( recv_buf, &status );
+        sassert( MCAPI_SUCCESS, status );
 
         mcapi_pktchan_recv_close_i( handy, &request, &status );
         sassert( MCAPI_PENDING, status );
@@ -1078,7 +1080,8 @@ test(pkt_third_party_con)
             struct endPointID us_id = BAR;
             struct endPointID them_id = FOO;
 
-            mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
+            mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, 
+            &status );
             receiver = mcapi_endpoint_create( us_id.port_id, &status );
 
             mcapi_pktchan_recv_open_i( &handy, receiver, &request, &status );
@@ -1103,7 +1106,8 @@ test(pkt_third_party_con)
             struct endPointID us_id = BAR;
             struct endPointID them_id = FOO;
 
-            mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
+            mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, 
+            &status );
             receiver = mcapi_endpoint_get( us_id.domain_id, us_id.node_id,
             us_id.port_id, 1000, &status );
             sender = mcapi_endpoint_get( them_id.domain_id, them_id.node_id,

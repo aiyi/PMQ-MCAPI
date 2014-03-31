@@ -1,8 +1,5 @@
 //This module has functions used in scalar MCAPI-communication.
 #include "channel.h"
-#include <stdio.h>
-#include <errno.h>
-#include <time.h>
 
 void mcapi_sclchan_connect_i(
  	MCAPI_IN mcapi_endpoint_t  send_endpoint, 

@@ -3,6 +3,9 @@
 //and thus both application and the implementation must be recompiled each
 //time these values are changed.
 
+#ifndef MCA_CONFIG
+#define MCA_CONFIG
+
 //How many buffers there are in total availiable for packet receive.
 //As a fist rule, one for each receiving packet endpoint, but only if
 //previously obtained buffer is released before receive is called again.
@@ -27,3 +30,5 @@
 
 //How many domains there are.
 #define MCA_MAX_DOMAINS 2
+
+#endif

@@ -41,7 +41,7 @@ int main()
     //create our end point with our port id
     printf( "Node 0: creating receiving endpoint\n" );
     usleep( 1500000 );
-    recv_point = mcapi_endpoint_create( YELLOW_SCL_IN, &status );
+    recv_point = mcapi_endpoint_create( YELLOW_SIN, &status );
 
     usleep( 3000000 );
 

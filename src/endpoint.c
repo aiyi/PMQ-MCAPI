@@ -1,10 +1,5 @@
 //This module has functions used in creating, getting and checking endpoints.
 #include "node.h"
-#include <mqueue.h>
-#include <stdio.h>
-#include <errno.h>
-#include <sys/stat.h>
-#include <sys/fcntl.h>
 
 /* checks if the endpoint handle refers to a valid endpoint */
 mcapi_boolean_t mcapi_trans_valid_endpoint (mcapi_endpoint_t endpoint)
@@ -69,18 +64,85 @@ mcapi_boolean_t mcapi_trans_endpoint_isowner (mcapi_endpoint_t endpoint)
     return MCAPI_TRUE;
 }
 
+/* create endpoint <node_num,port_num> and return it's handle */
+mcapi_endpoint_t mcapi_endpoint_create(
+ 	MCAPI_IN mcapi_port_t port_id, 
+ 	MCAPI_OUT mcapi_status_t* mcapi_status)
+{
+    //pointer to local node spesific data
+    struct nodeData* nd = getNodeData();
+    //the associated data of the would-be-endpoint
+    struct endPointData* epd;
+
+    //check for initialization
+    if ( mcapi_trans_initialized() == MCAPI_FALSE )
+    {
+        //no init means failure
+        *mcapi_status = MCAPI_ERR_NODE_NOTINIT;
+        return MCAPI_NULL;
+    }
+
+    //check for valid
+    if ( mcapi_trans_valid_port( port_id ) == MCAPI_FALSE)
+    {
+        *mcapi_status = MCAPI_ERR_PORT_INVALID;
+        return MCAPI_NULL;
+    }
+
+    //must not already reserved
+    if ( mcapi_trans_endpoint_exists( nd->domain_id, port_id ) )
+    {
+        *mcapi_status = MCAPI_ERR_ENDP_EXISTS;
+        return MCAPI_NULL;
+    }
+
+    //obtain pointer to the proper slot of the table
+    epd = &nd->endPoints[nd->domain_id][nd->node_id][port_id];
+
+    //lack of defines will also mean invalid port
+    if ( epd->defs == MCAPI_NULL )
+    {
+        *mcapi_status = MCAPI_ERR_PORT_INVALID;
+        return MCAPI_NULL;
+    }
+
+    //if it already exist, reuse it!
+    if ( epd->inited == 1 )
+    {
+        //mark it as success
+        *mcapi_status = MCAPI_SUCCESS;
+
+        return epd;
+    }
+
+    //let PMQ-layer handle rest
+    pmq_create( epd );
+
+    //failure with POSIX -> return
+    if ( *mcapi_status != MCAPI_SUCCESS )
+    {
+        return MCAPI_NULL;
+    }
+
+    //mark it inited as well
+    epd->inited = 1;
+    //name was already assigned before, in the construction
+
+    //mark it as success
+    *mcapi_status = MCAPI_SUCCESS;
+
+    //return the pointer, as it is the endpointtype
+    return epd;
+}
+
 /* blocking get endpoint for the given <node_num,port_num> and return it's handle */
 mcapi_endpoint_t mcapi_endpoint_get(
     MCAPI_IN mcapi_domain_t domain_id,
  	MCAPI_IN mcapi_node_t node_id, 
  	MCAPI_IN mcapi_port_t port_id, 
 	MCAPI_IN mcapi_timeout_t timeout,
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+ 	MCAPI_OUT mcapi_status_t* mcapi_status )
 { 
-    //the queue to be obtained
-    mqd_t msgq_id = -1;
-    //how close we are to timeout
-    uint32_t ticks = 0;
     //the associated data of the would-be-endpoint
     struct endPointData* epd;
     //pointer to local node spesific data
@@ -128,150 +190,25 @@ mcapi_endpoint_t mcapi_endpoint_get(
     //if it already exists, return it then
     if ( epd->inited == 1 )
     {
-        //mark it inited as well
-        epd->inited = 1;
         *mcapi_status = MCAPI_SUCCESS;
         return epd;
     }
 
-    //obtaining the receiving queue, until they have created it!
-    do
-    {
-        //sleep a millisecond between iterations
-        usleep(1000);
-        //try to open for receive only, but do not create it
-        msgq_id = mq_open(epd->defs->msg_name, O_WRONLY );
-        //closer for time out!
-        ++ticks;
-    }
-    while ( msgq_id == -1 && ( timeout != MCAPI_TIMEOUT_INFINITE &&
-    ticks < timeout ) );
+    //The POSIX layer handles the rest
+    *mcapi_status = pmq_open_epd( epd, timeout );
 
-    //if it was a timeout, we shall return with timeout
-    if ( msgq_id == -1 )
+    //failure with POSIX -> return
+    if ( *mcapi_status != MCAPI_SUCCESS )
     {
-        if ( errno != ENOENT )
-        {
-            perror("When opening msq from get");
-            *mcapi_status = MCAPI_ERR_GENERAL;
-        }
-        else
-            *mcapi_status = MCAPI_TIMEOUT;
-
         return MCAPI_NULL;
     }
 
-    //now, set its messagequeue
-    epd->msgq_id = msgq_id;
-    //mark it inited as well
+    //mark it inited
     epd->inited = 1;
     //name was already assigned before, in the construction
 
     //upon the succesfull completion, return the endpoint data, as it the type
     *mcapi_status = MCAPI_SUCCESS;
-    return epd;
-}
-
-/* create endpoint <node_num,port_num> and return it's handle */
-mcapi_endpoint_t mcapi_endpoint_create(
- 	MCAPI_IN mcapi_port_t port_id, 
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
-{
-    //the queue created for endpoint
-    mqd_t msgq_id;
-    //the used id of the port
-    mcapi_port_t port_id_used = port_id;
-    //pointer to local node spesific data
-    struct nodeData* nd = getNodeData();
-    //the associated data of the would-be-endpoint
-    struct endPointData* epd;
-    //the attributes to be set for queue
-    //Blocking, maximum number of msgs, their max size and current number
-    struct mq_attr attr = { 0, MAX_QUEUE_ELEMENTS, MCAPI_MAX_MSG_SIZE, 0 };
-    //the retrieved attributes are obtained here for the check
-    struct mq_attr uattr;
-
-    //check for initialization
-    if ( mcapi_trans_initialized() == MCAPI_FALSE )
-    {
-        //no init means failure
-        *mcapi_status = MCAPI_ERR_NODE_NOTINIT;
-        return MCAPI_NULL;
-    }
-
-    //check for valid
-    if ( mcapi_trans_valid_port( port_id_used ) == MCAPI_FALSE)
-    {
-        *mcapi_status = MCAPI_ERR_PORT_INVALID;
-        return MCAPI_NULL;
-    }
-
-    //must not already reserved
-    if ( mcapi_trans_endpoint_exists( nd->domain_id, port_id_used ) )
-    {
-        *mcapi_status = MCAPI_ERR_ENDP_EXISTS;
-        return MCAPI_NULL;
-    }
-
-    //obtain pointer to the proper slot of the table
-    epd = &nd->endPoints[nd->domain_id][nd->node_id][port_id_used];
-
-    //lack of defines will also mean invalid port
-    if ( epd->defs == MCAPI_NULL )
-    {
-        *mcapi_status = MCAPI_ERR_PORT_INVALID;
-        return MCAPI_NULL;
-    }
-
-    //if messagequeue already exists, it is reused!
-    if ( epd->msgq_id != -1 )
-    {
-        //mark it as success
-        *mcapi_status = MCAPI_SUCCESS;
-        //mark it inited as well
-        epd->inited = 1;
-
-        return epd;
-    }
-
-    //open the queue for reception, but only create
-    msgq_id = mq_open(epd->defs->msg_name, O_RDWR | O_CREAT | O_EXCL,
-    (S_IRUSR | S_IWUSR), &attr);
-
-    //if did not work, then its an error
-    if (msgq_id == (mqd_t)-1) {
-        perror("When opening msq from create");
-        *mcapi_status = MCAPI_ERR_GENERAL;
-        return MCAPI_NULL;
-    }
-
-    //try to open the attributes...
-    if (mq_getattr(msgq_id, &uattr) == -1)
-    {
-        perror("When obtaining msq attributes for check");
-        *mcapi_status = MCAPI_ERR_GENERAL;
-        return MCAPI_NULL;
-    }
-    
-    //...and check if match
-    if ( attr.mq_flags != uattr.mq_flags || attr.mq_maxmsg != uattr.mq_maxmsg
-        || attr.mq_msgsize != uattr.mq_msgsize )
-    {
-        fprintf(stderr, "Set msq attributes do not match!\n");
-        *mcapi_status = MCAPI_ERR_GENERAL;
-        return MCAPI_NULL;
-    }
-
-    //now, set its messagequeue
-    epd->msgq_id = msgq_id;
-    //mark it inited as well
-    epd->inited = 1;
-    //name was already assigned before, in the construction
-
-    //mark it as success
-    *mcapi_status = MCAPI_SUCCESS;
-
-    //return the pointer, as it is the endpointtype
     return epd;
 }
 
@@ -319,11 +256,10 @@ void mcapi_endpoint_delete(
         *mcapi_status = MCAPI_ERR_ENDP_NOTOWNER;
         return;
     }
-    
-    //close and unlink the queue
-    mq_close( endpoint->msgq_id );
-    mq_unlink( endpoint->defs->msg_name );
-    endpoint->msgq_id = -1;
+
+    //Use the layer to handle the practical deletion
+    pmq_delete_epd( endpoint );
+
     //mark the endpoint uninited
     endpoint->inited = -1;
     *mcapi_status = MCAPI_SUCCESS;

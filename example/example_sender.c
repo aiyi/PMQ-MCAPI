@@ -44,10 +44,10 @@ int main()
     usleep( 1500000 );
 
     //create our channel endpoint with our port id
-    send_point = mcapi_endpoint_create( RED_SCL_OUT, &status );
+    send_point = mcapi_endpoint_create( RED_SIN, &status );
     //get their channel message endpoint, with their domain, node and port id
     printf( "Node 0: obtaining receiving endpoint\n" );
-    recv_point = mcapi_endpoint_get( THE_DOMAIN, YELLOW_NODE, YELLOW_SCL_IN,
+    recv_point = mcapi_endpoint_get( THE_DOMAIN, YELLOW_NODE, YELLOW_SIN,
     TIMEOUT, &status );
     usleep( 1500000 );
 

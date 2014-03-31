@@ -3,6 +3,7 @@
 #ifndef NODE_H
 #define NODE_H
 #include <mcapi.h>
+#include "pmq_layer.h"
 
 //variables assosiated witn one MCAPI node entity
 //effectively a singleton, as a node represents a process

@@ -51,6 +51,7 @@ test(msg_send_recv_timeout)
     size_t received_size;
     mcapi_timeout_t timeout = 100;
     unsigned int i = 0;
+    struct timespec t_start, t_end;
 
     strncpy(send_buf, TEST_MESSAGE, MAX_MSG_LEN);
 
@@ -177,7 +178,8 @@ test(msg_send_recv_fail_size)
     ureceiver = mcapi_endpoint_create( 1, &status );
     receiver = mcapi_endpoint_get( 1, 2, 1, 1000, &status );
 
-    mcapi_msg_send( sender, receiver, send_buf, MCAPI_MAX_MSG_SIZE+1, 0, &status );
+    mcapi_msg_send( sender, receiver, send_buf, MCAPI_MAX_MSG_SIZE+1, 0, 
+    &status );
     sassert( MCAPI_ERR_MSG_SIZE, status );
     mcapi_msg_recv( ureceiver, recv_buf, MAX_MSG_LEN, NULL, &status );
     sassert( MCAPI_ERR_PARAMETER, status );

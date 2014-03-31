@@ -4,6 +4,7 @@
 #define CHANNEL_H
 
 #include <mcapi.h>
+#include "pmq_layer.h"
 
 //define code for opening channel
 #define CODE_OPEN_CONNECTED "MCAPI_CHAN_OPEN"

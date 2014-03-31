@@ -1,5 +1,4 @@
 //This module has functions used in packet MCAPI-communication.
-#include <string.h>
 #include <stdio.h>
 #include "channel.h"
 

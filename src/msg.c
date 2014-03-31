@@ -1,9 +1,8 @@
 //This module has functions used in message-oriented MCAPI-communication.
 #include <stdio.h>
 #include <string.h>
-#include <mqueue.h>
 #include <mcapi.h>
-#include "pmq_trans.h"
+#include "pmq_layer.h"
 
 void mcapi_msg_send(
  	MCAPI_IN mcapi_endpoint_t send_endpoint, 

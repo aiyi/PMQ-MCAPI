@@ -1,8 +1,5 @@
 #include "channel.h"
-#include <errno.h>
 #include <stdio.h>
-#include <sys/stat.h>
-#include <sys/fcntl.h>
 
 mcapi_boolean_t mcapi_chan_wait_connect( void* data )
 {
@@ -16,18 +13,12 @@ mcapi_boolean_t mcapi_chan_wait_connect( void* data )
     struct endPointID themID;
     //while not really observed, status must be provided as parameter
     mcapi_status_t status;
-    //Blocking, maximum number of msgs, their max size and current number
-    struct mq_attr attr = { 0, MAX_QUEUE_ELEMENTS, 0, 0 };
-    //the retrieved attributes are obtained here for the check
-    struct mq_attr uattr;
-    //the queue created for channel
-    mqd_t msgq_id;
 
     //the provided data is supposed to be castable to our endpoint
     us = (mcapi_endpoint_t)data;
 
     //check for valid endpoint
-    if ( !mcapi_trans_valid_endpoint(us) )
+    if ( !mcapi_trans_valid_endpoint( us ) )
     {
         fprintf(stderr, "Chan connect wait provided with invalid endpoint!\n");
         return MCAPI_FALSE;
@@ -55,63 +46,8 @@ mcapi_boolean_t mcapi_chan_wait_connect( void* data )
         return MCAPI_FALSE;
     }
 
-    //delete the existing queue. does not work if someone has opened, though
-    //NOTICE: errors not checked since possible errors do not concern us.
-    mq_unlink( us->defs->chan_name );
-
-    //yes: we may switch the size depending on type
-    if ( us->defs->type == MCAPI_PKT_CHAN )
-    {
-        attr.mq_msgsize = MCAPI_MAX_PKT_SIZE;
-    }
-    else if ( us->defs->type == MCAPI_NO_CHAN )
-    {
-        attr.mq_msgsize = MCAPI_MAX_MSG_SIZE;
-    }
-    else if ( us->defs->type == MCAPI_SCL_CHAN )
-    {
-        //in case of scalar channel, the channel defined size is used
-        attr.mq_msgsize = us->defs->scalar_size;
-    }
-    else
-    {
-        fprintf(stderr, "Channel connect provided with null chan type!\n");
-        return MCAPI_FALSE;
-    }
-    
-    //try to open the message queue to be used as channel
-    msgq_id = mq_open(us->defs->chan_name, O_RDWR | O_CREAT | O_EXCL,
-    (S_IRUSR | S_IWUSR), &attr);
-
-    //if did not work, then its an error
-    if ( msgq_id == -1 )
-    {
-        perror("When opening msq from connect");
-        return MCAPI_FALSE;
-    }
-
-    //try to open the attributes...
-    if (mq_getattr(msgq_id, &uattr) == -1)
-    {
-        perror("When obtaining channel msq attributes for check");
-        return MCAPI_FALSE;
-    }
-
-    //Close this end of the queue so that no residual is left in any case.
-    //In the other hand, if this node needs it later, it shall reopen it
-    //at open-calls.
-    mq_close( msgq_id );
-    
-    //...and check if match
-    if ( attr.mq_flags != uattr.mq_flags || attr.mq_maxmsg != uattr.mq_maxmsg
-        || attr.mq_msgsize != uattr.mq_msgsize )
-    {
-        fprintf(stderr, "Set channel sq attributes do not match!\n");
-        return MCAPI_FALSE;
-    }
-
-    //done
-    return MCAPI_TRUE;
+    //pmq-layer handles the rest
+    return pmq_chan_create( us );
 }
 
 void mcapi_chan_connect(
@@ -164,13 +100,6 @@ void mcapi_chan_connect(
         return;
     }
 
-    //if it already exists, it means we are connected already!
-    if ( mq_open( send_endpoint->defs->chan_name, O_WRONLY ) != -1 )
-    {
-        *mcapi_status = MCAPI_ERR_CHAN_CONNECTED;
-        return;
-    }
-
     //fill in the request and give pend.
     request->function = mcapi_chan_wait_connect;
     request->data = (void*)send_endpoint;
@@ -180,8 +109,6 @@ void mcapi_chan_connect(
 
 mcapi_boolean_t mcapi_chan_wait_open( void* data )
 {
-    //the queue to be obtained
-    mqd_t msgq_id;
     //the handle for channel coms
     struct handle_type* handy;
     //the endpoint we are opening for packet communication!
@@ -189,9 +116,9 @@ mcapi_boolean_t mcapi_chan_wait_open( void* data )
     //how long message we got in bytes
     size_t mslen;
     //the buffer used to RECEIVE the open code
-    char recv_buf[MCAPI_MAX_PKT_SIZE];
-    //timeout used by operations: actually no time at all
-    struct timespec time_limit = { 0, 0 };
+    char recv_buf[MCAPI_MAX_MSG_SIZE];
+    //the status code is needed by some calls
+    mcapi_status_t status;
 
     //check null
     if ( data == MCAPI_NULL )
@@ -217,24 +144,10 @@ mcapi_boolean_t mcapi_chan_wait_open( void* data )
     if ( our_endpoint->open == 1 )
         return MCAPI_TRUE;
 
-    //no -1 means we already has an messagequeue
-    if ( our_endpoint->chan_msgq_id == -1 )
+    //open the channel. failure means retry
+    if ( pmq_open_chan( our_endpoint) != MCAPI_TRUE )
     {
-        //try to open, but do not create it
-        msgq_id = mq_open(our_endpoint->defs->chan_name, O_RDWR );
-
-        //failure means retry
-        if ( msgq_id == -1 )
-        {
-            //print only if not non-existing, as we expect it.
-            if ( errno != ENOENT )
-                perror( "when obtaining channel queue");
-
-            return MCAPI_FALSE;
-        }
-
-        //success! assign channel to handle
-        our_endpoint->chan_msgq_id = msgq_id;
+        return MCAPI_FALSE;
     }
 
     //skip if already sent
@@ -245,18 +158,16 @@ mcapi_boolean_t mcapi_chan_wait_open( void* data )
         //the indentifier of the oppoposing side
         mcapi_domain_t domain_id = our_endpoint->defs->them.domain_id;
      	mcapi_node_t node_id = our_endpoint->defs->them.node_id;
-     	mcapi_port_t port_id = our_endpoint->defs->them.port_id; 
-        //the status message for endpoint retrieval
-        mcapi_status_t get_status;
+     	mcapi_port_t port_id = our_endpoint->defs->them.port_id;
         //the buffer used to SEND the open code
         char send_buf[] = CODE_OPEN_CONNECTED;
 
         //wait only for fixed amount of time so that this is "non-blocking"
         their_endpoint = mcapi_endpoint_get( domain_id, node_id, port_id,
-        0, &get_status );
+        0, &status );
 
         //failure means ERROR as it should exist already!
-        if ( get_status != MCAPI_SUCCESS )
+        if ( status != MCAPI_SUCCESS )
         {
             fprintf(stderr, "The other end point did not exist after \
             connect!\n");
@@ -264,14 +175,12 @@ mcapi_boolean_t mcapi_chan_wait_open( void* data )
         }
 
         //now we can send the open code!
-        //the priority is max+2, so that we are sure it is ahead
-        //any messages, packets and scalars
-        //NOTICE: the messagequeue is now used as it serves in configures!
-        mslen = mq_timedsend( their_endpoint->msgq_id, send_buf,
-        sizeof(CODE_OPEN_CONNECTED), MCAPI_MAX_PRIORITY+2, &time_limit );
+        //NOTICE: the messages are now used as it serves in configures!
+        status = pmq_send( their_endpoint->msgq_id, send_buf,
+        sizeof(send_buf), 0, 0 );
 
-        //an error? Time out also counts as it should not happen!
-        if ( mslen == -1 )
+        //failure means once again error. should never happen.
+        if ( status != MCAPI_SUCCESS )
         {
             perror("mq_send opening channel");
 
@@ -284,16 +193,12 @@ mcapi_boolean_t mcapi_chan_wait_open( void* data )
 
     //and now what remains to be done is receiving the open code to us
     //NOTICE: the messagequeue is now used as it serves in configures!
-    mslen = mq_timedreceive(our_endpoint->msgq_id, recv_buf,
-        MCAPI_MAX_PKT_SIZE, NULL, &time_limit );
+    status = pmq_recv( our_endpoint->msgq_id, recv_buf, MCAPI_MAX_MSG_SIZE, 
+    &mslen, NULL, 0 );
 
-    //an error?
-    if ( mslen == -1 )
+    //an error means failure within this iteration.
+    if ( status != MCAPI_SUCCESS )
     {
-        //print error only if not timeout, as timeout is expected
-        if ( errno != ETIMEDOUT )
-            perror("mq_receive chan open");
-
         return MCAPI_FALSE;
     }
 
@@ -385,8 +290,6 @@ void mcapi_chan_open(
 
     //assign handle
     handle->us = endpoint;
-    //nullify the mgsq_id
-    handle->us->chan_msgq_id = -1;
     //mark sync
     handle->us->synced = -1;
 
@@ -401,14 +304,14 @@ void mcapi_chan_open(
 
 mcapi_boolean_t mcapi_chan_wait_close( void* data )
 {
-    //timeout used by operations: actually no time at all
-    struct timespec time_limit = { 0, 0 };
     //the endpoint which associated channel we are closing
     mcapi_endpoint_t our_endpoint;
     //how long message we got in bytes: significanse is in error messages
     size_t mslen;
     //the buffer used to RECEIVE the open code
-    char recv_buf[MCAPI_MAX_PKT_SIZE];
+    char recv_buf[MCAPI_MAX_MSG_SIZE];
+    //the status code is needed by some calls
+    mcapi_status_t status;
 
     //the provided data is supposed to be castable to our endpoint
     our_endpoint = (mcapi_endpoint_t)data;
@@ -435,34 +338,30 @@ mcapi_boolean_t mcapi_chan_wait_close( void* data )
         mcapi_domain_t domain_id = our_endpoint->defs->them.domain_id;
      	mcapi_node_t node_id = our_endpoint->defs->them.node_id;
      	mcapi_port_t port_id = our_endpoint->defs->them.port_id; 
-        //the status message for endpoint retrieval
-        mcapi_status_t get_status;
         //the buffer used to SEND the close code
         char send_buf[] = CODE_CLOSE_CONNECTED;
 
         //wait only for fixed amount of time so that this is "non-blocking"
         their_endpoint = mcapi_endpoint_get( domain_id, node_id, port_id,
-        0, &get_status );
+        0, &status );
 
         //failure means ERROR as it should exist already!
-        if ( get_status != MCAPI_SUCCESS )
+        if ( status != MCAPI_SUCCESS )
         {
             fprintf(stderr, "The other end point did not exist after \
-            connect!\n");
+            close!\n");
             return MCAPI_FALSE;
         }
 
         //now we can send the open code!
-        //the priority is max+2, so that we are sure it is ahead
-        //any messages, packets and scalars
-        //NOTICE: the messagequeue is now used as it serves in configures!
-        mslen = mq_timedsend( their_endpoint->msgq_id, send_buf,
-        sizeof(CODE_CLOSE_CONNECTED), MCAPI_MAX_PRIORITY+2, &time_limit );
+        //NOTICE: the messages are now used as it serves in configures!
+        status = pmq_send( their_endpoint->msgq_id, send_buf,
+        sizeof(send_buf), 0, 0 );
 
-        //an error? Time out also counts as it should not happen!
-        if ( mslen == -1 )
+        //failure means once again error. should never happen.
+        if ( status != MCAPI_SUCCESS )
         {
-            perror("mq_send closing channel");
+            perror("mq_send opening channel");
 
             return MCAPI_FALSE;
         }
@@ -471,18 +370,14 @@ mcapi_boolean_t mcapi_chan_wait_close( void* data )
         our_endpoint->synced = 1;
     }
 
-    //and now what remains to be done is receiving the close code to us
+    //and now what remains to be done is receiving the open code to us
     //NOTICE: the messagequeue is now used as it serves in configures!
-    mslen = mq_timedreceive(our_endpoint->msgq_id, recv_buf,
-        MCAPI_MAX_PKT_SIZE, NULL, &time_limit );
+    status = pmq_recv( our_endpoint->msgq_id, recv_buf, MCAPI_MAX_MSG_SIZE, 
+    &mslen, NULL, 0 );
 
-    //an error?
-    if ( mslen == -1 )
+    //an error means failure within this iteration.
+    if ( status != MCAPI_SUCCESS )
     {
-        //print error only if not timeout, as timeout is expected
-        if ( errno != ETIMEDOUT )
-            perror("mq_receive receive open");
-
         return MCAPI_FALSE;
     }
 
@@ -490,6 +385,7 @@ mcapi_boolean_t mcapi_chan_wait_close( void* data )
     if ( strcmp( CODE_CLOSE_CONNECTED, recv_buf ) != 0 )
     {
         //some random turf: we shall discard it
+        fprintf(stderr, "The channel close received invalid message!\n" );
         return MCAPI_FALSE;
     }
 
@@ -564,11 +460,8 @@ void mcapi_chan_close(
         return;
     }
 
-    //close and unlink channel messagequeue
-    mq_close( handle.us->chan_msgq_id );
-    mq_unlink( handle.us->defs->chan_name );
-    //nullify the mgsq_id
-    handle.us->chan_msgq_id = -1;
+    //PMQ-layer does its thing
+    pmq_delete_chan( handle.us );
     //mark sync
     handle.us->synced = -1;
 

@@ -257,22 +257,26 @@ The timeout data type mcapi_timeout_t is defined as milliseconds.
 
 ***INTERNAL STRUCTURE OF IMPLEMENTATION***
 
-The tree below illustrates dependencies between modules. Modules below are
+The graph below illustrates dependencies between modules. Modules below are
 dependent on those modules above which they are connected to with a line.
 Indirect dependencies are culled out for simplicity. Names with extension ".h"
 are merely headers, while extensionless names are modules with their own
 implemented functions.
 
+The POSIX message queue specific functions were centered to pmq_layer-module.
+Datatypes endPointData and endPointDef also contain variables specific to
+POSIX message queues. External dependencies are not included in the graph.
+
                    mca.h
                     |
-                    |---------------------------   endpointlist.h
+                    |---------------------------    endpointlist.h
                     |                           \   /
                     |                     endpointdef   mca_config.h
-                    |                           |        /
+                    |                           |       /
                     |   ------------------mcapi_impl_spec.h
-                    |  /                      
-                mcapi.h
-                    |
+                    |  /
+                mcapi.h         pmq_layer
+                    |            /
       --------------|------------
      /              |            \
     msg          channel        node

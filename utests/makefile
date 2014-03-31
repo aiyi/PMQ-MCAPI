@@ -12,7 +12,7 @@ SDIR=../src
 UTDIR=.
 
 #the header files
-_DEPS = mca.h mcapi.h mca_config.h node.h endpointdef.h endpointlist.h channel.h utester.h pmq_trans.h
+_DEPS = mca.h mcapi.h mca_config.h node.h endpointdef.h endpointlist.h channel.h utester.h pmq_layer.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 #unit test suites
@@ -20,7 +20,7 @@ _UTESTS = suite_node.h suite_endpoint.h suite_msg.h suite_packet_con_open.h suit
 UTESTS = $(patsubst %,$(UTDIR)/%,$(_UTESTS))
 
 #object files
-_OBJ = endpoint.o msg.o node.o packet.o endpointdef.o channel.o scalar.o utester.o cleaner.o pmq_trans.o
+_OBJ = endpoint.o msg.o node.o packet.o endpointdef.o channel.o scalar.o utester.o cleaner.o pmq_layer.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 #rule to create object files

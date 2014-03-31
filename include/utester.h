@@ -33,7 +33,8 @@ void utest##NAME() \
 //macro for asserting via expression
 #define uassert( ASSERTION ) \
     if ( !(ASSERTION) ) {\
-        printf( "UNIT TEST FAILURE: %s: %s\n", names, #ASSERTION ); \
+        printf( "UNIT TEST FAILURE AT %u: %s: %s\n", __LINE__, names, \
+        #ASSERTION ); \
         addError(); }
 
 //macro for asserting via comparing two given values,
@@ -41,7 +42,8 @@ void utest##NAME() \
 //got is is the result and printed variable value
 #define uassert2( excpt, got ) \
     if ( excpt != got ) {\
-        printf( "UNIT TEST FAILURE: %s: expected: %s got %d\n", names, #excpt, got ); \
+        printf( "UNIT TEST FAILURE AT %u: %s: expected: %s got %d\n", \
+        __LINE__, names, #excpt, got ); \
         addError(); }
 
 //macro for asserting MCAPI-error codes: if value does not yield what
@@ -50,8 +52,8 @@ void utest##NAME() \
     if ( excpt != got ) { \
         char status_msg[MCAPI_MAX_STATUS_MSG_LEN]; \
         mcapi_display_status( got, status_msg, MCAPI_MAX_STATUS_MSG_LEN ); \
-        printf( "UNIT TEST FAILURE AT %u: %s got: %s expected: %s\n", __LINE__,\
-        names, status_msg, #excpt ); \
+        printf( "UNIT TEST FAILURE AT %u: %s got: %s expected: %s\n", \
+        __LINE__, names, status_msg, #excpt ); \
         addError(); }
 
 //These endpoint defines are to be used in tests. Put here to avoid overwrite.

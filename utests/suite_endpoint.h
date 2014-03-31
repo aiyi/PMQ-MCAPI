@@ -1,6 +1,5 @@
 //this suite tests generic endpoint functions
 #include <mcapi.h>
-#include "mca_config.h"
 #include "mcapi_impl_spec.h"
 #include "utester.h"
 
@@ -167,7 +166,7 @@ test(create_inva_big_port_fail)
     mcapi_initialize( 1, 2, 0, 0, &info, &status );
 
     mcapi_endpoint_t sender;
-    sender = mcapi_endpoint_create( MCAPI_MAX_ENDPOINTS, &status );
+    sender = mcapi_endpoint_create( MCAPI_MAX_PORT, &status );
 
     uassert( status == MCAPI_ERR_PORT_INVALID );
     uassert( sender == MCAPI_NULL );
@@ -197,7 +196,7 @@ test(create_no_port_fail)
 
     unsigned int i;
 
-    for ( i  = 0; i < MCAPI_MAX_ENDPOINTS + 1; ++i )
+    for ( i  = 0; i < MCAPI_MAX_PORT + 1; ++i )
     {
         sender = mcapi_endpoint_create( MCAPI_PORT_ANY, &status );
     }
@@ -276,7 +275,7 @@ test(get_big_port_inva_fail)
 
     mcapi_initialize( 1, 2, 0, 0, &info, &status );
 
-    receiver = mcapi_endpoint_get( 1, 2, MCAPI_MAX_ENDPOINTS, 1000, &status );
+    receiver = mcapi_endpoint_get( 1, 2, MCAPI_MAX_PORT, 1000, &status );
     uassert( status == MCAPI_ERR_PORT_INVALID );
     uassert( receiver == MCAPI_NULL );
     mcapi_finalize( &status );
@@ -288,7 +287,7 @@ test(get_big_node_inva_fail)
 
     mcapi_initialize( 1, 2, 0, 0, &info, &status );
 
-    receiver = mcapi_endpoint_get( 1, MCA_MAX_NODES, 1, 1000, &status );
+    receiver = mcapi_endpoint_get( 1, MCAPI_MAX_NODE, 1, 1000, &status );
     uassert( status == MCAPI_ERR_NODE_INVALID );
     uassert( receiver == MCAPI_NULL );
     mcapi_finalize( &status );
@@ -300,7 +299,7 @@ test(get_big_domain_inva_fail)
 
     mcapi_initialize( 1, 2, 0, 0, &info, &status );
 
-    receiver = mcapi_endpoint_get( MCA_MAX_DOMAINS, 2, 1, 1000, &status );
+    receiver = mcapi_endpoint_get( MCAPI_MAX_DOMAIN, 2, 1, 1000, &status );
     uassert( status == MCAPI_ERR_DOMAIN_INVALID );
     uassert( receiver == MCAPI_NULL );
     mcapi_finalize( &status );

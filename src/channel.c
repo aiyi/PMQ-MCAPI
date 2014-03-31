@@ -175,9 +175,11 @@ mcapi_boolean_t mcapi_chan_wait_open( void* data )
         }
 
         //now we can send the open code!
+        //the priority is max+2, so that we are sure it is ahead
+        //any messages, packets and scalars
         //NOTICE: the messages are now used as it serves in configures!
         status = pmq_send( their_endpoint->msgq_id, send_buf,
-        sizeof(send_buf), 0, 0 );
+        sizeof(send_buf), MCAPI_MAX_PRIORITY+2, 0 );
 
         //failure means once again error. should never happen.
         if ( status != MCAPI_SUCCESS )
@@ -354,9 +356,11 @@ mcapi_boolean_t mcapi_chan_wait_close( void* data )
         }
 
         //now we can send the open code!
+        //the priority is max+2, so that we are sure it is ahead
+        //any messages, packets and scalars
         //NOTICE: the messages are now used as it serves in configures!
         status = pmq_send( their_endpoint->msgq_id, send_buf,
-        sizeof(send_buf), 0, 0 );
+        sizeof(send_buf), MCAPI_MAX_PRIORITY+2, 0 );
 
         //failure means once again error. should never happen.
         if ( status != MCAPI_SUCCESS )

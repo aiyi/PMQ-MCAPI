@@ -56,11 +56,11 @@ void mcapi_initialize(MCAPI_IN mcapi_domain_t domain_id,
     nodeData_.node_id = node_id;
 
     //mark endpoints initally non-initialized, since they are
-    for ( x = 0; x < MCA_MAX_DOMAINS; ++x )
+    for ( x = 0; x < MCAPI_MAX_DOMAIN; ++x )
     {
-        for ( y = 0; y < MCA_MAX_NODES; ++y )
+        for ( y = 0; y < MCAPI_MAX_NODE; ++y )
         {
-            for ( z = 0; z < MCAPI_MAX_ENDPOINTS; ++z )
+            for ( z = 0; z < MCAPI_MAX_PORT; ++z )
             {
                 //mark non-init, but also non-open and non-pending
                 nodeData_.endPoints[x][y][z].inited = -1;
@@ -92,9 +92,9 @@ void mcapi_initialize(MCAPI_IN mcapi_domain_t domain_id,
     mcapi_info->mcapi_version = MCAPI_VERSION;
     mcapi_info->organization_id = MCAPI_ORG_ID;
     mcapi_info->implementation_version = MCAPI_IMPL_VERSION;
-    mcapi_info->number_of_domains = MCA_MAX_DOMAINS;
-    mcapi_info->number_of_nodes = MCA_MAX_NODES;
-    mcapi_info->number_of_ports = MCAPI_MAX_ENDPOINTS;
+    mcapi_info->number_of_domains = MCAPI_MAX_DOMAIN;
+    mcapi_info->number_of_nodes = MCAPI_MAX_NODE;
+    mcapi_info->number_of_ports = MCAPI_MAX_PORT;
     
     //mark that we are inited!
     nodeInitialized_ = 1;
@@ -119,11 +119,11 @@ void mcapi_finalize( MCAPI_OUT mcapi_status_t* mcapi_status)
     }
 
     //unlink and close the messagequeues
-    for ( x = 0; x < MCA_MAX_DOMAINS; ++x )
+    for ( x = 0; x < MCAPI_MAX_DOMAIN; ++x )
     {
-        for ( y = 0; y < MCA_MAX_NODES; ++y )
+        for ( y = 0; y < MCAPI_MAX_NODE; ++y )
         {
-            for ( z = 0; z < MCAPI_MAX_ENDPOINTS; ++z )
+            for ( z = 0; z < MCAPI_MAX_PORT; ++z )
             {
                 struct endPointData* epd =
                 &nodeData_.endPoints[x][y][z];
@@ -133,7 +133,8 @@ void mcapi_finalize( MCAPI_OUT mcapi_status_t* mcapi_status)
                     continue;
 
                 //close, so that we are no longer reserving them
-                mq_close( epd->msgq_id );
+                pmq_delete_epd( epd );
+                pmq_delete_chan( epd );
             }
         }
     }
@@ -357,7 +358,7 @@ mcapi_boolean_t mcapi_trans_initialized ()
 /* checks if the given node is valid */
 mcapi_boolean_t mcapi_trans_valid_node(mcapi_uint_t node_num)
 {
-    if ( node_num >= 0 && node_num < MCA_MAX_NODES )
+    if ( node_num >= 0 && node_num < MCAPI_MAX_NODE )
     {
         return MCAPI_TRUE;
     }
@@ -368,7 +369,7 @@ mcapi_boolean_t mcapi_trans_valid_node(mcapi_uint_t node_num)
 /* checks if the given domain is valid */
 mcapi_boolean_t mcapi_trans_valid_domain(mcapi_uint_t domain_num)
 {
-    if ( domain_num >= 0 && domain_num < MCA_MAX_DOMAINS )
+    if ( domain_num >= 0 && domain_num < MCAPI_MAX_DOMAIN )
     {
         return MCAPI_TRUE;
     }

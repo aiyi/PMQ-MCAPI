@@ -1,6 +1,5 @@
 //this suite tests scalar-channel communication
 #include <mcapi.h>
-#include "mca_config.h"
 #include "utester.h"
 
 static mcapi_info_t info;

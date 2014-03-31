@@ -12,8 +12,8 @@ struct nodeData
     mca_domain_t domain_id; //domain where the node belong to
     mca_node_t node_id; //id of this node
     //each index is a port number, each value is mqdt of endpoint, -1 is null
-    struct endPointData endPoints[MCA_MAX_DOMAINS][MCA_MAX_NODES]\
-        [MCAPI_MAX_ENDPOINTS];
+    struct endPointData endPoints[MCAPI_MAX_DOMAIN][MCAPI_MAX_NODE]\
+        [MCAPI_MAX_PORT];
 };
 
 //returns pointer to the nodedata

@@ -203,7 +203,7 @@ run the cleaner. More details are in the above chapter, "Cleaner".
 
 ***CONFIGURATION FILE***
 
-The include/mca_config.h is a file containing configurations definable by
+The include/mcapi_config.h is a file containing configurations definable by
 application. This includes numbers of endpoints, nodes, domains and packet
 receive buffers and maximum sizes for both messages and packets. Both 
 implementation and application must be recompiled every time these values are 
@@ -255,6 +255,9 @@ mcapi_wait_any and mcapi_cancel.
 
 The timeout data type mcapi_timeout_t is defined as milliseconds.
 
+The pool receive buffers for packets are shared within a node. The number of
+buffers is configurable. See more details in chapter CONFIGURATION FILE.
+
 ***INTERNAL STRUCTURE OF IMPLEMENTATION***
 
 The graph below illustrates dependencies between modules. Modules below are
@@ -271,7 +274,7 @@ POSIX message queues. External dependencies are not included in the graph.
                     |
                     |---------------------------    endpointlist.h
                     |                           \   /
-                    |                     endpointdef   mca_config.h
+                    |                     endpointdef   mcapi_config.h
                     |                           |       /
                     |   ------------------mcapi_impl_spec.h
                     |  /

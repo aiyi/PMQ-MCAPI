@@ -1,7 +1,6 @@
 //this suite tests general node functions
 #include <mcapi.h>
 #include "utester.h"
-#include "mca_config.h"
 
 static mcapi_info_t info;
 static mcapi_status_t status;
@@ -20,9 +19,9 @@ test(init_info)
     uassert( info.mcapi_version == MCAPI_VERSION );
     uassert( info.organization_id == MCAPI_ORG_ID);
     uassert( info.implementation_version == MCAPI_IMPL_VERSION );
-    uassert( info.number_of_domains == MCA_MAX_DOMAINS );
-    uassert( info.number_of_nodes == MCA_MAX_NODES );
-    uassert( info.number_of_ports == MCAPI_MAX_ENDPOINTS );
+    uassert( info.number_of_domains == MCAPI_MAX_DOMAIN );
+    uassert( info.number_of_nodes == MCAPI_MAX_NODE );
+    uassert( info.number_of_ports == MCAPI_MAX_PORT);
     mcapi_finalize( &status );
 }
 
@@ -63,7 +62,7 @@ test(init_fail_node_lil)
 
 //must fail if node is above range
 test(init_fail_node_big)
-    mcapi_initialize( 1, MCA_MAX_NODES, 0, 0, &info, &status );
+    mcapi_initialize( 1, MCAPI_MAX_NODE, 0, 0, &info, &status );
     sassert( MCAPI_ERR_NODE_INVALID, status );
     mcapi_finalize( &status );
 }
@@ -77,7 +76,7 @@ test(init_fail_domain_lil)
 
 //must fail if domain is above range
 test(init_fail_domain_big)
-    mcapi_initialize( MCA_MAX_DOMAINS, 2, 0, 0, &info, &status );
+    mcapi_initialize( MCAPI_MAX_DOMAIN, 2, 0, 0, &info, &status );
     sassert( MCAPI_ERR_DOMAIN_INVALID, status );
     mcapi_finalize( &status );
 }

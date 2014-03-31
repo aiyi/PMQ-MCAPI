@@ -29,7 +29,7 @@ mcapi_boolean_t mcapi_trans_valid_endpoints (mcapi_endpoint_t endpoint1,
 /* checks to see if the port_num is a valid port_num for this system */
 mcapi_boolean_t mcapi_trans_valid_port(mcapi_uint_t port_num)
 {
-    if ( port_num >= 0 && port_num < MCAPI_MAX_ENDPOINTS )
+    if ( port_num >= 0 && port_num < MCAPI_MAX_PORT )
     {
         return MCAPI_TRUE;
     }

@@ -1,6 +1,5 @@
 //this suite tests packet channel communication
 #include <mcapi.h>
-#include "mca_config.h"
 #include "utester.h"
 #include <string.h>
 

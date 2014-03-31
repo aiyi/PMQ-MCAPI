@@ -42,7 +42,7 @@ extern "C" {
 
 #include <mca.h>
 #include <mqueue.h>
-#include "mca_config.h"
+#include "mcapi_config.h"
 #include "endpointdef.h"
 
 /******************************************************************

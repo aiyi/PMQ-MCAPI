@@ -1,6 +1,5 @@
 //this suite tests connectionless message communications
 #include <mcapi.h>
-#include "mca_config.h"
 #include "utester.h"
 #include <string.h>
 #include <stdlib.h>

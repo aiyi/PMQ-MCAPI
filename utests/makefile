@@ -12,7 +12,7 @@ SDIR=../src
 UTDIR=.
 
 #the header files
-_DEPS = mca.h mcapi.h mca_config.h node.h endpointdef.h endpointlist.h channel.h utester.h pmq_layer.h
+_DEPS = mca.h mcapi.h mcapi_config.h node.h endpointdef.h endpointlist.h channel.h utester.h pmq_layer.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 #unit test suites

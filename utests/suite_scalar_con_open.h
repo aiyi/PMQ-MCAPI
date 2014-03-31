@@ -1,6 +1,5 @@
 //this suite focuses on connecting and opening packet channels
 #include <mcapi.h>
-#include "mca_config.h"
 #include "utester.h"
 
 static struct endPointData iepd;

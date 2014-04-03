@@ -47,7 +47,7 @@ mcapi_boolean_t mcapi_chan_wait_connect( void* data )
     }
 
     //pmq-layer handles the rest
-    return pmq_chan_create( us );
+    return pmq_create_chan( us );
 }
 
 void mcapi_chan_connect(
@@ -256,7 +256,7 @@ void mcapi_chan_open(
         return;
     }
 
-    //mustn be pending, one way or another!
+    //must not be pending, one way or another!
     if ( endpoint->pend_close == 1 )
     {
         *mcapi_status = MCAPI_ERR_CHAN_CLOSEPENDING;

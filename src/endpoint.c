@@ -116,7 +116,7 @@ mcapi_endpoint_t mcapi_endpoint_create(
     }
 
     //let PMQ-layer handle rest
-    pmq_create( epd );
+    pmq_create_epd( epd );
 
     //failure with POSIX -> return
     if ( *mcapi_status != MCAPI_SUCCESS )

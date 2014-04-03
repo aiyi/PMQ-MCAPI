@@ -76,8 +76,7 @@ void mcapi_initialize(MCAPI_IN mcapi_domain_t domain_id,
                 nodeData_.endPoints[x][y][z].time_out = MCAPI_TIMEOUT_INFINITE;
 
                 //find the endpoint definition for this one
-                nodeData_.endPoints[x][y][z].defs =
-                findDef( x, y, z );
+                nodeData_.endPoints[x][y][z].defs = findDef( x, y, z );
             }
         }
     }
@@ -202,10 +201,8 @@ mcapi_boolean_t mcapi_wait(
     {
         //sleep a millisecond between iterations
         usleep(1000);
-        //the waited-for function
-        mcapi_boolean_t (*function) (void*) = request->function;
-        //call the function
-        complete = function( request->data );
+        //call the waited-for function
+        complete = request->function( request->data );
         //closer to time out!
         ++ticks;
     }

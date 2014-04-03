@@ -373,13 +373,13 @@ test(dele_con_fail)
 
 //see that a packet of maximum size goes through intact
 test(pkt_send_recv_big)
-    char send_buf[MCAPI_MAX_PKT_SIZE];
+    char send_buf[MCAPI_MAX_PACKET_SIZE];
 
     unsigned int i;
 
     srand(send_buf[0]);
 
-    for ( i = 0; i < MCAPI_MAX_PKT_SIZE; ++i )
+    for ( i = 0; i < MCAPI_MAX_PACKET_SIZE; ++i )
     {
         send_buf[i] = rand();
     }
@@ -398,7 +398,7 @@ test(pkt_send_recv_big)
         mcapi_pktchan_send_open_i( &handy, sender, &request, &status );
         mcapi_wait( &request, &size, 1001, &status );
 
-        mcapi_pktchan_send( handy, send_buf, MCAPI_MAX_PKT_SIZE, &status );
+        mcapi_pktchan_send( handy, send_buf, MCAPI_MAX_PACKET_SIZE, &status );
         sassert( MCAPI_SUCCESS, status );
 
         mcapi_finalize( &status );
@@ -422,8 +422,8 @@ test(pkt_send_recv_big)
 
         mcapi_pktchan_recv( handy, &recv_buf, &size, &status );
         sassert( MCAPI_SUCCESS, status );
-        uassert( size == MCAPI_MAX_PKT_SIZE );
-        uassert2( 0, memcmp( send_buf, recv_buf, MCAPI_MAX_PKT_SIZE ) );
+        uassert( size == MCAPI_MAX_PACKET_SIZE );
+        uassert2( 0, memcmp( send_buf, recv_buf, MCAPI_MAX_PACKET_SIZE ) );
         mcapi_pktchan_release( recv_buf, &status );
         sassert( MCAPI_SUCCESS, status );
 
@@ -661,7 +661,7 @@ test(pkt_send_too_big)
 
     mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
 
-    mcapi_pktchan_send( handy, &send_buf, MCAPI_MAX_PKT_SIZE+1, &status );
+    mcapi_pktchan_send( handy, &send_buf, MCAPI_MAX_PACKET_SIZE+1, &status );
     sassert( MCAPI_ERR_PKT_SIZE, status );
 
     mcapi_finalize( &status );

@@ -141,7 +141,7 @@ inline mcapi_status_t pmq_create_epd(
     mqd_t msgq_id;
     //the attributes to be set for queue
     //Blocking, maximum number of msgs, their max size and current number
-    struct mq_attr attr = { 0, MAX_QUEUE_ELEMENTS, MCAPI_MAX_MSG_SIZE, 0 };
+    struct mq_attr attr = { 0, MAX_QUEUE_ELEMENTS, MCAPI_MAX_MESSAGE_SIZE, 0 };
     //the retrieved attributes are obtained here for the check
     struct mq_attr uattr;
 
@@ -240,11 +240,11 @@ inline mcapi_boolean_t pmq_create_chan( mcapi_endpoint_t us )
     //yes: we may switch the size depending on type
     if ( us->defs->type == MCAPI_PKT_CHAN )
     {
-        attr.mq_msgsize = MCAPI_MAX_PKT_SIZE;
+        attr.mq_msgsize = MCAPI_MAX_PACKET_SIZE;
     }
     else if ( us->defs->type == MCAPI_NO_CHAN )
     {
-        attr.mq_msgsize = MCAPI_MAX_MSG_SIZE;
+        attr.mq_msgsize = MCAPI_MAX_MESSAGE_SIZE;
     }
     else if ( us->defs->type == MCAPI_SCL_CHAN )
     {

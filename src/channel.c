@@ -116,7 +116,7 @@ mcapi_boolean_t mcapi_chan_wait_open( void* data )
     //how long message we got in bytes
     size_t mslen;
     //the buffer used to RECEIVE the open code
-    char recv_buf[MCAPI_MAX_MSG_SIZE];
+    char recv_buf[MCAPI_MAX_MESSAGE_SIZE];
     //the status code is needed by some calls
     mcapi_status_t status;
 
@@ -195,8 +195,8 @@ mcapi_boolean_t mcapi_chan_wait_open( void* data )
 
     //and now what remains to be done is receiving the open code to us
     //NOTICE: the messagequeue is now used as it serves in configures!
-    status = pmq_recv( our_endpoint->msgq_id, recv_buf, MCAPI_MAX_MSG_SIZE, 
-    &mslen, NULL, 0 );
+    status = pmq_recv( our_endpoint->msgq_id, recv_buf,
+    MCAPI_MAX_MESSAGE_SIZE, &mslen, NULL, 0 );
 
     //an error means failure within this iteration.
     if ( status != MCAPI_SUCCESS )
@@ -311,7 +311,7 @@ mcapi_boolean_t mcapi_chan_wait_close( void* data )
     //how long message we got in bytes: significanse is in error messages
     size_t mslen;
     //the buffer used to RECEIVE the open code
-    char recv_buf[MCAPI_MAX_MSG_SIZE];
+    char recv_buf[MCAPI_MAX_MESSAGE_SIZE];
     //the status code is needed by some calls
     mcapi_status_t status;
 
@@ -376,8 +376,8 @@ mcapi_boolean_t mcapi_chan_wait_close( void* data )
 
     //and now what remains to be done is receiving the open code to us
     //NOTICE: the messagequeue is now used as it serves in configures!
-    status = pmq_recv( our_endpoint->msgq_id, recv_buf, MCAPI_MAX_MSG_SIZE, 
-    &mslen, NULL, 0 );
+    status = pmq_recv( our_endpoint->msgq_id, recv_buf,
+    MCAPI_MAX_MESSAGE_SIZE, &mslen, NULL, 0 );
 
     //an error means failure within this iteration.
     if ( status != MCAPI_SUCCESS )

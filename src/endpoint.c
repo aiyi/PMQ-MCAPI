@@ -222,7 +222,7 @@ void mcapi_endpoint_delete(
     //data of the node from witch endpoint shall be unassosiated
     struct nodeData* nd = getNodeData();
     //we need receive buffer to empty the message queue somewhere
-    char recv_buf[MCAPI_MAX_MSG_SIZE];
+    char recv_buf[MCAPI_MAX_MESSAGE_SIZE];
     //timeout used by posix-function: actually no time at all
     struct timespec time_limit = { 0, 0 };
     //used to observe, when buffer is 

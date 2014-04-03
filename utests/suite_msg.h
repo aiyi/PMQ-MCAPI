@@ -177,7 +177,7 @@ test(msg_send_recv_fail_size)
     ureceiver = mcapi_endpoint_create( 1, &status );
     receiver = mcapi_endpoint_get( 1, 2, 1, 1000, &status );
 
-    mcapi_msg_send( sender, receiver, send_buf, MCAPI_MAX_MSG_SIZE+1, 0, 
+    mcapi_msg_send( sender, receiver, send_buf, MCAPI_MAX_MESSAGE_SIZE+1, 0, 
     &status );
     sassert( MCAPI_ERR_MSG_SIZE, status );
     mcapi_msg_recv( ureceiver, recv_buf, MAX_MSG_LEN, NULL, &status );
@@ -352,14 +352,14 @@ test(msg_send_recv_big)
     mcapi_endpoint_t sender;
     mcapi_endpoint_t receiver;
     mcapi_endpoint_t ureceiver;
-    char send_buf[MCAPI_MAX_MSG_SIZE];
-    char recv_buf[MCAPI_MAX_MSG_SIZE];
+    char send_buf[MCAPI_MAX_MESSAGE_SIZE];
+    char recv_buf[MCAPI_MAX_MESSAGE_SIZE];
     size_t received_size;
     unsigned int i;
 
     srand(send_buf[0]);
 
-    for ( i = 0; i < MCAPI_MAX_MSG_SIZE; ++i )
+    for ( i = 0; i < MCAPI_MAX_MESSAGE_SIZE; ++i )
     {
         send_buf[i] = rand();
     }
@@ -369,15 +369,15 @@ test(msg_send_recv_big)
     sender = mcapi_endpoint_create( 0, &status );
     ureceiver = mcapi_endpoint_create( 1, &status );
     receiver = mcapi_endpoint_get( 1, 2, 1, 1000, &status );
-    mcapi_msg_send( sender, receiver, send_buf, MCAPI_MAX_MSG_SIZE, 0, 
+    mcapi_msg_send( sender, receiver, send_buf, MCAPI_MAX_MESSAGE_SIZE, 0, 
     &status );
     sassert( MCAPI_SUCCESS, status );
-    mcapi_msg_recv( ureceiver, recv_buf, MCAPI_MAX_MSG_SIZE, &received_size, 
+    mcapi_msg_recv( ureceiver, recv_buf, MCAPI_MAX_MESSAGE_SIZE, &received_size, 
     &status );
 
     sassert( MCAPI_SUCCESS, status );
-    uassert( received_size == MCAPI_MAX_MSG_SIZE );
-    uassert2( 0, memcmp( send_buf, recv_buf, MCAPI_MAX_MSG_SIZE ) );
+    uassert( received_size == MCAPI_MAX_MESSAGE_SIZE );
+    uassert2( 0, memcmp( send_buf, recv_buf, MCAPI_MAX_MESSAGE_SIZE ) );
 
     mcapi_endpoint_delete( sender, &status );
     mcapi_endpoint_delete( ureceiver, &status );

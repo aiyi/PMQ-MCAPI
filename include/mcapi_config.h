@@ -13,18 +13,14 @@
 
 //Maximum lenght of a message in bytes. NOTICE: must not be shorter than
 //string defines in channel.h or channel open and close shall fail.
-#ifndef MCAPI_MAX_MSG_SIZE
-#define MCAPI_MAX_MSG_SIZE 128
+#ifndef MCAPI_MAX_MESSAGE_SIZE
+#define MCAPI_MAX_MESSAGE_SIZE 128
 #endif
-
-#define MCAPI_MAX_MESSAGE_SIZE MCAPI_MAX_MSG_SIZE
 
 //Maximum length of a packet in bytes
-#ifndef MCAPI_MAX_PKT_SIZE
-#define MCAPI_MAX_PKT_SIZE 1024
+#ifndef MCAPI_MAX_PACKET_SIZE
+#define MCAPI_MAX_PACKET_SIZE 1024
 #endif
-
-#define MCAPI_MAX_PACKET_SIZE MCAPI_MAX_PKT_SIZE
 
 //How many endpoints each node may have.
 #define MCAPI_MAX_PORT 32

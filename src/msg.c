@@ -51,7 +51,7 @@ void mcapi_msg_send(
     }
 
     //check for size
-    if ( buffer_size > MCAPI_MAX_MSG_SIZE )
+    if ( buffer_size > MCAPI_MAX_MESSAGE_SIZE )
     {
         *mcapi_status = MCAPI_ERR_MSG_SIZE;
         return;
@@ -70,7 +70,7 @@ void mcapi_msg_recv(
  	MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     //the intermediate buffer for receiving. needed for the receive call
-    char recv_buf[MCAPI_MAX_MSG_SIZE];
+    char recv_buf[MCAPI_MAX_MESSAGE_SIZE];
     //the priority obtained
     unsigned msg_prio;
     //how long message we got in bytes
@@ -116,7 +116,7 @@ void mcapi_msg_recv(
 
     //POSIX will handle the recv, timeout of receiving endpoint is used
     *mcapi_status = pmq_recv( receive_endpoint->msgq_id, recv_buf, 
-    MCAPI_MAX_MSG_SIZE, &mslen, &msg_prio, receive_endpoint->time_out );
+    MCAPI_MAX_MESSAGE_SIZE, &mslen, &msg_prio, receive_endpoint->time_out );
 
     if ( *mcapi_status != MCAPI_SUCCESS )
     {

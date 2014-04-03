@@ -92,7 +92,7 @@ static void * _thrd_wrapper_function(void * aArg)
         check( MCAPI_SUCCESS, status );
         
         //check they are consistent
-        for ( j = 0; j < MCAPI_MAX_PKT_SIZE; ++j )
+        for ( j = 0; j < MCAPI_MAX_PACKET_SIZE; ++j )
         {
             //each byte is supposed to be incremented by one from original.
             unsigned char comp = use_buf[j] + 1;
@@ -190,7 +190,7 @@ int main()
         //an iterator used in loops
         unsigned int j = 0;
         //reserve buf in malloc for easier use
-        send_buf = (unsigned char*)malloc(MCAPI_MAX_PKT_SIZE);
+        send_buf = (unsigned char*)malloc(MCAPI_MAX_PACKET_SIZE);
 
         if ( send_buf == NULL )
         {
@@ -199,13 +199,13 @@ int main()
         }
 
         //populate packet with random numbers
-        for ( j = 0; j < MCAPI_MAX_PKT_SIZE; ++j )
+        for ( j = 0; j < MCAPI_MAX_PACKET_SIZE; ++j )
         {
             send_buf[j] = rand();
         }
 
         //send the packet
-        mcapi_pktchan_send( handy2, send_buf, MCAPI_MAX_PKT_SIZE, &status );
+        mcapi_pktchan_send( handy2, send_buf, MCAPI_MAX_PACKET_SIZE, &status );
 
         //obtain lock
         pthread_mutex_lock(&mHandle);

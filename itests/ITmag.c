@@ -83,13 +83,13 @@ static void * _thrd_wrapper_function(void * aArg)
         pthread_mutex_unlock(&sHandle2);
 
         //increment each value by one
-        for ( j = 0; j < MCAPI_MAX_PKT_SIZE; ++j )
+        for ( j = 0; j < MCAPI_MAX_PACKET_SIZE; ++j )
         {
             use_buf[j] = use_buf[j] + 1;
         }
 
         //send the packet
-        mcapi_pktchan_send( handy2, use_buf, MCAPI_MAX_PKT_SIZE, &status );
+        mcapi_pktchan_send( handy2, use_buf, MCAPI_MAX_PACKET_SIZE, &status );
         
         //release
         mcapi_pktchan_release( use_buf, &status );

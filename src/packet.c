@@ -8,7 +8,7 @@ struct bufObject
     //the endpoint currently using the buffer: MCAPI_NULL if unused
     mcapi_endpoint_t endpoint;
     //the data contained in the buffer
-    unsigned char data[MCAPI_MAX_PKT_SIZE+sizeof(unsigned int)];
+    unsigned char data[MCAPI_MAX_PACKET_SIZE+sizeof(unsigned int)];
 };
 
 //the all buffers within the use of this node
@@ -31,7 +31,7 @@ void bufClearAll()
         //and clear
         bo->endpoint = MCAPI_NULL;
         //set "us" at the end of the buffer
-        bo->data[MCAPI_MAX_PKT_SIZE] = i;
+        bo->data[MCAPI_MAX_PACKET_SIZE] = i;
     }
 }
 
@@ -124,7 +124,7 @@ void mcapi_pktchan_send(
     }
 
     //size constrains apply
-    if ( size > MCAPI_MAX_PKT_SIZE )
+    if ( size > MCAPI_MAX_PACKET_SIZE )
     {
         *mcapi_status = MCAPI_ERR_PKT_SIZE; 
         return;
@@ -210,7 +210,7 @@ void mcapi_pktchan_recv(
 
     //POSIX will handle the recv, timeout of receiving endpoint is used
     *mcapi_status = pmq_recv( receive_handle.us->chan_msgq_id, bo->data,
-    MCAPI_MAX_PKT_SIZE, received_size, &msg_prio,
+    MCAPI_MAX_PACKET_SIZE, received_size, &msg_prio,
     receive_handle.us->time_out );
 
     if ( *mcapi_status != MCAPI_SUCCESS )
@@ -261,7 +261,7 @@ void mcapi_pktchan_release(
     }
 
     //magic: we get the struct index from the end of buffer
-    loc = buffer + MCAPI_MAX_PKT_SIZE;
+    loc = buffer + MCAPI_MAX_PACKET_SIZE;
     i = (unsigned int*)loc;
 
     //out of bound means an error

@@ -8,8 +8,7 @@ ran before the actual application processes.
 Example application is intended to provide the simplest possible example of
 channel oriented communication between two processes.
 
-Calling "make clean" will rebuild and rerun the cleaner and remove the object
-files from the object directory.
+Calling "make clean" will rebuild and rerun the cleaner.
 
 If you wish to add more processes to your application, insert them to line
 beginning with "PROCESSES".

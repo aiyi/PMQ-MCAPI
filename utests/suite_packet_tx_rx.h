@@ -916,8 +916,6 @@ test(pkt_re_open)
         mcapi_pktchan_send_close_i( handy, &request, &status );
         sassert( MCAPI_ERR_CHAN_NOTOPEN, status );
 
-        mcapi_pktchan_connect_i( sender, receiver, &request, &status );
-        mcapi_wait( &request, &size, 1001, &status );
         mcapi_pktchan_send_open_i( &handy, sender, &request, &status );
         sassert( MCAPI_PENDING, status );
         mcapi_wait( &request, &size, 1001, &status );
@@ -952,6 +950,8 @@ test(pkt_re_open)
         mcapi_pktchan_recv_close_i( handy, &request, &status );
         sassert( MCAPI_ERR_CHAN_NOTOPEN, status );
 
+        mcapi_pktchan_connect_i( sender, receiver, &request, &status );
+        mcapi_wait( &request, &size, 1001, &status );
         mcapi_pktchan_recv_open_i( &handy, receiver, &request, &status );
         sassert( MCAPI_PENDING, status );
         mcapi_wait( &request, &size, 1000, &status );
@@ -1266,6 +1266,275 @@ test(pkt_no_avail)
     }
 }
 
+//see if channel may be properly reused after the finalize!
+test(pkt_re_open_fin)
+
+    strncpy(send_buf, TEST_MESSAGE, MAX_MSG_LEN);
+
+    pid = fork();
+
+    if ( pid == 0 )
+    {
+        mcapi_pktchan_send_hndl_t handy;
+        struct endPointID us_id = FOO;
+        struct endPointID them_id = BAR;
+
+        mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
+        sender = mcapi_endpoint_create( us_id.port_id, &status );
+
+        mcapi_pktchan_send_open_i( &handy, sender, &request, &status );
+        mcapi_wait( &request, &size, 1001, &status );
+        mcapi_pktchan_send( handy, send_buf, MAX_MSG_LEN, &status );
+
+        mcapi_finalize( &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
+        sassert( MCAPI_SUCCESS, status );
+        sender = mcapi_endpoint_create( us_id.port_id, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_pktchan_send_open_i( &handy, sender, &request, &status );
+        sassert( MCAPI_PENDING, status );
+        mcapi_wait( &request, &size, 1001, &status );
+        sassert( MCAPI_SUCCESS, status );
+        mcapi_pktchan_send( handy, send_buf, MAX_MSG_LEN, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_finalize( &status );
+
+        exit(0);
+    }
+    else if ( pid != -1 )
+    {
+        mcapi_pktchan_recv_hndl_t handy;
+        struct endPointID us_id = BAR;
+        struct endPointID them_id = FOO;
+
+        mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
+        receiver = mcapi_endpoint_create( us_id.port_id, &status );
+        sender = mcapi_endpoint_get( them_id.domain_id, them_id.node_id,
+        them_id.port_id, 1000, &status );
+        
+        mcapi_pktchan_connect_i( sender, receiver, &request, &status );
+        mcapi_wait( &request, &size, 1001, &status );
+        mcapi_pktchan_recv_open_i( &handy, receiver, &request, &status );
+        mcapi_wait( &request, &size, 1000, &status );
+
+        mcapi_finalize( &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
+        sassert( MCAPI_SUCCESS, status );
+        receiver = mcapi_endpoint_create( us_id.port_id, &status );
+        sassert( MCAPI_SUCCESS, status );
+        sender = mcapi_endpoint_get( them_id.domain_id, them_id.node_id,
+        them_id.port_id, 1000, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_pktchan_connect_i( sender, receiver, &request, &status );
+        mcapi_wait( &request, &size, 1001, &status );
+        mcapi_pktchan_recv_open_i( &handy, receiver, &request, &status );
+        sassert( MCAPI_PENDING, status );
+        mcapi_wait( &request, &size, 1000, &status );
+        sassert( MCAPI_SUCCESS, status );
+        mcapi_pktchan_recv( handy, &recv_buf, &size, &status );
+        sassert( MCAPI_SUCCESS, status );
+        uassert( size == MAX_MSG_LEN );
+        uassert2( 0, memcmp( send_buf, recv_buf, MAX_MSG_LEN ) );
+        mcapi_pktchan_release( recv_buf, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        int count = mcapi_pktchan_available( handy, &status );
+        uassert( count == 0 );
+        sassert( MCAPI_SUCCESS, status );
+        
+        wait(NULL);
+
+        mcapi_finalize( &status );
+    }
+    else
+    {
+        perror("fork");
+    }
+}
+
+//see if channel may be properly reused after the delete!
+test(pkt_re_open_del)
+
+    strncpy(send_buf, TEST_MESSAGE, MAX_MSG_LEN);
+
+    pid = fork();
+
+    if ( pid == 0 )
+    {
+        mcapi_pktchan_send_hndl_t handy;
+        struct endPointID us_id = FOO;
+        struct endPointID them_id = BAR;
+
+        mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
+        sender = mcapi_endpoint_create( us_id.port_id, &status );
+
+        mcapi_pktchan_send_open_i( &handy, sender, &request, &status );
+        mcapi_wait( &request, &size, 1001, &status );
+        mcapi_pktchan_send( handy, send_buf, MAX_MSG_LEN, &status );
+
+        mcapi_pktchan_send_close_i( handy, &request, &status );
+        sassert( MCAPI_PENDING, status );
+        mcapi_wait( &request, &size, 1001, &status );
+        sassert( MCAPI_SUCCESS, status );
+        mcapi_pktchan_send_close_i( handy, &request, &status );
+        sassert( MCAPI_ERR_CHAN_NOTOPEN, status );
+
+        mcapi_endpoint_delete( sender, &status );
+        sassert( MCAPI_SUCCESS, status );
+        sender = mcapi_endpoint_create( us_id.port_id, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_pktchan_send_open_i( &handy, sender, &request, &status );
+        sassert( MCAPI_PENDING, status );
+        mcapi_wait( &request, &size, 1001, &status );
+        sassert( MCAPI_SUCCESS, status );
+        mcapi_pktchan_send( handy, send_buf, MAX_MSG_LEN, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_finalize( &status );
+
+        exit(0);
+    }
+    else if ( pid != -1 )
+    {
+        mcapi_pktchan_recv_hndl_t handy;
+        struct endPointID us_id = BAR;
+        struct endPointID them_id = FOO;
+
+        mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
+        receiver = mcapi_endpoint_create( us_id.port_id, &status );
+        sender = mcapi_endpoint_get( them_id.domain_id, them_id.node_id,
+        them_id.port_id, 1000, &status );
+        
+        mcapi_pktchan_connect_i( sender, receiver, &request, &status );
+        mcapi_wait( &request, &size, 1001, &status );
+        mcapi_pktchan_recv_open_i( &handy, receiver, &request, &status );
+        mcapi_wait( &request, &size, 1000, &status );
+        mcapi_pktchan_recv( handy, &recv_buf, &size, &status );
+        mcapi_pktchan_release( recv_buf, &status );
+        
+        mcapi_pktchan_recv_close_i( handy, &request, &status );
+        mcapi_wait( &request, &size, 1000, &status );
+
+        mcapi_endpoint_delete( receiver, &status );
+        sassert( MCAPI_SUCCESS, status );
+        receiver = mcapi_endpoint_create( us_id.port_id, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_pktchan_connect_i( sender, receiver, &request, &status );
+        sassert( MCAPI_PENDING, status );
+        mcapi_wait( &request, &size, 1001, &status );
+        sassert( MCAPI_SUCCESS, status );
+        mcapi_pktchan_recv_open_i( &handy, receiver, &request, &status );
+        sassert( MCAPI_PENDING, status );
+        mcapi_wait( &request, &size, 1000, &status );
+        sassert( MCAPI_SUCCESS, status );
+        mcapi_pktchan_recv( handy, &recv_buf, &size, &status );
+        sassert( MCAPI_SUCCESS, status );
+        uassert( size == MAX_MSG_LEN );
+        uassert2( 0, memcmp( send_buf, recv_buf, MAX_MSG_LEN ) );
+        mcapi_pktchan_release( recv_buf, &status );
+        sassert( MCAPI_SUCCESS, status );
+        
+        wait(NULL);
+
+        mcapi_finalize( &status );
+    }
+    else
+    {
+        perror("fork");
+    }
+}
+
+//see if channel may be properly reused after delete on open
+test(pkt_re_open_del_mid)
+
+    strncpy(send_buf, TEST_MESSAGE, MAX_MSG_LEN);
+
+    pid = fork();
+
+    if ( pid == 0 )
+    {
+        mcapi_pktchan_send_hndl_t handy;
+        struct endPointID us_id = FOO;
+        struct endPointID them_id = BAR;
+
+        mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
+        sender = mcapi_endpoint_create( us_id.port_id, &status );
+        mcapi_endpoint_set_attribute( sender, MCAPI_ENDP_ATTR_TIMEOUT, &timeut,
+        sizeof(mcapi_timeout_t), &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_pktchan_send_open_i( &handy, sender, &request, &status );
+
+        mcapi_endpoint_delete( sender, &status );
+        sassert( MCAPI_SUCCESS, status );
+        sender = mcapi_endpoint_create( us_id.port_id, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_pktchan_send_open_i( &handy, sender, &request, &status );
+        sassert( MCAPI_PENDING, status );
+        mcapi_wait( &request, &size, 1001, &status );
+        sassert( MCAPI_SUCCESS, status );
+        mcapi_pktchan_send( handy, send_buf, MAX_MSG_LEN, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_finalize( &status );
+
+        exit(0);
+    }
+    else if ( pid != -1 )
+    {
+        mcapi_pktchan_recv_hndl_t handy;
+        struct endPointID us_id = BAR;
+        struct endPointID them_id = FOO;
+
+        mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
+        receiver = mcapi_endpoint_create( us_id.port_id, &status );
+        sender = mcapi_endpoint_get( them_id.domain_id, them_id.node_id,
+        them_id.port_id, 1000, &status );
+        mcapi_endpoint_set_attribute( receiver, MCAPI_ENDP_ATTR_TIMEOUT, &timeut,
+        sizeof(mcapi_timeout_t), &status );
+        sassert( MCAPI_SUCCESS, status );
+        
+        mcapi_pktchan_connect_i( sender, receiver, &request, &status );
+        mcapi_wait( &request, &size, 1001, &status );
+        mcapi_pktchan_recv_open_i( &handy, receiver, &request, &status );
+
+        mcapi_endpoint_delete( receiver, &status );
+        sassert( MCAPI_SUCCESS, status );
+        receiver = mcapi_endpoint_create( us_id.port_id, &status );
+        sassert( MCAPI_SUCCESS, status );
+        
+        mcapi_pktchan_recv_open_i( &handy, receiver, &request, &status );
+        sassert( MCAPI_PENDING, status );
+        mcapi_wait( &request, &size, 1000, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_pktchan_recv( handy, &recv_buf, &size, &status );
+        sassert( MCAPI_SUCCESS, status );
+        uassert( size == MAX_MSG_LEN );
+        uassert2( 0, memcmp( send_buf, recv_buf, MAX_MSG_LEN ) );
+        mcapi_pktchan_release( recv_buf, &status );
+        sassert( MCAPI_SUCCESS, status );
+        
+        wait(NULL);
+
+        mcapi_finalize( &status );
+    }
+    else
+    {
+        perror("fork");
+    }
+}
+
 void suite_packet_tx_rx()
 {
     nullhand.us = MCAPI_NULL;
@@ -1292,4 +1561,7 @@ void suite_packet_tx_rx()
     dotest(pkt_third_party_con)
     dotest(pkt_avail)
     dotest(pkt_no_avail)
+    dotest(pkt_re_open_fin)
+    dotest(pkt_re_open_del)
+    dotest(pkt_re_open_del_mid)
 }

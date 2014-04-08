@@ -85,8 +85,7 @@ which are statically linked to every application executable, while folder
 access the functionality. Flag -lrt must be provided to GCC so that it will be 
 able to access the POSIX message queues.
 
-Calling "clean" will rerun and rebuild the cleaner and also remove the
-implementation object files.
+Calling "clean" will rerun and rebuild the cleaner.
 
     example: make clean
 
@@ -234,7 +233,9 @@ sys/fcntl.h are needed for some defines.
 
 ***IMPLEMENTATION SPECIFIC BEHAVIOR***
 
-Within this implementation each node is supposed to be one process. Domains are user defined, but within the same processor. Endpoints must be defined before compilation. See chapter DEFINING ENDPOINTS for more details.
+Within this implementation each node is supposed to be one process. Domains are
+user defined, but within the same processor. Endpoints must be defined before
+compilation. See chapter DEFINING ENDPOINTS for more details.
 
 Most of of the non-blocking functions are not implemented. Notable exceptions
 are calls oriented with connecting, opening and closing channels. However,

@@ -140,13 +140,13 @@ inline mcapi_status_t pmq_create_epd(
     //the queue created for endpoint
     mqd_t msgq_id;
     //the attributes to be set for queue
-    //Blocking, maximum number of msgs, their max size and current number
+    //Blocking, maximum number of msgs, their max size and current messages
     struct mq_attr attr = { 0, MAX_QUEUE_ELEMENTS, MCAPI_MAX_MESSAGE_SIZE, 0 };
     //the retrieved attributes are obtained here for the check
     struct mq_attr uattr;
 
     //open the queue for reception, but only create
-    msgq_id = mq_open(endpoint->defs->msg_name, O_RDWR | O_CREAT | O_EXCL,
+    msgq_id = mq_open(endpoint->defs->msg_name, O_RDWR | O_CREAT,
     (S_IRUSR | S_IWUSR), &attr);
 
     //if did not work, then its an error
@@ -221,9 +221,23 @@ inline mcapi_status_t pmq_open_epd(
 inline void pmq_delete_epd(
     MCAPI_IN mcapi_endpoint_t endpoint )
 {
-    //close and unlink the queue
+    //needed for the receive call
+    char recv_buf[MCAPI_MAX_MESSAGE_SIZE];
+    //result of received
+    size_t mslen;
+    //zero timelimit for immediate return
+    struct timespec time_limit = { 0, 0 };
+
+    //read out all messages from queue
+    do
+    {
+        mslen = mq_timedreceive( endpoint->msgq_id, recv_buf, 
+        MCAPI_MAX_MESSAGE_SIZE, NULL, &time_limit );
+    }
+    while( mslen != -1 );
+
+    //close the queue
     mq_close( endpoint->msgq_id );
-    mq_unlink( endpoint->defs->msg_name );
     //nullify the mgsq_id
     endpoint->msgq_id = -1;
 }

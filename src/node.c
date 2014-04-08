@@ -23,14 +23,14 @@ void mcapi_initialize(MCAPI_IN mcapi_domain_t domain_id,
     unsigned int y;
     unsigned int z;
 
-    //check for init
+    //must not be inited already
     if ( mcapi_trans_initialized() == MCAPI_TRUE )
     {
         *mcapi_status = MCAPI_ERR_NODE_INITIALIZED;
         return;
     }
 
-    //musnt be null
+    //must not be null
     if ( mcapi_info == NULL )
     {
         *mcapi_status = MCAPI_ERR_PARAMETER;

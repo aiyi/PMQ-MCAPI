@@ -262,6 +262,10 @@ void mcapi_endpoint_delete(
 
     //mark the endpoint uninited
     endpoint->inited = -1;
+    //discard open pending
+    endpoint->pend_open = -1;
+
+    //so far so good
     *mcapi_status = MCAPI_SUCCESS;
 }
 

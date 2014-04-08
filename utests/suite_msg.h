@@ -449,7 +449,7 @@ test(msg_recreate_send_not_avail)
 
     count = mcapi_msg_available( ureceiver, &status );
     sassert( MCAPI_SUCCESS, status );
-    uassert( count == 0 );
+    uassert2( 0, count );
     mcapi_finalize( &status );
 }
 

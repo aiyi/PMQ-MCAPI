@@ -249,8 +249,9 @@ void mcapi_chan_open(
         return;
     }
 
-    //check for valid endpoint
-    if ( !mcapi_trans_valid_endpoint(endpoint) )
+    //check for valid LOCAL endpoint
+    if ( !mcapi_trans_valid_endpoint(endpoint) || 
+    mcapi_trans_endpoint_isowner( endpoint ) == MCAPI_FALSE )
     {
         *mcapi_status = MCAPI_ERR_ENDP_INVALID;
         return;

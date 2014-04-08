@@ -67,10 +67,7 @@ void mcapi_initialize(MCAPI_IN mcapi_domain_t domain_id,
                 nodeData_.endPoints[x][y][z].open = -1;
                 nodeData_.endPoints[x][y][z].pend_open = -1;
                 nodeData_.endPoints[x][y][z].pend_close = -1;
-
-                //initially, also messagequeues must be non-inited
-                nodeData_.endPoints[x][y][z].msgq_id = -1;
-                nodeData_.endPoints[x][y][z].chan_msgq_id = -1;
+                nodeData_.endPoints[x][y][z].synced = -1;
 
                 //the default timeout is infinite
                 nodeData_.endPoints[x][y][z].time_out = MCAPI_TIMEOUT_INFINITE;

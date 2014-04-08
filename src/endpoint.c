@@ -264,6 +264,9 @@ void mcapi_endpoint_delete(
     endpoint->inited = -1;
     //discard open pending
     endpoint->pend_open = -1;
+    endpoint->synced = -1;
+    //assume attributes are discarded as well
+    endpoint->time_out = MCAPI_TIMEOUT_INFINITE;
 
     //so far so good
     *mcapi_status = MCAPI_SUCCESS;

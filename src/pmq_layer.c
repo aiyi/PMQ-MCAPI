@@ -174,6 +174,8 @@ inline mcapi_status_t pmq_create_epd(
 
     //now, set its messagequeue
     endpoint->msgq_id = msgq_id;
+    //but un-set the channel messagequeue
+    endpoint->chan_msgq_id = -1;
 
     return MCAPI_SUCCESS;
 }

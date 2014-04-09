@@ -65,18 +65,30 @@ test(msg_send_recv_timeout)
     sizeof(mcapi_timeout_t), &status );
 
     receiver = mcapi_endpoint_get( 1, 2, 1, 1000, &status );
+    clock_gettime( CLOCK_MONOTONIC, &t_start );
     mcapi_msg_recv( ureceiver, recv_buf, MAX_MSG_LEN, &received_size, &status );
+    clock_gettime( CLOCK_MONOTONIC, &t_end );
     sassert( MCAPI_TIMEOUT, status );
+
+    double diff = (double)( t_end.tv_nsec - t_start.tv_nsec );
+    diff += ( t_end.tv_sec - t_start.tv_sec ) * 1000000000;
+    
+    uassert( diff > ( timeout * 1000000 ) );
 
     for ( ; i < 11; ++i )
     {
+        clock_gettime( CLOCK_MONOTONIC, &t_start );
         mcapi_msg_send( sender, receiver, send_buf, MAX_MSG_LEN, 0, &status );
+        clock_gettime( CLOCK_MONOTONIC, &t_end );
     }
 
     sassert( MCAPI_TIMEOUT, status );
 
-    mcapi_endpoint_delete( sender, &status );
-    mcapi_endpoint_delete( ureceiver, &status );
+    diff = (double)( t_end.tv_nsec - t_start.tv_nsec );
+    diff += ( t_end.tv_sec - t_start.tv_sec ) * 1000000000;
+    
+    uassert( diff > ( timeout * 1000000 ) );
+
     mcapi_finalize( &status );
 }
 

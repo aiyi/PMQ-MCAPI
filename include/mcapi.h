@@ -708,7 +708,11 @@ extern void mcapi_cancel(
 );
 
 /* Convenience functions */
-char* mcapi_display_status(mcapi_status_t status,char* status_message,size_t size);
+char* mcapi_display_status(
+    MCAPI_IN mcapi_status_t status,
+    MCAPI_OUT char* status_message,
+    MCAPI_IN size_t size);
+
 void mcapi_set_debug_level(int d);
 
 #endif /* LIB_BUILD */

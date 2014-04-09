@@ -2,6 +2,7 @@
 #include <mcapi.h>
 #include "mcapi_impl_spec.h"
 #include "utester.h"
+#include <time.h>
 
 //an invalid endpoint usable in all tests as such!
 static struct endPointData iepd;
@@ -308,12 +309,22 @@ test(get_big_domain_inva_fail)
 //get must fail if the timeout passes
 test(get_timeout)
     mcapi_endpoint_t receiver;
+    struct timespec t_start, t_end;
+    int timeout = 500;
 
     mcapi_initialize( 1, 2, 0, 0, &info, &status );
 
-    receiver = mcapi_endpoint_get( 1, 2, 0, 500, &status );
+    clock_gettime( CLOCK_MONOTONIC, &t_start );
+    receiver = mcapi_endpoint_get( 1, 2, 0, timeout, &status );
+    clock_gettime( CLOCK_MONOTONIC, &t_end );
     uassert( status == MCAPI_TIMEOUT );
     uassert( receiver == MCAPI_NULL );
+
+    double diff = (double)( t_end.tv_nsec - t_start.tv_nsec );
+    diff += ( t_end.tv_sec - t_start.tv_sec ) * 1000000000;
+    
+    uassert( diff > ( timeout * 1000000 ) );
+
     mcapi_finalize( &status );
 }
 

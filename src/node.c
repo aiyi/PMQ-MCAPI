@@ -223,8 +223,10 @@ mcapi_boolean_t mcapi_wait(
 #define STATUS_CASE( status ) \
     case( status ): message = strcpy(status_message, #status); break;
 
-char* mcapi_display_status( mcapi_status_t status, char* status_message,
-size_t size)
+char* mcapi_display_status(
+    MCAPI_IN mcapi_status_t status,
+    MCAPI_OUT char* status_message,
+    MCAPI_IN size_t size)
 {
     //pointer to the buffer
     char* message;

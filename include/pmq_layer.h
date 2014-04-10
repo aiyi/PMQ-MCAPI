@@ -14,10 +14,10 @@
 //if set to MCAPI_TIMEOUT_INFINITE, there is no timeout
 //RETURNS MCAPI_SUCCESS on success, else error or timeout
 inline mcapi_status_t pmq_send(
- 	MCAPI_IN mqd_t msgq_id, 
- 	MCAPI_IN void* buffer, 
- 	MCAPI_IN size_t buffer_size, 
- 	MCAPI_IN mcapi_priority_t priority,
+    MCAPI_IN mqd_t msgq_id, 
+    MCAPI_IN void* buffer, 
+    MCAPI_IN size_t buffer_size, 
+    MCAPI_IN mcapi_priority_t priority,
     MCAPI_IN mcapi_timeout_t timeout );
 
 //receives a message via posix message queue
@@ -30,11 +30,11 @@ inline mcapi_status_t pmq_send(
 //if set to MCAPI_TIMEOUT_INFINITE, there is no timeout
 //RETURNS MCAPI_SUCCESS on success, else error or timeout
 inline mcapi_status_t pmq_recv(
- 	MCAPI_IN mqd_t msgq_id, 
- 	MCAPI_OUT void* buffer, 
- 	MCAPI_IN size_t buffer_size,
- 	MCAPI_OUT size_t* received_size, 
- 	MCAPI_OUT mcapi_priority_t* priority,
+    MCAPI_IN mqd_t msgq_id, 
+    MCAPI_OUT void* buffer, 
+    MCAPI_IN size_t buffer_size,
+    MCAPI_OUT size_t* received_size, 
+    MCAPI_OUT mcapi_priority_t* priority,
     MCAPI_IN mcapi_timeout_t timeout );
 
 //checks if there is any messages in queue
@@ -43,7 +43,7 @@ inline mcapi_status_t pmq_recv(
 //else MCAPI_ERR_GENERAL
 //RETURNS count of messages, or MCAPI_NULL on failure
 inline mcapi_uint_t pmq_avail(
- 	MCAPI_IN mqd_t msgq_id,
+    MCAPI_IN mqd_t msgq_id,
     MCAPI_OUT mcapi_status_t* mcapi_status );
 
 //creates message queue for the given local endpoint

@@ -5,12 +5,12 @@
 #include "pmq_layer.h"
 
 void mcapi_msg_send(
- 	MCAPI_IN mcapi_endpoint_t send_endpoint, 
- 	MCAPI_IN mcapi_endpoint_t receive_endpoint, 
- 	MCAPI_IN void* buffer, 
- 	MCAPI_IN size_t buffer_size, 
- 	MCAPI_IN mcapi_priority_t priority, 
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+    MCAPI_IN mcapi_endpoint_t send_endpoint, 
+    MCAPI_IN mcapi_endpoint_t receive_endpoint, 
+    MCAPI_IN void* buffer, 
+    MCAPI_IN size_t buffer_size, 
+    MCAPI_IN mcapi_priority_t priority, 
+    MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     //check for initialization
     if ( mcapi_trans_initialized() == MCAPI_FALSE )
@@ -63,11 +63,11 @@ void mcapi_msg_send(
 }
 
 void mcapi_msg_recv(
- 	MCAPI_IN mcapi_endpoint_t  receive_endpoint,  
- 	MCAPI_OUT void* buffer, 
- 	MCAPI_IN size_t buffer_size, 
- 	MCAPI_OUT size_t* received_size, 
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+    MCAPI_IN mcapi_endpoint_t  receive_endpoint,  
+    MCAPI_OUT void* buffer, 
+    MCAPI_IN size_t buffer_size, 
+    MCAPI_OUT size_t* received_size, 
+    MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     //the intermediate buffer for receiving. needed for the receive call
     char recv_buf[MCAPI_MAX_MESSAGE_SIZE];

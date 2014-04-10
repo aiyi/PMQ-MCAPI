@@ -51,10 +51,10 @@ mcapi_boolean_t mcapi_chan_wait_connect( void* data )
 }
 
 void mcapi_chan_connect(
- 	MCAPI_IN mcapi_endpoint_t  send_endpoint, 
- 	MCAPI_IN mcapi_endpoint_t  receive_endpoint, 
- 	MCAPI_OUT mcapi_request_t* request, 
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+    MCAPI_IN mcapi_endpoint_t  send_endpoint, 
+    MCAPI_IN mcapi_endpoint_t  receive_endpoint, 
+    MCAPI_OUT mcapi_request_t* request, 
+    MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     //check for initialization
     if ( !mcapi_trans_initialized() )
@@ -157,8 +157,8 @@ mcapi_boolean_t mcapi_chan_wait_open( void* data )
         mcapi_endpoint_t their_endpoint;
         //the indentifier of the oppoposing side
         mcapi_domain_t domain_id = our_endpoint->defs->them.domain_id;
-     	mcapi_node_t node_id = our_endpoint->defs->them.node_id;
-     	mcapi_port_t port_id = our_endpoint->defs->them.port_id;
+        mcapi_node_t node_id = our_endpoint->defs->them.node_id;
+        mcapi_port_t port_id = our_endpoint->defs->them.port_id;
         //the buffer used to SEND the open code
         char send_buf[] = CODE_OPEN_CONNECTED;
 
@@ -220,10 +220,10 @@ mcapi_boolean_t mcapi_chan_wait_open( void* data )
 }
 
 void mcapi_chan_open(
- 	MCAPI_OUT struct handle_type* handle, 
- 	MCAPI_IN mcapi_endpoint_t  endpoint, 
- 	MCAPI_OUT mcapi_request_t* request, 
- 	MCAPI_OUT mcapi_status_t* mcapi_status,
+    MCAPI_OUT struct handle_type* handle, 
+    MCAPI_IN mcapi_endpoint_t  endpoint, 
+    MCAPI_OUT mcapi_request_t* request, 
+    MCAPI_OUT mcapi_status_t* mcapi_status,
     MCAPI_IN channel_type expected_type,
     MCAPI_IN channel_dir expected_dir )
 {
@@ -339,8 +339,8 @@ mcapi_boolean_t mcapi_chan_wait_close( void* data )
         mcapi_endpoint_t their_endpoint;
         //the indentifier of the oppoposing side
         mcapi_domain_t domain_id = our_endpoint->defs->them.domain_id;
-     	mcapi_node_t node_id = our_endpoint->defs->them.node_id;
-     	mcapi_port_t port_id = our_endpoint->defs->them.port_id; 
+        mcapi_node_t node_id = our_endpoint->defs->them.node_id;
+        mcapi_port_t port_id = our_endpoint->defs->them.port_id; 
         //the buffer used to SEND the close code
         char send_buf[] = CODE_CLOSE_CONNECTED;
 
@@ -402,9 +402,9 @@ mcapi_boolean_t mcapi_chan_wait_close( void* data )
 }
 
 void mcapi_chan_close(
- 	MCAPI_IN struct handle_type handle, 
- 	MCAPI_OUT mcapi_request_t* request, 
- 	MCAPI_OUT mcapi_status_t* mcapi_status,
+    MCAPI_IN struct handle_type handle, 
+    MCAPI_OUT mcapi_request_t* request, 
+    MCAPI_OUT mcapi_status_t* mcapi_status,
     MCAPI_IN channel_type expected_type,
     MCAPI_IN channel_dir expected_dir)
 {

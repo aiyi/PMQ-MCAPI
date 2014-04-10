@@ -62,58 +62,58 @@ struct bufObject* bufFindEmpty()
 }
 
 void mcapi_pktchan_connect_i(
- 	MCAPI_IN mcapi_endpoint_t  send_endpoint, 
- 	MCAPI_IN mcapi_endpoint_t  receive_endpoint, 
- 	MCAPI_OUT mcapi_request_t* request, 
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+    MCAPI_IN mcapi_endpoint_t  send_endpoint, 
+    MCAPI_IN mcapi_endpoint_t  receive_endpoint, 
+    MCAPI_OUT mcapi_request_t* request, 
+    MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     mcapi_chan_connect( send_endpoint, receive_endpoint, request,
     mcapi_status);
 }
 
 void mcapi_pktchan_recv_open_i(
- 	MCAPI_OUT mcapi_pktchan_recv_hndl_t* receive_handle, 
- 	MCAPI_IN mcapi_endpoint_t receive_endpoint, 
- 	MCAPI_OUT mcapi_request_t* request, 
- 	MCAPI_OUT mcapi_status_t* mcapi_status) 
+    MCAPI_OUT mcapi_pktchan_recv_hndl_t* receive_handle, 
+    MCAPI_IN mcapi_endpoint_t receive_endpoint, 
+    MCAPI_OUT mcapi_request_t* request, 
+    MCAPI_OUT mcapi_status_t* mcapi_status) 
 {
     mcapi_chan_open( receive_handle, receive_endpoint, request,
     mcapi_status, MCAPI_PKT_CHAN, CHAN_DIR_RECV );
 }
 
 void mcapi_pktchan_send_open_i(
- 	MCAPI_OUT mcapi_pktchan_send_hndl_t* send_handle, 
- 	MCAPI_IN mcapi_endpoint_t  send_endpoint, 
- 	MCAPI_OUT mcapi_request_t* request, 
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+    MCAPI_OUT mcapi_pktchan_send_hndl_t* send_handle, 
+    MCAPI_IN mcapi_endpoint_t  send_endpoint, 
+    MCAPI_OUT mcapi_request_t* request, 
+    MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     mcapi_chan_open( send_handle, send_endpoint, request,
     mcapi_status, MCAPI_PKT_CHAN, CHAN_DIR_SEND );
 }
 
 void mcapi_pktchan_recv_close_i(
- 	MCAPI_IN mcapi_pktchan_recv_hndl_t receive_handle, 
- 	MCAPI_OUT mcapi_request_t* request, 
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+    MCAPI_IN mcapi_pktchan_recv_hndl_t receive_handle, 
+    MCAPI_OUT mcapi_request_t* request, 
+    MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     mcapi_chan_close( receive_handle, request, mcapi_status, MCAPI_PKT_CHAN,
     CHAN_DIR_RECV );
 }
 
 void mcapi_pktchan_send_close_i(
- 	MCAPI_IN mcapi_pktchan_send_hndl_t send_handle, 
- 	MCAPI_OUT mcapi_request_t* request, 
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+    MCAPI_IN mcapi_pktchan_send_hndl_t send_handle, 
+    MCAPI_OUT mcapi_request_t* request, 
+    MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     mcapi_chan_close( send_handle, request, mcapi_status, MCAPI_PKT_CHAN,
     CHAN_DIR_SEND );
 }
 
 void mcapi_pktchan_send(
- 	MCAPI_IN mcapi_pktchan_send_hndl_t send_handle, 
- 	MCAPI_IN void* buffer, 
- 	MCAPI_IN size_t size, 
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+    MCAPI_IN mcapi_pktchan_send_hndl_t send_handle, 
+    MCAPI_IN void* buffer, 
+    MCAPI_IN size_t size, 
+    MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     //check for initialization
     if ( mcapi_trans_initialized() == MCAPI_FALSE )
@@ -158,10 +158,10 @@ void mcapi_pktchan_send(
 }
 
 void mcapi_pktchan_recv(
- 	MCAPI_IN mcapi_pktchan_recv_hndl_t receive_handle, 
- 	MCAPI_OUT void** buffer, 
- 	MCAPI_OUT size_t* received_size, 
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+    MCAPI_IN mcapi_pktchan_recv_hndl_t receive_handle, 
+    MCAPI_OUT void** buffer, 
+    MCAPI_OUT size_t* received_size, 
+    MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     //the buffer for receiving.
     struct bufObject* bo;

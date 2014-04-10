@@ -12,11 +12,11 @@ struct nodeData* getNodeData()
 }
 
 void mcapi_initialize(MCAPI_IN mcapi_domain_t domain_id,
-                      MCAPI_IN mcapi_node_t node_id,
-		              MCAPI_IN mcapi_node_attributes_t* mcapi_node_attributes,
-                      MCAPI_IN mcapi_param_t* init_parameters,
-                      MCAPI_OUT mcapi_info_t* mcapi_info,
-                      MCAPI_OUT mcapi_status_t* mcapi_status) 
+    MCAPI_IN mcapi_node_t node_id,
+    MCAPI_IN mcapi_node_attributes_t* mcapi_node_attributes,
+    MCAPI_IN mcapi_param_t* init_parameters,
+    MCAPI_OUT mcapi_info_t* mcapi_info,
+    MCAPI_OUT mcapi_status_t* mcapi_status) 
 {
     //iterators for endpoint initialization: domain, node, port
     unsigned int x;
@@ -159,10 +159,10 @@ mcapi_boolean_t mcapi_test(
 }
 
 mcapi_boolean_t mcapi_wait(
- 	MCAPI_IN mcapi_request_t* request, 
- 	MCAPI_OUT size_t* size,  
- 	MCAPI_IN mcapi_timeout_t timeout,
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+    MCAPI_IN mcapi_request_t* request, 
+    MCAPI_OUT size_t* size,  
+    MCAPI_IN mcapi_timeout_t timeout,
+    MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     //becomes true, when compeleted
     mcapi_boolean_t complete;

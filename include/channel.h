@@ -14,25 +14,25 @@
 
 //used to connect channel, so that they can be opened
 void mcapi_chan_connect(
- 	MCAPI_IN mcapi_endpoint_t  send_endpoint, 
- 	MCAPI_IN mcapi_endpoint_t  receive_endpoint, 
- 	MCAPI_OUT mcapi_request_t* request, 
- 	MCAPI_OUT mcapi_status_t* mcapi_status);
+    MCAPI_IN mcapi_endpoint_t  send_endpoint, 
+    MCAPI_IN mcapi_endpoint_t  receive_endpoint, 
+    MCAPI_OUT mcapi_request_t* request, 
+    MCAPI_OUT mcapi_status_t* mcapi_status);
 
 //used to open channel
 void mcapi_chan_open(
- 	MCAPI_OUT struct handle_type* handle, 
- 	MCAPI_IN mcapi_endpoint_t  endpoint, 
- 	MCAPI_OUT mcapi_request_t* request, 
- 	MCAPI_OUT mcapi_status_t* mcapi_status,
+    MCAPI_OUT struct handle_type* handle, 
+    MCAPI_IN mcapi_endpoint_t  endpoint, 
+    MCAPI_OUT mcapi_request_t* request, 
+    MCAPI_OUT mcapi_status_t* mcapi_status,
     MCAPI_IN channel_type expected_type,
     MCAPI_IN channel_dir expected_dir );
 
 //used to close channel
 void mcapi_chan_close(
- 	MCAPI_IN struct handle_type handle, 
- 	MCAPI_OUT mcapi_request_t* request, 
- 	MCAPI_OUT mcapi_status_t* mcapi_status,
+    MCAPI_IN struct handle_type handle, 
+    MCAPI_OUT mcapi_request_t* request, 
+    MCAPI_OUT mcapi_status_t* mcapi_status,
     MCAPI_IN channel_type expected_type,
     MCAPI_IN channel_dir expected_dir);
 

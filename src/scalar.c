@@ -2,10 +2,10 @@
 #include "channel.h"
 
 void mcapi_sclchan_connect_i(
- 	MCAPI_IN mcapi_endpoint_t  send_endpoint, 
- 	MCAPI_IN mcapi_endpoint_t  receive_endpoint, 
- 	MCAPI_OUT mcapi_request_t* request, 
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+    MCAPI_IN mcapi_endpoint_t  send_endpoint, 
+    MCAPI_IN mcapi_endpoint_t  receive_endpoint, 
+    MCAPI_OUT mcapi_request_t* request, 
+    MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     mcapi_chan_connect( send_endpoint, receive_endpoint, request, mcapi_status);
 
@@ -21,47 +21,47 @@ void mcapi_sclchan_connect_i(
 }
 
 void mcapi_sclchan_recv_open_i(
- 	MCAPI_OUT mcapi_sclchan_recv_hndl_t* receive_handle, 
- 	MCAPI_IN mcapi_endpoint_t receive_endpoint, 
- 	MCAPI_OUT mcapi_request_t* request, 
- 	MCAPI_OUT mcapi_status_t* mcapi_status) 
+    MCAPI_OUT mcapi_sclchan_recv_hndl_t* receive_handle, 
+    MCAPI_IN mcapi_endpoint_t receive_endpoint, 
+    MCAPI_OUT mcapi_request_t* request, 
+    MCAPI_OUT mcapi_status_t* mcapi_status) 
 {
     mcapi_chan_open(receive_handle, receive_endpoint, request, mcapi_status,
     MCAPI_SCL_CHAN, CHAN_DIR_RECV);
 }
 
 void mcapi_sclchan_send_open_i(
- 	MCAPI_OUT mcapi_sclchan_send_hndl_t* send_handle, 
- 	MCAPI_IN mcapi_endpoint_t  send_endpoint, 
- 	MCAPI_OUT mcapi_request_t* request, 
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+    MCAPI_OUT mcapi_sclchan_send_hndl_t* send_handle, 
+    MCAPI_IN mcapi_endpoint_t  send_endpoint, 
+    MCAPI_OUT mcapi_request_t* request, 
+    MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     mcapi_chan_open(send_handle, send_endpoint, request, mcapi_status,
     MCAPI_SCL_CHAN, CHAN_DIR_SEND);
 }
 
 void mcapi_sclchan_recv_close_i(
- 	MCAPI_IN mcapi_sclchan_recv_hndl_t receive_handle, 
- 	MCAPI_OUT mcapi_request_t* request, 
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+    MCAPI_IN mcapi_sclchan_recv_hndl_t receive_handle, 
+    MCAPI_OUT mcapi_request_t* request, 
+    MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     mcapi_chan_close( receive_handle, request, mcapi_status,
     MCAPI_SCL_CHAN, CHAN_DIR_RECV);
 }
 
 void mcapi_sclchan_send_close_i(
- 	MCAPI_IN mcapi_sclchan_send_hndl_t send_handle, 
- 	MCAPI_OUT mcapi_request_t* request, 
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+    MCAPI_IN mcapi_sclchan_send_hndl_t send_handle, 
+    MCAPI_OUT mcapi_request_t* request, 
+    MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     mcapi_chan_close( send_handle, request, mcapi_status,
     MCAPI_SCL_CHAN, CHAN_DIR_SEND );
 }
 
 inline void mcapi_sclchan_send(
- 	MCAPI_IN mcapi_sclchan_send_hndl_t send_handle, 
- 	MCAPI_IN mcapi_uint64_t dataword,
- 	MCAPI_OUT mcapi_status_t* mcapi_status,
+    MCAPI_IN mcapi_sclchan_send_hndl_t send_handle, 
+    MCAPI_IN mcapi_uint64_t dataword,
+    MCAPI_OUT mcapi_status_t* mcapi_status,
     size_t bytes)
 {
     //check for initialization
@@ -86,40 +86,40 @@ inline void mcapi_sclchan_send(
 }
 
 void mcapi_sclchan_send_uint64(
- 	MCAPI_IN mcapi_sclchan_send_hndl_t send_handle, 
- 	MCAPI_IN mcapi_uint64_t dataword,
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+    MCAPI_IN mcapi_sclchan_send_hndl_t send_handle, 
+    MCAPI_IN mcapi_uint64_t dataword,
+    MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     mcapi_sclchan_send( send_handle, dataword, mcapi_status, 8 );
 }
 
 void mcapi_sclchan_send_uint32(
- 	MCAPI_IN mcapi_sclchan_send_hndl_t send_handle, 
- 	MCAPI_IN mcapi_uint32_t dataword,
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+    MCAPI_IN mcapi_sclchan_send_hndl_t send_handle, 
+    MCAPI_IN mcapi_uint32_t dataword,
+    MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     mcapi_sclchan_send( send_handle, dataword, mcapi_status, 4 );
 }
 
 void mcapi_sclchan_send_uint16(
- 	MCAPI_IN mcapi_sclchan_send_hndl_t send_handle, 
- 	MCAPI_IN mcapi_uint16_t dataword,
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+    MCAPI_IN mcapi_sclchan_send_hndl_t send_handle, 
+    MCAPI_IN mcapi_uint16_t dataword,
+    MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     mcapi_sclchan_send( send_handle, dataword, mcapi_status, 2 );
 }
 
 void mcapi_sclchan_send_uint8(
- 	MCAPI_IN mcapi_sclchan_send_hndl_t send_handle, 
- 	MCAPI_IN mcapi_uint8_t dataword,
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+    MCAPI_IN mcapi_sclchan_send_hndl_t send_handle, 
+    MCAPI_IN mcapi_uint8_t dataword,
+    MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     mcapi_sclchan_send( send_handle, dataword, mcapi_status, 1 );
 }
 
 inline mcapi_uint64_t mcapi_sclchan_recv(
- 	MCAPI_IN mcapi_sclchan_recv_hndl_t receive_handle,
- 	MCAPI_OUT mcapi_status_t* mcapi_status,
+    MCAPI_IN mcapi_sclchan_recv_hndl_t receive_handle,
+    MCAPI_OUT mcapi_status_t* mcapi_status,
     size_t bytes)
 {
     //the priority obtained
@@ -152,29 +152,29 @@ inline mcapi_uint64_t mcapi_sclchan_recv(
 }
 
 mcapi_uint64_t mcapi_sclchan_recv_uint64(
- 	MCAPI_IN mcapi_sclchan_recv_hndl_t receive_handle,
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+    MCAPI_IN mcapi_sclchan_recv_hndl_t receive_handle,
+    MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     return mcapi_sclchan_recv( receive_handle, mcapi_status, 8 );
 }
 
 mcapi_uint32_t mcapi_sclchan_recv_uint32(
- 	MCAPI_IN mcapi_sclchan_recv_hndl_t receive_handle,
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+    MCAPI_IN mcapi_sclchan_recv_hndl_t receive_handle,
+    MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     return mcapi_sclchan_recv( receive_handle, mcapi_status, 4 );
 }
 
 mcapi_uint16_t mcapi_sclchan_recv_uint16(
- 	MCAPI_IN mcapi_sclchan_recv_hndl_t receive_handle,
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+    MCAPI_IN mcapi_sclchan_recv_hndl_t receive_handle,
+    MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     return mcapi_sclchan_recv( receive_handle, mcapi_status, 2 );
 }
 
 mcapi_uint8_t mcapi_sclchan_recv_uint8(
- 	MCAPI_IN mcapi_sclchan_recv_hndl_t receive_handle,
- 	MCAPI_OUT mcapi_status_t* mcapi_status)
+    MCAPI_IN mcapi_sclchan_recv_hndl_t receive_handle,
+    MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     return mcapi_sclchan_recv( receive_handle, mcapi_status, 1 );
 }

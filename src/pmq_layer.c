@@ -27,10 +27,10 @@
     time_limit.tv_nsec = time_limit.tv_nsec%NANO_IN_ONE;
 
 inline mcapi_status_t pmq_send(
- 	MCAPI_IN mqd_t msgq_id, 
- 	MCAPI_IN void* buffer, 
- 	MCAPI_IN size_t buffer_size, 
- 	MCAPI_IN mcapi_priority_t priority,
+    MCAPI_IN mqd_t msgq_id, 
+    MCAPI_IN void* buffer, 
+    MCAPI_IN size_t buffer_size, 
+    MCAPI_IN mcapi_priority_t priority,
     MCAPI_IN mcapi_timeout_t timeout )
 {
     //the result of action
@@ -71,11 +71,11 @@ inline mcapi_status_t pmq_send(
 }
 
 inline mcapi_status_t pmq_recv(
- 	MCAPI_IN mqd_t msgq_id, 
- 	MCAPI_OUT void* buffer, 
- 	MCAPI_IN size_t buffer_size,
- 	MCAPI_OUT size_t* received_size, 
- 	MCAPI_OUT mcapi_priority_t* priority,
+    MCAPI_IN mqd_t msgq_id, 
+    MCAPI_OUT void* buffer, 
+    MCAPI_IN size_t buffer_size,
+    MCAPI_OUT size_t* received_size, 
+    MCAPI_OUT mcapi_priority_t* priority,
     MCAPI_IN mcapi_timeout_t timeout )
 {
     if ( timeout == MCAPI_TIMEOUT_INFINITE )
@@ -113,7 +113,7 @@ inline mcapi_status_t pmq_recv(
 }
 
 inline mcapi_uint_t pmq_avail(
- 	MCAPI_IN mqd_t msgq_id,
+    MCAPI_IN mqd_t msgq_id,
     MCAPI_OUT mcapi_status_t* mcapi_status )
 {
     //the retrieved attributes are obtained here for the check

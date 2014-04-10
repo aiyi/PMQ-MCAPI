@@ -3,6 +3,7 @@
 #include "utester.h"
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define MAX_MSG_LEN     30
 #define TEST_MESSAGE "THIS THE THE TEST MESSAGE"

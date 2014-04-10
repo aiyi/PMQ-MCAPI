@@ -1,6 +1,7 @@
 //this suite tests general node functions
 #include <mcapi.h>
 #include "utester.h"
+#include <time.h>
 
 static mcapi_info_t info;
 static mcapi_status_t status;
@@ -134,11 +135,22 @@ test(wait_fail_req_null)
 
 //testing timeout
 test(wait_timeout)
+    mcapi_timeout_t timeout = 100;
     mcapi_request_t request = { failFun, NULL };
     size_t size;
+    struct timespec t_start, t_end;
+
     mcapi_initialize( 1, 2, 0, 0, &info, &status );
-    mcapi_wait( &request, &size, 100, &status );
+    clock_gettime( CLOCK_MONOTONIC, &t_start );
+    mcapi_wait( &request, &size, timeout, &status );
+    clock_gettime( CLOCK_MONOTONIC, &t_end );
     sassert( MCAPI_TIMEOUT, status );
+
+    double diff = (double)( t_end.tv_nsec - t_start.tv_nsec );
+    diff += ( t_end.tv_sec - t_start.tv_sec ) * 1000000000;
+    
+    uassert( diff > ( timeout * 1000000 ) );
+
     mcapi_finalize( &status );
 }
 

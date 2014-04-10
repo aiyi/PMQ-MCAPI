@@ -1,7 +1,7 @@
 //Module has a function to unlink all posix message queues used by defined 
 //endpoints. Such defines are looked up from list in endpointdef.h. If
 //MAKE_EXECUTABLE is defined, this module has a main, which sole purpose
-//is to call then clean-function.
+//is to call the clean-function.
 #include "endpointdef.h"
 #include <stdio.h>
 #include <mqueue.h>

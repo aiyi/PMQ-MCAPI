@@ -2,3 +2,4 @@
 *.o
 cleaner
 other/*
+hitlist.txt

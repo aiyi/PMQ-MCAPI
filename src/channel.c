@@ -366,7 +366,7 @@ mcapi_boolean_t mcapi_chan_wait_close( void* data )
         //failure means once again error. should never happen.
         if ( status != MCAPI_SUCCESS )
         {
-            perror("mq_send opening channel");
+            perror("mq_send closing channel");
 
             return MCAPI_FALSE;
         }

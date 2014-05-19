@@ -196,6 +196,7 @@ test(scl_send_recv_fail_trans)
 //see that send and receive timeouts
 test(scl_send_recv_timeout)
     unsigned int i = 0;
+    struct timespec t_start, t_end;
 
     pid = fork();
 
@@ -224,8 +225,15 @@ test(scl_send_recv_timeout)
             sassert( MCAPI_SUCCESS, status );
         }
 
+        clock_gettime( CLOCK_MONOTONIC, &t_start );
         mcapi_sclchan_send_uint64( handy, send, &status );
+        clock_gettime( CLOCK_MONOTONIC, &t_end );
         sassert( MCAPI_TIMEOUT, status );
+
+        double diff = (double)( t_end.tv_nsec - t_start.tv_nsec );
+        diff += ( t_end.tv_sec - t_start.tv_sec ) * 1000000000;
+        
+        uassert( diff > ( timeut * 1000000 ) );
 
         mcapi_finalize( &status );
         exit(0);
@@ -264,8 +272,16 @@ test(scl_send_recv_timeout)
             sassert( MCAPI_SUCCESS, status );
         }
 
+        clock_gettime( CLOCK_MONOTONIC, &t_start );
         recv = mcapi_sclchan_recv_uint64( handy, &status );
+        clock_gettime( CLOCK_MONOTONIC, &t_end );
         sassert( MCAPI_TIMEOUT, status );
+
+        double diff = (double)( t_end.tv_nsec - t_start.tv_nsec );
+        diff += ( t_end.tv_sec - t_start.tv_sec ) * 1000000000;
+        
+        uassert( diff > ( timeut * 1000000 ) );
+
 
         mcapi_finalize( &status );
     }

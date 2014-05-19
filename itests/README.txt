@@ -1,10 +1,8 @@
-CALL "MAKE"
+CALL "./launcher"
 
-...and the makefile will compile and run integration tests. Also the cleaner
+...and the script will compile and run integration tests. Also the cleaner
 program is compiled and ran. Some integration test executables are dependent on
 flags -lm and -pthread.
-
-WARNING: Calling "make clean" will remove the .o-files from folder ../obj
 
 Each integration test is identified by specific color used in their terminal
 prints. Each is described below:

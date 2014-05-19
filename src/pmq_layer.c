@@ -51,7 +51,7 @@ inline mcapi_status_t pmq_send(
 
         //sending the data, priority is ascending in msgq
         result = mq_timedsend( msgq_id, buffer, buffer_size,
-            priority, &time_limit );
+        priority, &time_limit );
     }
 
     //check for error
@@ -93,7 +93,7 @@ inline mcapi_status_t pmq_recv(
 
         //receiving the data
         *received_size = mq_timedreceive( msgq_id, buffer,
-            buffer_size, priority, &time_limit );
+        buffer_size, priority, &time_limit );
     }
 
     //check for error
@@ -159,14 +159,12 @@ inline mcapi_status_t pmq_create_epd(
     if (mq_getattr(msgq_id, &uattr) == -1)
     {
         perror("When obtaining msq attributes for check");
-        mq_close( msgq_id );
-        mq_unlink( endpoint->defs->msg_name );
         return MCAPI_ERR_GENERAL;
     }
     
     //...and check if match
     if ( attr.mq_flags != uattr.mq_flags || attr.mq_maxmsg != uattr.mq_maxmsg
-        || attr.mq_msgsize != uattr.mq_msgsize )
+    || attr.mq_msgsize != uattr.mq_msgsize )
     {
         fprintf(stderr, "Set msq attributes do not match!\n");
         return MCAPI_ERR_GENERAL;
@@ -288,8 +286,6 @@ inline mcapi_boolean_t pmq_create_chan( mcapi_endpoint_t us )
     if (mq_getattr(msgq_id, &uattr) == -1)
     {
         perror("When obtaining channel msq attributes for check");
-        mq_close( msgq_id );
-        mq_unlink( us->defs->chan_name );
         return MCAPI_FALSE;
     }
 
@@ -300,7 +296,7 @@ inline mcapi_boolean_t pmq_create_chan( mcapi_endpoint_t us )
     
     //...and check if match
     if ( attr.mq_flags != uattr.mq_flags || attr.mq_maxmsg != uattr.mq_maxmsg
-        || attr.mq_msgsize != uattr.mq_msgsize )
+    || attr.mq_msgsize != uattr.mq_msgsize )
     {
         fprintf(stderr, "Set channel sq attributes do not match!\n");
         return MCAPI_FALSE;

@@ -5,7 +5,7 @@
     LAUNCHING PROCESSES
     DEFINING ENDPOINTS
     CLEANER
-    THE OTHER MAKEFILES
+    BUILDING THE IMPLEMENTATION
     CONFIGURATION FILE
     THREAD SAFETY
     DEPENDENCIES
@@ -28,13 +28,13 @@ more detail below:
 FILES:
 
 LICENSE.txt     | THE LICENSE OF THIS SOFTWARE
-README.txt      | Instructions for building the provided "hello world" example
+README.txt      | Instructions for running the provided "hello world" example
 DETAILS.txt     | This document: Contains more detailed information about this
                   MCAPI implementation and provided files.
-makefile        | Script to build and launch application processes.
+launcher.sh     | Script to build and launch application processes.
                   More details in chapter LAUNCHING PROCESSES
 makefile.mcapi  | Script to build the implementation object files
-                  More details in chapter THE OTHER MAKEFILE
+                  More details in chapter BUILDING THE IMPLEMENTATION
 makefile.cleaner| Script to build and run the cleaner executable.
 
 FOLDERS:
@@ -51,43 +51,39 @@ FOLDERS:
 
 ***LAUNCHING PROCESSES***
 
-It is highly recommended to use the provided makefile or other script to
+It is highly recommended to use launcher.sh or other script to
 launch processes in correct order, with correct parameters and with correct
 priority. Furthermore, the cleaner executable should be always ran before or
 after application processes as it will unlink any residual message queues left
 by previous runs of the application. If such residuals exist when application
-is launched again, it will result undefined behavior. You may also want to make
-sure that there are no multiple instances of same executable, but existing
-makefile does not help with that.
+is launched again, it will result undefined behavior. Below example illustrates
+how the launcher script is executed.
 
-Calling "make" with the provided makefile will first (re)build the cleaner,
-build the object files of the MCAPI implementation and then build the
-application executables while linking said objects files statically. After the
-builds the cleaner is executed, processes are launched with "nice", which will
-set their priorities for operating system scheduler. Processes are separated
-with '&' so that they launch in parallel rather than in sequence. Makefile will
-wait for the processes finish, before finally calling the cleaner again.
+    example: ./launcher.sh
 
-    example: make
+If one application process crashes or exits, the other processes should also 
+should also do so before restart. The provided script helps with that by
+killing the old processes. You should not execute the launcher again before the
+previous instance have launched the application processes, which is indicated with print "PROCESSES LAUNCHED".
 
-Processes, their order, parameter etc are defined in makefile variable
-"PROCESSES", while their respective build commands are defined in "PBUILD".
+While the launcher.sh is executed, it inserts the names of launched processes
+to a file called "hitlist.txt". When the script is ran again, the script goes 
+over the list and kills the listed processes. For this reason, you may want
+make sure that no process use the same name when launched.
 
-example:
-    PROCESSES = nice -n 10 ./more_important & nice -n 11 ./less_important
+In beginning of launcher.sh there is place for application executables.
+Insert them there along with the parameters.
 
-example:
-    PBUILD = make -f makefile.mcapi; gcc some_node.c obj/*.o -Iinclude -lrt
+    example: PROCESSES=(ITcyan.exe 'ITblue.exe 32')
 
-Object files in folder "obj" are supposed to be implementation object files,
-which are statically linked to every application executable, while folder
-"include" is needed to include their header files, so that the application may
-access the functionality. Flag -lrt must be provided to GCC so that it will be 
-able to access the POSIX message queues.
+Within the line below, you will notice niceness, it is an optional feature
+allowing to influence the priorities of launched processes. Smaller niceness
+mean higher priority. Within the development environment (see chapter TEST ENVIRONMENTS) the minimum niceness for most processes was 10.
 
-Calling "clean" will rerun and rebuild the cleaner.
-
-    example: make clean
+The next two lines allows to choose if niceness is used and executables are
+built while executing the script. Not all platforms support niceness and some
+need cross compilation. The section for build rules is further below within the
+script. See more details in chapter BUILDING THE IMPLEMENTATION.
 
 ***DEFINING ENDPOINTS***
 
@@ -182,13 +178,14 @@ will still exist if any process uses it. Thus, executing the cleaner while
 application processes are running will result in undefined behavior.
 
 Since the cleaner needs access to said defined endpoints, it needs to be
-recompiled every time they are changed.
+recompiled every time they are changed. A makefile, "makefile.cleaner",
+contains instructions to build and run the cleaner.
 
     example: ./clean
 
-***THE OTHER MAKEFILES***
+***BUILDING THE IMPLEMENTATION***
 
-Other makefile, "makefile.mcapi", contains the build instruction for the
+Other makefile, "makefile.mcapi", contains the build instructions for the
 implementation object files. It is not intended to produce any kind of
 standalone executable, but instead produce the object files to be statically
 linked with the applications. The file has also a clean command, which will 
@@ -197,8 +194,13 @@ remove the implementation object files from directory "obj".
     example: make -f makefile.mcapi
     example: make -f makefile.mcapi clean
 
-The third makefile, "makefile.cleaner", contains instructions to build and
-run the cleaner. More details are in the above chapter, "Cleaner".
+Object files in folder "obj" are supposed to be implementation object files,
+which are statically linked to every application executable, while folder
+"include" is needed to include their header files, so that the application may
+access the functionality. Flag -lrt must be provided to GCC so that it will be
+able to access the POSIX message queues.
+
+    example: gcc -o esender example/example_sender.c $ODIR/*.o -I$IDIR -lrt
 
 ***CONFIGURATION FILE***
 
@@ -472,3 +474,16 @@ SYSTEM #10:
 
     Compiler: gcc (Ubuntu/Linaro 4.8.1-10ubuntu8) 4.8.1
     Make: GNU Make 3.81
+
+SYSTEM #11:
+    Operating system: Linux socfpga 
+    Kernel: 3.9.0
+    
+    Processor: ARM Cortex-A9 MPCore
+    Memory: 1 GiB
+
+    Compiler: arm-linux-gnueabihf-gcc (crosstool-NG
+    linaro-1.13.1-4.7-2012.11-20121123 - Linaro GCC 2012.11) 4.7.3 20121106
+    (prerelease)
+    Make: GNU Make 3.81
+    NOTICE: Was cross compiled on SYSTEM #1 and thus make is the same

@@ -225,6 +225,7 @@ test(pkt_send_recv_fail_trans)
 //timeout send & receive
 test(pkt_send_recv_timeout)
     unsigned int i = 0;
+    struct timespec t_start, t_end;
 
     strncpy(send_buf, TEST_MESSAGE, MAX_MSG_LEN);
 
@@ -255,8 +256,15 @@ test(pkt_send_recv_timeout)
             sassert( MCAPI_SUCCESS, status );
         }
 
+        clock_gettime( CLOCK_MONOTONIC, &t_start );
         mcapi_pktchan_send( handy, send_buf, MAX_MSG_LEN, &status );
+        clock_gettime( CLOCK_MONOTONIC, &t_end );
         sassert( MCAPI_TIMEOUT, status );
+
+        double diff = (double)( t_end.tv_nsec - t_start.tv_nsec );
+        diff += ( t_end.tv_sec - t_start.tv_sec ) * 1000000000;
+        
+        uassert( diff > ( timeut * 1000000 ) );
 
         mcapi_finalize( &status );
         exit(0);
@@ -292,12 +300,19 @@ test(pkt_send_recv_timeout)
 
         for ( ; i < 10; ++i )
         {
-            mcapi_pktchan_recv( handy, &recv_buf, &size, &status );;
+            mcapi_pktchan_recv( handy, &recv_buf, &size, &status );
             sassert( MCAPI_SUCCESS, status );
         }
 
-        mcapi_pktchan_recv( handy, &recv_buf, &size, &status );;
+        clock_gettime( CLOCK_MONOTONIC, &t_start );
+        mcapi_pktchan_recv( handy, &recv_buf, &size, &status );
+        clock_gettime( CLOCK_MONOTONIC, &t_end );
         sassert( MCAPI_TIMEOUT, status );
+
+        double diff = (double)( t_end.tv_nsec - t_start.tv_nsec );
+        diff += ( t_end.tv_sec - t_start.tv_sec ) * 1000000000;
+        
+        uassert( diff > ( timeut * 1000000 ) );
 
         mcapi_finalize( &status );
     }

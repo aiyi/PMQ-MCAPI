@@ -7,10 +7,10 @@
 #include "pmq_layer.h"
 
 //define code for opening channel
-#define CODE_OPEN_CONNECTED "MCAPI_CHAN_OPEN"
+#define CODE_OPEN_CONNECTED "CH_OPEN"
 
 //define code for closing channel
-#define CODE_CLOSE_CONNECTED "MCAPI_CHAN_CLOSE"
+#define CODE_CLOSE_CONNECTED "CH_CLOS"
 
 //used to connect channel, so that they can be opened
 void mcapi_chan_connect(
@@ -42,8 +42,8 @@ mcapi_uint_t mcapi_chan_available(
     MCAPI_OUT mcapi_status_t* mcapi_status );
 
 /* checks if the given channel handle is valid */
-extern mcapi_boolean_t mcapi_trans_valid_pktchan_send_handle( mcapi_pktchan_send_hndl_t handle);
-extern mcapi_boolean_t mcapi_trans_valid_pktchan_recv_handle( mcapi_pktchan_recv_hndl_t handle);
-extern mcapi_boolean_t mcapi_trans_valid_sclchan_send_handle( mcapi_sclchan_send_hndl_t handle);
-extern mcapi_boolean_t mcapi_trans_valid_sclchan_recv_handle( mcapi_sclchan_recv_hndl_t handle);
+extern mcapi_boolean_t mcapi_trans_valid_pktchan_send_handle( mcapi_pktchan_send_hndl_t handle );
+extern mcapi_boolean_t mcapi_trans_valid_pktchan_recv_handle( mcapi_pktchan_recv_hndl_t handle );
+extern mcapi_boolean_t mcapi_trans_valid_sclchan_send_handle( mcapi_sclchan_send_hndl_t handle );
+extern mcapi_boolean_t mcapi_trans_valid_sclchan_recv_handle( mcapi_sclchan_recv_hndl_t handle );
 #endif

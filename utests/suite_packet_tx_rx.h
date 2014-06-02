@@ -1210,6 +1210,11 @@ test(pkt_avail)
         uassert( count == 2 );
         sassert( MCAPI_SUCCESS, status );
 
+        mcapi_pktchan_recv( handy, &recv_buf, &size, &status );
+        sassert( MCAPI_SUCCESS, status );
+        mcapi_pktchan_recv( handy, &recv_buf, &size, &status );
+        sassert( MCAPI_SUCCESS, status );
+
         mcapi_finalize( &status );
     }
     else

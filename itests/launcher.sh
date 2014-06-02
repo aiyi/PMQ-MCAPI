@@ -21,6 +21,9 @@ if [ $BUILDEXES -eq 1 ]; then
     ODIR=../obj
     CURDIR=$(pwd)
 
+    #enforce the existence of object folder
+    mkdir -p $ODIR
+
     #move to proper directory
     cd ..
     #clear the implementation

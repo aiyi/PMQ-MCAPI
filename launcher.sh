@@ -20,6 +20,9 @@ if [ $BUILDEXES -eq 1 ]; then
     IDIR=include
     ODIR=obj
 
+    #enforce the existence of object folder
+    mkdir -p $ODIR
+
     #clear the implementation
     make -f makefile.mcapi clean
     #build the implementation

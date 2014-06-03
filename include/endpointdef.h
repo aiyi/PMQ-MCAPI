@@ -43,6 +43,9 @@ typedef enum {
 //receiving endpoint identifier in order: domain, node and port number
 #define CHAN_NAME_FORMAT "/MCAPI_CHAN_D%X_N%X_P%X"
 
+//how many endpoints we have in total
+#define ENDPOINT_COUNT sizeof(endPointDefs_)/sizeof(struct endPointDef)
+
 //The predefined values of an endpoint. These are supposed to stay constant
 //in runtime, except names are initialized when the node is initialized.
 struct endPointDef
@@ -57,8 +60,7 @@ struct endPointDef
 };
 
 //finds endpoint definition matching the tuple. return MCAPI_NULL if not.
-struct endPointDef* findDef( mca_domain_t domain_id, mca_node_t node_id,
-unsigned int port_id);
+struct endPointDef* findDef( unsigned int i );
 
 //returns true, if the identifiers have same values, else false
 mca_boolean_t same( struct endPointID first, struct endPointID scnd );

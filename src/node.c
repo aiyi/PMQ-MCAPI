@@ -18,10 +18,8 @@ void mcapi_initialize(MCAPI_IN mcapi_domain_t domain_id,
     MCAPI_OUT mcapi_info_t* mcapi_info,
     MCAPI_OUT mcapi_status_t* mcapi_status) 
 {
-    //iterators for endpoint initialization: domain, node, port
+    //iterator for endpoint initialization
     unsigned int x;
-    unsigned int y;
-    unsigned int z;
 
     //must not be inited already
     if ( mcapi_trans_initialized() == MCAPI_TRUE )
@@ -37,45 +35,25 @@ void mcapi_initialize(MCAPI_IN mcapi_domain_t domain_id,
         return;
     }
 
-    //check for valid node
-    if ( mcapi_trans_valid_node( node_id ) == MCAPI_FALSE ) 
-    {
-        *mcapi_status = MCAPI_ERR_NODE_INVALID;
-        return;
-    }
-
-    //check for valid domain
-    if ( mcapi_trans_valid_domain( domain_id ) == MCAPI_FALSE )
-    {
-        *mcapi_status = MCAPI_ERR_DOMAIN_INVALID;
-        return;
-    }
-
     //save the ids so that they may be checked later
     nodeData_.domain_id = domain_id;
     nodeData_.node_id = node_id;
 
     //mark endpoints initally non-initialized, since they are
-    for ( x = 0; x < MCAPI_MAX_DOMAIN; ++x )
+    for ( x = 0; x < ENDPOINT_COUNT; ++x )
     {
-        for ( y = 0; y < MCAPI_MAX_NODE; ++y )
-        {
-            for ( z = 0; z < MCAPI_MAX_PORT; ++z )
-            {
-                //mark non-init, but also non-open and non-pending
-                nodeData_.endPoints[x][y][z].inited = -1;
-                nodeData_.endPoints[x][y][z].open = -1;
-                nodeData_.endPoints[x][y][z].pend_open = -1;
-                nodeData_.endPoints[x][y][z].pend_close = -1;
-                nodeData_.endPoints[x][y][z].synced = -1;
+        //mark non-init, but also non-open and non-pending
+        nodeData_.endPoints[x].inited = -1;
+        nodeData_.endPoints[x].open = -1;
+        nodeData_.endPoints[x].pend_open = -1;
+        nodeData_.endPoints[x].pend_close = -1;
+        nodeData_.endPoints[x].synced = -1;
 
-                //the default timeout is infinite
-                nodeData_.endPoints[x][y][z].time_out = MCAPI_TIMEOUT_INFINITE;
+        //the default timeout is infinite
+        nodeData_.endPoints[x].time_out = MCAPI_TIMEOUT_INFINITE;
 
-                //find the endpoint definition for this one
-                nodeData_.endPoints[x][y][z].defs = findDef( x, y, z );
-            }
-        }
+        //pair with corresponding endpoint definition
+        nodeData_.endPoints[x].defs = findDef( x );
     }
 
     //clear buffers for packet channels
@@ -103,8 +81,6 @@ void mcapi_finalize( MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     //iterators for endpoint finalization: domain, node, port
     unsigned int x;
-    unsigned int y;
-    unsigned int z;
 
     //check for initialization
     if ( mcapi_trans_initialized() == MCAPI_FALSE )
@@ -115,24 +91,17 @@ void mcapi_finalize( MCAPI_OUT mcapi_status_t* mcapi_status)
     }
 
     //unlink and close the messagequeues
-    for ( x = 0; x < MCAPI_MAX_DOMAIN; ++x )
+    for ( x = 0; x < ENDPOINT_COUNT; ++x )
     {
-        for ( y = 0; y < MCAPI_MAX_NODE; ++y )
-        {
-            for ( z = 0; z < MCAPI_MAX_PORT; ++z )
-            {
-                struct endPointData* epd =
-                &nodeData_.endPoints[x][y][z];
+        struct endPointData* epd = &nodeData_.endPoints[x];
 
-                //skip if not inited to begin with
-                if ( epd->inited != 1 )
-                    continue;
+        //skip if not inited to begin with
+        if ( epd->inited != 1 )
+            continue;
 
-                //close, so that we are no longer reserving them
-                pmq_delete_epd( epd );
-                pmq_delete_chan( epd );
-            }
-        }
+        //close, so that we are no longer reserving them
+        pmq_delete_epd( epd );
+        pmq_delete_chan( epd );
     }
 
     //mark that we are not inited!
@@ -287,6 +256,27 @@ char* mcapi_display_status(
     return message;
 }
 
+struct endPointData* findEpd( mcapi_domain_t domain_id, mcapi_node_t node_id,
+unsigned int port_id)
+{
+    unsigned int i;
+
+    for ( i = 0; i < ENDPOINT_COUNT; ++i )
+    {
+        struct endPointData* epd = &nodeData_.endPoints[i];
+        struct endPointDef* e = epd->defs;
+
+        //provided end point identifier match definition identifier -> is found
+        if ( node_id == e->us.node_id && domain_id == e->us.domain_id &&
+        port_id == e->us.port_id )
+        {
+            return epd;
+        }
+    }
+
+    return MCAPI_NULL;
+}
+
 mcapi_domain_t mcapi_domain_id_get(
     MCAPI_OUT mcapi_status_t* mcapi_status )
 {
@@ -344,28 +334,6 @@ mcapi_boolean_t mcapi_trans_valid_request_handle
 mcapi_boolean_t mcapi_trans_initialized ()
 {
     if ( nodeInitialized_ == 1 )
-    {
-        return MCAPI_TRUE;
-    }
-
-    return MCAPI_FALSE;
-}
-
-/* checks if the given node is valid */
-mcapi_boolean_t mcapi_trans_valid_node(mcapi_uint_t node_num)
-{
-    if ( node_num >= 0 && node_num < MCAPI_MAX_NODE )
-    {
-        return MCAPI_TRUE;
-    }
-
-    return MCAPI_FALSE;
-}
-
-/* checks if the given domain is valid */
-mcapi_boolean_t mcapi_trans_valid_domain(mcapi_uint_t domain_num)
-{
-    if ( domain_num >= 0 && domain_num < MCAPI_MAX_DOMAIN )
     {
         return MCAPI_TRUE;
     }

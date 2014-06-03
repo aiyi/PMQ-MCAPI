@@ -278,7 +278,7 @@ inline mcapi_boolean_t pmq_create_chan( mcapi_endpoint_t us )
     //if did not work, then its an error
     if ( msgq_id == -1 )
     {
-        perror("When opening msq from connect");
+        perror("When opening msq from connect");getchar();
         return MCAPI_FALSE;
     }
 
@@ -341,6 +341,7 @@ inline void pmq_delete_chan(
     //close and unlink the queue
     mq_close( endpoint->chan_msgq_id );
     mq_unlink( endpoint->defs->chan_name );
+
     //nullify the mgsq_id
     endpoint->chan_msgq_id = -1;
 }

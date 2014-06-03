@@ -145,33 +145,17 @@ test(create_exists_fail)
     mcapi_finalize( &status );
 }
 
-//must fail, if port is below valid region
-test(create_inva_lil_port_fail)
-    mcapi_initialize( 1, 2, 0, 0, &info, &status );
-    int testvalue = -1;
-
-    if ( MCAPI_PORT_ANY == testvalue )
-        testvalue = -2;
+//cannot create undefined endpoint
+test(create_no_def_fail)
+    mcapi_initialize( 66, 55, 0, 0, &info, &status );
 
     mcapi_endpoint_t sender;
-    sender = mcapi_endpoint_create( testvalue, &status );
+    sender = mcapi_endpoint_create( 44, &status );
 
-    uassert( status == MCAPI_ERR_PORT_INVALID );
+    sassert( MCAPI_ERR_PORT_INVALID, status );
     uassert( sender == MCAPI_NULL );
 
-    mcapi_finalize( &status );
-}
-
-//must fail, if port is above valid region
-test(create_inva_big_port_fail)
-    mcapi_initialize( 1, 2, 0, 0, &info, &status );
-
-    mcapi_endpoint_t sender;
-    sender = mcapi_endpoint_create( MCAPI_MAX_PORT, &status );
-
-    uassert( status == MCAPI_ERR_PORT_INVALID );
-    uassert( sender == MCAPI_NULL );
-
+    mcapi_endpoint_delete( sender, &status );
     mcapi_finalize( &status );
 }
 
@@ -183,26 +167,6 @@ test(any_port_create)
     sender = mcapi_endpoint_create( MCAPI_PORT_ANY, &status );
 
     sassert( MCAPI_ERR_PORT_INVALID, status );
-    uassert( sender == MCAPI_NULL );
-
-    mcapi_endpoint_delete( sender, &status );
-    mcapi_finalize( &status );
-}
-
-//must fail if too many ports already
-test(create_no_port_fail)
-    mcapi_initialize( 1, 2, 0, 0, &info, &status );
-
-    mcapi_endpoint_t sender;
-
-    unsigned int i;
-
-    for ( i  = 0; i < MCAPI_MAX_PORT + 1; ++i )
-    {
-        sender = mcapi_endpoint_create( MCAPI_PORT_ANY, &status );
-    }
-
-    uassert( status == MCAPI_ERR_PORT_INVALID );
     uassert( sender == MCAPI_NULL );
 
     mcapi_endpoint_delete( sender, &status );
@@ -234,74 +198,14 @@ test(get_init_fail)
     uassert( receiver == MCAPI_NULL );
 }
 
-//get must fail if port is below acceptable region
-test(get_lil_port_inva_fail)
+//get must fail if port is not defined
+test(get_epd_fail)
     mcapi_endpoint_t receiver;
 
-    mcapi_initialize( 1, 2, 0, 0, &info, &status );
+    mcapi_initialize( 15, 66, 0, 0, &info, &status );
 
     receiver = mcapi_endpoint_get( 1, 2, -1, 1000, &status );
     uassert( status == MCAPI_ERR_PORT_INVALID );
-    uassert( receiver == MCAPI_NULL );
-    mcapi_finalize( &status );
-}
-
-//get must fail if node is below acceptable region
-test(get_lil_node_inva_fail)
-    mcapi_endpoint_t receiver;
-
-    mcapi_initialize( 1, 2, 0, 0, &info, &status );
-
-    receiver = mcapi_endpoint_get( 1, -1, 1, 1000, &status );
-    uassert( status == MCAPI_ERR_NODE_INVALID );
-    uassert( receiver == MCAPI_NULL );
-    mcapi_finalize( &status );
-}
-
-//get must fail if domain is below acceptable region
-test(get_lil_domain_inva_fail)
-    mcapi_endpoint_t receiver;
-
-    mcapi_initialize( 1, 2, 0, 0, &info, &status );
-
-    receiver = mcapi_endpoint_get( -1, 2, 1, 1000, &status );
-    uassert( status == MCAPI_ERR_DOMAIN_INVALID );
-    uassert( receiver == MCAPI_NULL );
-    mcapi_finalize( &status );
-}
-
-//get must fail if port is above acceptable region
-test(get_big_port_inva_fail)
-    mcapi_endpoint_t receiver;
-
-    mcapi_initialize( 1, 2, 0, 0, &info, &status );
-
-    receiver = mcapi_endpoint_get( 1, 2, MCAPI_MAX_PORT, 1000, &status );
-    uassert( status == MCAPI_ERR_PORT_INVALID );
-    uassert( receiver == MCAPI_NULL );
-    mcapi_finalize( &status );
-}
-
-//get must fail if node is above acceptable region
-test(get_big_node_inva_fail)
-    mcapi_endpoint_t receiver;
-
-    mcapi_initialize( 1, 2, 0, 0, &info, &status );
-
-    receiver = mcapi_endpoint_get( 1, MCAPI_MAX_NODE, 1, 1000, &status );
-    uassert( status == MCAPI_ERR_NODE_INVALID );
-    uassert( receiver == MCAPI_NULL );
-    mcapi_finalize( &status );
-}
-
-//get must fail if domain is above acceptable region
-test(get_big_domain_inva_fail)
-    mcapi_endpoint_t receiver;
-
-    mcapi_initialize( 1, 2, 0, 0, &info, &status );
-
-    receiver = mcapi_endpoint_get( MCAPI_MAX_DOMAIN, 2, 1, 1000, &status );
-    uassert( status == MCAPI_ERR_DOMAIN_INVALID );
     uassert( receiver == MCAPI_NULL );
     mcapi_finalize( &status );
 }
@@ -343,16 +247,9 @@ void suite_endpoint()
     dotest(any_port_create)
     dotest(create_init_fail)
     dotest(create_exists_fail)
-    dotest(create_inva_lil_port_fail)
-    dotest(create_inva_big_port_fail)
-    dotest(create_no_port_fail)
+    dotest(create_no_def_fail)
     dotest(get_end)
     dotest(get_init_fail)
-    dotest(get_lil_port_inva_fail)
-    dotest(get_lil_node_inva_fail)
-    dotest(get_lil_domain_inva_fail)
-    dotest(get_big_port_inva_fail)
-    dotest(get_big_node_inva_fail)
-    dotest(get_big_domain_inva_fail)
     dotest(get_timeout)
+    dotest(get_epd_fail)
 }

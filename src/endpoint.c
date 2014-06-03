@@ -26,23 +26,13 @@ mcapi_boolean_t mcapi_trans_valid_endpoints (mcapi_endpoint_t endpoint1,
     return MCAPI_TRUE;
 }
 
-/* checks to see if the port_num is a valid port_num for this system */
-mcapi_boolean_t mcapi_trans_valid_port(mcapi_uint_t port_num)
-{
-    if ( port_num >= 0 && port_num < MCAPI_MAX_PORT )
-    {
-        return MCAPI_TRUE;
-    }
-
-    return MCAPI_FALSE;
-}
-
 mcapi_boolean_t mcapi_trans_endpoint_exists (mcapi_domain_t domain_id, 
     uint32_t port_num)
 {
     struct nodeData* nd = getNodeData();
+    struct endPointData* epd = findEpd( nd->domain_id, nd->node_id, port_num );
 
-    if ( nd->endPoints[domain_id][nd->node_id][port_num].inited != 1 )
+    if ( epd == MCAPI_NULL || epd->inited != 1 )
     {
         return MCAPI_FALSE;
     }
@@ -82,14 +72,7 @@ mcapi_endpoint_t mcapi_endpoint_create(
         return MCAPI_NULL;
     }
 
-    //check for valid
-    if ( mcapi_trans_valid_port( port_id ) == MCAPI_FALSE)
-    {
-        *mcapi_status = MCAPI_ERR_PORT_INVALID;
-        return MCAPI_NULL;
-    }
-
-    //must not already reserved
+    //must not be already reserved
     if ( mcapi_trans_endpoint_exists( nd->domain_id, port_id ) )
     {
         *mcapi_status = MCAPI_ERR_ENDP_EXISTS;
@@ -97,10 +80,10 @@ mcapi_endpoint_t mcapi_endpoint_create(
     }
 
     //obtain pointer to the proper slot of the table
-    epd = &nd->endPoints[nd->domain_id][nd->node_id][port_id];
+    epd = findEpd( nd->domain_id, nd->node_id, port_id );
 
-    //lack of defines will also mean invalid port
-    if ( epd->defs == MCAPI_NULL )
+    //lack of defines will mean invalid port
+    if ( epd == MCAPI_NULL || epd->defs == MCAPI_NULL )
     {
         *mcapi_status = MCAPI_ERR_PORT_INVALID;
         return MCAPI_NULL;
@@ -116,7 +99,7 @@ mcapi_endpoint_t mcapi_endpoint_create(
     }
 
     //let PMQ-layer handle rest
-    pmq_create_epd( epd );
+    *mcapi_status = pmq_create_epd( epd );
 
     //failure with POSIX -> return
     if ( *mcapi_status != MCAPI_SUCCESS )
@@ -156,32 +139,11 @@ mcapi_endpoint_t mcapi_endpoint_get(
         return MCAPI_NULL;
     }
 
-    //check for valid port
-    if ( mcapi_trans_valid_port( port_id ) == MCAPI_FALSE )
-    {
-        *mcapi_status = MCAPI_ERR_PORT_INVALID;
-        return MCAPI_NULL;
-    }
-
-    //check for valid node
-    if ( mcapi_trans_valid_node( node_id ) == MCAPI_FALSE )
-    {
-        *mcapi_status = MCAPI_ERR_NODE_INVALID;
-        return MCAPI_NULL;
-    }
-
-    //check for valid domain
-    if ( mcapi_trans_valid_domain( domain_id ) == MCAPI_FALSE )
-    {
-        *mcapi_status = MCAPI_ERR_DOMAIN_INVALID;
-        return MCAPI_NULL;
-    }
-
     //obtain pointer to the proper slot of the table
-    epd = &nd->endPoints[domain_id][node_id][port_id];
+    epd = findEpd( domain_id, node_id, port_id );
 
-    //lack of defines will also mean invalid port
-    if ( epd->defs == MCAPI_NULL )
+    //lack of defines will mean invalid port
+    if ( epd == MCAPI_NULL || epd->defs == MCAPI_NULL )
     {
         *mcapi_status = MCAPI_ERR_PORT_INVALID;
         return MCAPI_NULL;

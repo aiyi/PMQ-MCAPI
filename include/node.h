@@ -11,16 +11,16 @@ struct nodeData
 {
     mca_domain_t domain_id; //domain where the node belong to
     mca_node_t node_id; //id of this node
-    //each index is a port number, each value is mqdt of endpoint, -1 is null
-    struct endPointData endPoints[MCAPI_MAX_DOMAIN][MCAPI_MAX_NODE]\
-        [MCAPI_MAX_PORT];
+    //data of ALL recognized endpoints, not just the ones in this node!
+    struct endPointData endPoints[ENDPOINT_COUNT];
 };
 
 //returns pointer to the nodedata
 struct nodeData* getNodeData();
 
-/* checks if the given domain is valid */
-mcapi_boolean_t mcapi_trans_valid_domain(mcapi_uint_t domain_num);
+//finds endpoint data matching the tuple. return MCAPI_NULL if not.
+struct endPointData* findEpd( mcapi_domain_t domain_id, mcapi_node_t node_id,
+unsigned int port_id);
 
 //sets keys of all buffers to MCAPI_NULL
 void bufClearAll();
@@ -37,12 +37,6 @@ extern mcapi_boolean_t mcapi_trans_valid_request_handle
 
 /* checks if the size parameter is valid */
 extern mcapi_boolean_t mcapi_trans_valid_size_param (MCAPI_IN size_t*size);
-
-/* checks if the given node is valid */
-extern mcapi_boolean_t mcapi_trans_valid_node(mcapi_uint_t node_num);
-
-/* checks to see if the port_num is a valid port_num for this system */
-extern mcapi_boolean_t mcapi_trans_valid_port(mcapi_uint_t port_num);
 
 /* checks if the endpoint handle refers to a valid endpoint */
 extern mcapi_boolean_t mcapi_trans_valid_endpoint (mcapi_endpoint_t endpoint);

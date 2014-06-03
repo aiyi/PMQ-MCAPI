@@ -54,34 +54,6 @@ test(init_fail_double_init)
     mcapi_finalize( &status );
 }
 
-//must fail if node is below range
-test(init_fail_node_lil)
-    mcapi_initialize( 1, -1, 0, 0, &info, &status );
-    sassert( MCAPI_ERR_NODE_INVALID, status );
-    mcapi_finalize( &status );
-}
-
-//must fail if node is above range
-test(init_fail_node_big)
-    mcapi_initialize( 1, MCAPI_MAX_NODE, 0, 0, &info, &status );
-    sassert( MCAPI_ERR_NODE_INVALID, status );
-    mcapi_finalize( &status );
-}
-
-//must fail if domain is below range 
-test(init_fail_domain_lil)
-    mcapi_initialize( -1, 2, 0, 0, &info, &status );
-    sassert( MCAPI_ERR_DOMAIN_INVALID, status );
-    mcapi_finalize( &status );
-}
-
-//must fail if domain is above range
-test(init_fail_domain_big)
-    mcapi_initialize( MCAPI_MAX_DOMAIN, 2, 0, 0, &info, &status );
-    sassert( MCAPI_ERR_DOMAIN_INVALID, status );
-    mcapi_finalize( &status );
-}
-
 //succesfull finalization
 test(finalize)
     mcapi_initialize( 1, 2, 0, 0, &info, &status );
@@ -266,10 +238,6 @@ void suite_node()
     dotest(id_getters)
     dotest(init_fail_null_info)
     dotest(init_fail_double_init)
-    dotest(init_fail_node_lil)
-    dotest(init_fail_node_big)
-    dotest(init_fail_domain_lil)
-    dotest(init_fail_domain_big)
     dotest(finalize)
     dotest(fail_finalize)
     dotest(wait_fail_init)

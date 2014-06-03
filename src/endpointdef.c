@@ -2,27 +2,11 @@
 #include "endpointlist.h"
 #include <stdio.h>
 
-struct endPointDef* findDef( mca_domain_t domain_id, mca_node_t node_id,
-unsigned int port_id)
+struct endPointDef* findDef( unsigned int i )
 {
-    //iterator
-    unsigned int i;
-    //how many defines there are at total, defined compile time
-    size_t total_size = sizeof(endPointDefs_)/sizeof(struct endPointDef);
+    struct endPointDef* e = &endPointDefs_[i];
 
-    for ( i = 0; i < total_size; ++i )
-    {
-        struct endPointDef* e = &endPointDefs_[i];
-
-        //provided end point identifier match definition identifier -> is found
-        if ( node_id == e->us.node_id && domain_id == e->us.domain_id &&
-        port_id == e->us.port_id )
-        {
-            return e;
-        }
-    }
-
-    return MCA_NULL;
+    return e;
 }
 
 mca_boolean_t sameID( struct endPointID first, struct endPointID scnd )
@@ -39,12 +23,10 @@ mca_boolean_t sameID( struct endPointID first, struct endPointID scnd )
 
 void initMsgqNames()
 {
-    //iterator
     unsigned int i;
-    //how many defines there are at total, defined compile time
-    size_t total_size = sizeof(endPointDefs_)/sizeof(struct endPointDef);
 
-    for ( i = 0; i < total_size; ++i )
+    //assignning the names for all the predefined endpoints
+    for ( i = 0; i < ENDPOINT_COUNT; ++i )
     {
         //the endpoint definition whose names are to be constructed
         struct endPointDef* e = &endPointDefs_[i];

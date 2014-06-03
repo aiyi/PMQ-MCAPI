@@ -68,7 +68,7 @@ extern "C" {
            datatypes
 ******************************************************************/ 
 
-//The data associated with the endpoint.
+//The runtime data associated with an endpoint.
 struct endPointData
 {
     mqd_t msgq_id; //the messagequeue used for communication

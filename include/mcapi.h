@@ -353,7 +353,7 @@ typedef struct
 
 /* In/out parameter indication macros */
 #ifndef MCAPI_IN
-#define MCAPI_IN const
+#define MCAPI_IN
 #endif /* MCAPI_IN */
 
 #ifndef MCAPI_OUT

@@ -28,6 +28,7 @@ test(msg_send_recv)
     sender = mcapi_endpoint_create( 0, &status );
     ureceiver = mcapi_endpoint_create( 1, &status );
     receiver = mcapi_endpoint_get( 1, 2, 1, 1000, &status );
+    sassert( MCAPI_SUCCESS, status );
     mcapi_msg_send( sender, receiver, send_buf, MAX_MSG_LEN, 0, &status );
     sassert( MCAPI_SUCCESS, status );
     mcapi_msg_recv( ureceiver, recv_buf, MAX_MSG_LEN, &received_size, &status );
@@ -201,7 +202,7 @@ test(msg_send_recv_fail_size)
     mcapi_finalize( &status );
 }
 
-//cant send message to connected endpoint
+//could send message to non-connected endpoint, albeit definition
 test(msg_send_recv_fail_chan)
     mcapi_endpoint_t sender;
     mcapi_endpoint_t receiver;
@@ -221,9 +222,9 @@ test(msg_send_recv_fail_chan)
     receiver = mcapi_endpoint_get( them_id.domain_id, them_id.node_id,
     them_id.port_id, 1000, &status );
     mcapi_msg_send( sender, receiver, send_buf, MAX_MSG_LEN, 0, &status );
-    sassert( MCAPI_ERR_GENERAL, status );
+    sassert( MCAPI_SUCCESS, status );
     mcapi_msg_recv( ureceiver, recv_buf, MAX_MSG_LEN, &received_size, &status );
-    sassert( MCAPI_ERR_GENERAL, status );
+    sassert( MCAPI_SUCCESS, status );
 
     mcapi_finalize( &status );
 }

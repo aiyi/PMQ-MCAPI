@@ -12,7 +12,7 @@ SDIR=../src
 UTDIR=.
 
 #the header files
-_DEPS = mca.h mcapi.h mcapi_config.h node.h endpointdef.h endpointlist.h channel.h utester.h pmq_layer.h
+_DEPS = mca.h mcapi.h mcapi_config.h endpoint.h node.h endpointdef.h endpointlist.h channel.h utester.h pmq_layer.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 #unit test suites
@@ -30,6 +30,6 @@ $(ODIR)/%.o: $(SDIR)/%.c $(DEPS) $(UTESTS)
 #rule to create unit test runner. object files are also cleaned away as arent really needed
 make: $(OBJ)
 	$(CC) -o $(UEXE) $(OBJ) $(CFLAGS); \
-	rm -f $(ODIR)/*.o; \
+	rm -f $(_OBJ); \
 	./$(UEXE); \
 	rm $(UEXE)

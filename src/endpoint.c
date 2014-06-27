@@ -1,4 +1,4 @@
-//This module has functions used in creating, getting and checking endpoints.
+#include "endpoint.h"
 #include "node.h"
 
 /* checks if the endpoint handle refers to a valid endpoint */
@@ -13,8 +13,8 @@ mcapi_boolean_t mcapi_trans_valid_endpoint (mcapi_endpoint_t endpoint)
     return MCAPI_TRUE;
 }
 
-mcapi_boolean_t mcapi_trans_valid_endpoints (mcapi_endpoint_t endpoint1, 
-                                               mcapi_endpoint_t endpoint2)
+mcapi_boolean_t mcapi_trans_valid_endpoints
+(mcapi_endpoint_t endpoint1, mcapi_endpoint_t endpoint2)
 {
     if ( endpoint1 == MCAPI_NULL || endpoint2 == MCAPI_NULL ||
     endpoint1->inited != 1 || endpoint2->inited != 1 ||
@@ -26,8 +26,7 @@ mcapi_boolean_t mcapi_trans_valid_endpoints (mcapi_endpoint_t endpoint1,
     return MCAPI_TRUE;
 }
 
-mcapi_boolean_t mcapi_trans_endpoint_exists (mcapi_domain_t domain_id, 
-    uint32_t port_num)
+mcapi_boolean_t mcapi_trans_endpoint_exists ( uint32_t port_num )
 {
     struct nodeData* nd = getNodeData();
     struct endPointData* epd = findEpd( nd->domain_id, nd->node_id, port_num );
@@ -62,7 +61,7 @@ mcapi_endpoint_t mcapi_endpoint_create(
     //pointer to local node spesific data
     struct nodeData* nd = getNodeData();
     //the associated data of the would-be-endpoint
-    struct endPointData* epd;
+    struct endPointData* epd = MCAPI_NULL;
 
     //check for initialization
     if ( mcapi_trans_initialized() == MCAPI_FALSE )
@@ -72,11 +71,14 @@ mcapi_endpoint_t mcapi_endpoint_create(
         return MCAPI_NULL;
     }
 
+    //critical section for node begins here
+    LOCK_NODE( nd );
+
     //must not be already reserved
-    if ( mcapi_trans_endpoint_exists( nd->domain_id, port_id ) )
+    if ( mcapi_trans_endpoint_exists( port_id ) )
     {
         *mcapi_status = MCAPI_ERR_ENDP_EXISTS;
-        return MCAPI_NULL;
+        goto ret;
     }
 
     //obtain pointer to the proper slot of the table
@@ -86,17 +88,11 @@ mcapi_endpoint_t mcapi_endpoint_create(
     if ( epd == MCAPI_NULL || epd->defs == MCAPI_NULL )
     {
         *mcapi_status = MCAPI_ERR_PORT_INVALID;
-        return MCAPI_NULL;
+        goto ret;
     }
 
-    //if it already exist, reuse it!
-    if ( epd->inited == 1 )
-    {
-        //mark it as success
-        *mcapi_status = MCAPI_SUCCESS;
-
-        return epd;
-    }
+    //critical section for endpoint begins here
+    LOCK_ENPOINT( epd );
 
     //let PMQ-layer handle rest
     *mcapi_status = pmq_create_epd( epd );
@@ -104,7 +100,8 @@ mcapi_endpoint_t mcapi_endpoint_create(
     //failure with POSIX -> return
     if ( *mcapi_status != MCAPI_SUCCESS )
     {
-        return MCAPI_NULL;
+        epd = MCAPI_NULL;
+        goto ret;
     }
 
     //mark it inited as well
@@ -114,8 +111,13 @@ mcapi_endpoint_t mcapi_endpoint_create(
     //mark it as success
     *mcapi_status = MCAPI_SUCCESS;
 
-    //return the pointer, as it is the endpointtype
-    return epd;
+    //mutex must be unlocked even if error occurs
+    ret:
+        UNLOCK_NODE( nd );
+        UNLOCK_ENPOINT( epd );
+
+        //return the pointer, as it is the endpointtype
+        return epd;
 }
 
 /* blocking get endpoint for the given <node_num,port_num> and return it's handle */
@@ -127,7 +129,7 @@ mcapi_endpoint_t mcapi_endpoint_get(
  	MCAPI_OUT mcapi_status_t* mcapi_status )
 { 
     //the associated data of the would-be-endpoint
-    struct endPointData* epd;
+    struct endPointData* epd = MCAPI_NULL;
     //pointer to local node spesific data
     struct nodeData* nd = getNodeData();
 
@@ -139,6 +141,9 @@ mcapi_endpoint_t mcapi_endpoint_get(
         return MCAPI_NULL;
     }
 
+    //critical section for node begins here
+    LOCK_NODE( nd );
+
     //obtain pointer to the proper slot of the table
     epd = findEpd( domain_id, node_id, port_id );
 
@@ -146,14 +151,17 @@ mcapi_endpoint_t mcapi_endpoint_get(
     if ( epd == MCAPI_NULL || epd->defs == MCAPI_NULL )
     {
         *mcapi_status = MCAPI_ERR_PORT_INVALID;
-        return MCAPI_NULL;
+        goto ret;
     }
+
+    //critical section for endpoint begins here
+    LOCK_ENPOINT( epd );
 
     //if it already exists, return it then
     if ( epd->inited == 1 )
     {
         *mcapi_status = MCAPI_SUCCESS;
-        return epd;
+        goto ret;
     }
 
     //The POSIX layer handles the rest
@@ -162,7 +170,8 @@ mcapi_endpoint_t mcapi_endpoint_get(
     //failure with POSIX -> return
     if ( *mcapi_status != MCAPI_SUCCESS )
     {
-        return MCAPI_NULL;
+        epd = MCAPI_NULL;
+        goto ret;
     }
 
     //mark it inited
@@ -171,7 +180,14 @@ mcapi_endpoint_t mcapi_endpoint_get(
 
     //upon the succesfull completion, return the endpoint data, as it the type
     *mcapi_status = MCAPI_SUCCESS;
-    return epd;
+
+    //mutex must be unlocked even if error occurs
+    ret:
+        UNLOCK_NODE( nd );
+        UNLOCK_ENPOINT( epd );
+
+        //return the pointer, as it is the endpointtype
+        return epd;
 }
 
 /* delete the given endpoint */
@@ -198,25 +214,31 @@ void mcapi_endpoint_delete(
         return;
     }
 
+    //critical section for node begins here
+    LOCK_NODE( nd );
+
+    //critical section for endpoint begins here
+    LOCK_ENPOINT( endpoint );
+
     //check for valid
     if ( mcapi_trans_valid_endpoint( endpoint ) == MCAPI_FALSE )
     {
         *mcapi_status = MCAPI_ERR_ENDP_INVALID;
-        return;
+        goto ret;
     }
 
     //check for connected
     if ( endpoint->open == 1 )
     {
         *mcapi_status = MCAPI_ERR_CHAN_CONNECTED;
-        return;
+        goto ret;
     }
 
     //check for owner
     if ( mcapi_trans_endpoint_isowner( endpoint ) == MCAPI_FALSE )
     {
         *mcapi_status = MCAPI_ERR_ENDP_NOTOWNER;
-        return;
+        goto ret;
     }
 
     //Use the layer to handle the practical deletion
@@ -232,6 +254,11 @@ void mcapi_endpoint_delete(
 
     //so far so good
     *mcapi_status = MCAPI_SUCCESS;
+
+    //mutex must be unlocked even if error occurs
+    ret:
+        UNLOCK_ENPOINT( endpoint );
+        UNLOCK_NODE( nd );
 }
 
 void mcapi_endpoint_set_attribute(
@@ -241,6 +268,9 @@ void mcapi_endpoint_set_attribute(
     MCAPI_IN size_t attribute_size,
     MCAPI_OUT mcapi_status_t* mcapi_status )
 {
+    //data of the node from witch endpoint shall be unassosiated
+    struct nodeData* nd = getNodeData();
+
     //check for initialization
     if ( mcapi_trans_initialized() == MCAPI_FALSE )
     {
@@ -248,57 +278,68 @@ void mcapi_endpoint_set_attribute(
         *mcapi_status = MCAPI_ERR_NODE_NOTINIT;
         return;
     }
+
+    //critical section for node begins here
+    LOCK_NODE( nd );
+
+    //critical section for endpoint begins here
+    LOCK_ENPOINT( endpoint );
     
     //check for valid
     if ( mcapi_trans_valid_endpoint( endpoint ) == MCAPI_FALSE )
     {
         *mcapi_status = MCAPI_ERR_ENDP_INVALID;
-        return;
+        goto ret;
     }
 
     //check for connected
     if ( endpoint->open == 1 )
     {
         *mcapi_status = MCAPI_ERR_CHAN_CONNECTED;
-        return;
+        goto ret;
     }
 
     //check for owner, so that it will local
     if ( mcapi_trans_endpoint_isowner( endpoint ) == MCAPI_FALSE )
     {
         *mcapi_status = MCAPI_ERR_ENDP_REMOTE;
-        return;
+        goto ret;
     }
 
     //attribute supplied must not be null
     if ( attribute == MCAPI_NULL )
     {
         *mcapi_status = MCAPI_ERR_PARAMETER;
-        return;
+        goto ret;
     }
 
     //beyond boundaries means unknown
     if ( attribute_num < 0 || attribute_num > MCAPI_ENDP_ATTR_END )
     {
         *mcapi_status = MCAPI_ERR_ATTR_NUM;
-        return;
+        goto ret;
     }
 
     //only one is supported
     if ( attribute_num != MCAPI_ENDP_ATTR_TIMEOUT )
     {
         *mcapi_status = MCAPI_ERR_ATTR_NOTSUPPORTED;
-        return;
+        goto ret;
     }
 
     //size must correspond
     if ( attribute_size != sizeof(mcapi_timeout_t) )
     {
         *mcapi_status = MCAPI_ERR_ATTR_SIZE;
-        return;
+        goto ret;
     }
     
     //finally, we may set it
     endpoint->time_out = *(mcapi_timeout_t*)attribute;
     *mcapi_status = MCAPI_SUCCESS;
+
+    //mutex must be unlocked even if error occurs
+    ret:
+        UNLOCK_ENPOINT( endpoint );
+        UNLOCK_NODE( nd );
 }

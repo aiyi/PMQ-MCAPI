@@ -232,6 +232,96 @@ test(get_timeout)
     mcapi_finalize( &status );
 }
 
+//succesfully set endpoint attribute
+test(endpoint_set_attr)
+    mcapi_endpoint_t sender;
+    mcapi_timeout_t timeout = 100;
+
+    mcapi_initialize( 1, 2, 0, 0, &info, &status );
+    
+    sender = mcapi_endpoint_create( 0, &status );
+
+    mcapi_endpoint_set_attribute( sender, MCAPI_ENDP_ATTR_TIMEOUT, &timeout,
+    sizeof(mcapi_timeout_t), &status );
+    sassert( MCAPI_SUCCESS, status );
+
+    mcapi_finalize( &status );
+}
+
+//invalid endpoint for attribute set
+test(endpoint_set_attr_inva)
+    mcapi_endpoint_t sender;
+    mcapi_timeout_t timeout = 100;
+
+    mcapi_initialize( 1, 2, 0, 0, &info, &status );
+    
+    sender = MCAPI_NULL;
+
+    mcapi_endpoint_set_attribute( sender, MCAPI_ENDP_ATTR_TIMEOUT, &timeout,
+    sizeof(mcapi_timeout_t), &status );
+    sassert( MCAPI_ERR_ENDP_INVALID, status );
+
+    mcapi_finalize( &status );
+}
+
+//must not set attributes of remote endpoints!
+test(endpoint_set_attr_remote)
+    mcapi_endpoint_t sender;
+    mcapi_timeout_t timeout = 100;
+    pid_t pid;
+
+    pid = fork();
+
+    if ( pid == 0 )
+    {
+        mcapi_initialize( 0, 5, 0, 0, &info, &status );
+        
+        sender = mcapi_endpoint_create( 1, &status );
+
+        mcapi_finalize( &status );
+
+        exit(0);
+    }
+    else if ( pid != -1 )
+    {
+        mcapi_initialize( 1, 2, 0, 0, &info, &status );
+
+        sender = mcapi_endpoint_get( 0, 5, 1, timeout, &status );
+
+        mcapi_endpoint_set_attribute( sender, MCAPI_ENDP_ATTR_TIMEOUT, &timeout,
+        sizeof(mcapi_timeout_t), &status );
+        sassert(MCAPI_ERR_ENDP_REMOTE, status );
+
+        wait(NULL);
+
+        mcapi_finalize( &status );
+    }
+    else
+    {
+        perror("fork");
+    }
+}
+
+//must be existing attribute
+test(endpoint_set_attr_ext)
+    mcapi_endpoint_t sender;
+    mcapi_timeout_t timeout = 100;
+
+    mcapi_initialize( 1, 2, 0, 0, &info, &status );
+    
+    sender = mcapi_endpoint_create( 0, &status );
+
+    mcapi_endpoint_set_attribute( sender, MCAPI_ENDP_ATTR_END+1, &timeout,
+    sizeof(mcapi_timeout_t), &status );
+    sassert( MCAPI_ERR_ATTR_NUM, status );
+    mcapi_endpoint_set_attribute( sender, -1, &timeout,
+    sizeof(mcapi_timeout_t), &status );
+    sassert( MCAPI_ERR_ATTR_NUM, status );
+
+
+    mcapi_finalize( &status );
+}
+
 void suite_endpoint()
 {
     iepd.inited = -1;
@@ -249,7 +339,11 @@ void suite_endpoint()
     dotest(create_exists_fail)
     dotest(create_no_def_fail)
     dotest(get_end)
+    dotest(get_epd_fail)
     dotest(get_init_fail)
     dotest(get_timeout)
-    dotest(get_epd_fail)
+    dotest(endpoint_set_attr)
+    dotest(endpoint_set_attr_inva)
+    dotest(endpoint_set_attr_remote)
+    dotest(endpoint_set_attr_ext)
 }

@@ -1,5 +1,6 @@
 //This module has functions used in scalar MCAPI-communication.
 #include "channel.h"
+#include "endpoint.h"
 
 void mcapi_sclchan_connect_i(
     MCAPI_IN mcapi_endpoint_t  send_endpoint, 
@@ -8,16 +9,6 @@ void mcapi_sclchan_connect_i(
     MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     mcapi_chan_connect( send_endpoint, receive_endpoint, request, mcapi_status);
-
-    if ( *mcapi_status != MCAPI_PENDING )
-        return;
-
-    //check for incompatible sizes
-    if ( send_endpoint->defs->scalar_size !=
-    receive_endpoint->defs->scalar_size )
-    {
-        *mcapi_status = MCAPI_ERR_ATTR_INCOMPATIBLE;
-    }
 }
 
 void mcapi_sclchan_recv_open_i(
@@ -72,17 +63,25 @@ inline void mcapi_sclchan_send(
         return;
     }
 
+    //critical section for endpoint begins here
+    LOCK_CHANNEL( send_handle );
+
     //handle must be valid send handle
     if ( !mcapi_trans_valid_sclchan_send_handle(send_handle) )
     {
         *mcapi_status = MCAPI_ERR_CHAN_INVALID;
-        return;
+    }
+    else
+    {
+        //POSIX will handle the rest, timeout of sending endpoint is used
+        //priority is fixed to that expected of channel traffic
+        *mcapi_status = pmq_send( send_handle.us->chan_msgq_id,
+        (void*)&dataword, bytes, MCAPI_MAX_PRIORITY+1,
+        send_handle.us->time_out );
     }
 
-    //POSIX will handle the rest, timeout of sending endpoint is used
-    //priority is fixed to that expected of channel traffic
-    *mcapi_status = pmq_send( send_handle.us->chan_msgq_id, (void*)&dataword,
-    bytes, MCAPI_MAX_PRIORITY+1, send_handle.us->time_out );
+    //critical secntion ends
+    UNLOCK_CHANNEL( send_handle );
 }
 
 void mcapi_sclchan_send_uint64(
@@ -125,7 +124,7 @@ inline mcapi_uint64_t mcapi_sclchan_recv(
     //the priority obtained
     unsigned msg_prio;
     //the received value
-    mcapi_uint64_t value;
+    mcapi_uint64_t value = -1;
     //how long message we got in bytes
     size_t mslen;
 
@@ -137,16 +136,21 @@ inline mcapi_uint64_t mcapi_sclchan_recv(
         return -1;
     }
 
+    LOCK_CHANNEL( receive_handle );
+
     //handle must be valid
     if ( !mcapi_trans_valid_sclchan_recv_handle(receive_handle) )
     {
         *mcapi_status = MCAPI_ERR_CHAN_INVALID;
-        return -1;
+    }
+    else
+    {
+        //POSIX will handle the recv, timeout of receiving endpoint is used
+        *mcapi_status = pmq_recv( receive_handle.us->chan_msgq_id,
+        (void*)&value, bytes, &mslen, &msg_prio, receive_handle.us->time_out );
     }
 
-    //POSIX will handle the recv, timeout of receiving endpoint is used
-    *mcapi_status = pmq_recv( receive_handle.us->chan_msgq_id, (void*)&value,
-    bytes, &mslen, &msg_prio, receive_handle.us->time_out );
+    UNLOCK_CHANNEL( receive_handle );
 
     return value;
 }
@@ -183,14 +187,32 @@ mcapi_uint_t mcapi_sclchan_available(
 MCAPI_IN mcapi_sclchan_recv_hndl_t receive_handle,
 MCAPI_OUT mcapi_status_t* mcapi_status )
 {
+    //return value
+    mcapi_uint_t to_ret = MCAPI_NULL;
+
+    //check for initialization
+    if ( mcapi_trans_initialized() == MCAPI_FALSE )
+    {
+        //no init means failure
+        *mcapi_status = MCAPI_ERR_NODE_NOTINIT;
+        return MCAPI_NULL;
+    }
+
+    LOCK_CHANNEL( receive_handle );
+
     //handle must be valid
     if ( !mcapi_trans_valid_sclchan_recv_handle( receive_handle ) )
     {
         *mcapi_status = MCAPI_ERR_CHAN_INVALID;
-        return MCAPI_NULL;
+    }
+    else
+    {
+        to_ret = pmq_avail( receive_handle.us->chan_msgq_id, mcapi_status );
     }
 
-    return mcapi_chan_available( receive_handle, mcapi_status );
+    UNLOCK_CHANNEL( receive_handle );
+
+    return to_ret;
 }
 
 inline mcapi_boolean_t mcapi_trans_valid_sclchan_send_handle( mcapi_sclchan_send_hndl_t handle)
@@ -202,7 +224,6 @@ inline mcapi_boolean_t mcapi_trans_valid_sclchan_send_handle( mcapi_sclchan_send
 
     return MCAPI_TRUE;
 }
-
 
 inline mcapi_boolean_t mcapi_trans_valid_sclchan_recv_handle( mcapi_sclchan_recv_hndl_t handle)
 {

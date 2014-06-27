@@ -81,25 +81,25 @@ test(wait_fail_req)
     mcapi_finalize( &status );
 }
 
-//size parameter must not be null
-test(wait_fail_size)
-    mcapi_request_t request;
-    mcapi_initialize( 1, 2, 0, 0, &info, &status );
-    mcapi_wait( &request, NULL, 1001, &status );
-    sassert( MCAPI_ERR_PARAMETER, status );
-    mcapi_finalize( &status );
-}
-
 //used below
 mcapi_boolean_t failFun( void* data )
 {
     return MCAPI_FALSE;
 }
 
+//size parameter must not be null
+test(wait_fail_size)
+    mcapi_initialize( 1, 2, 0, 0, &info, &status );
+    mcapi_request_t request = reserve_request( failFun, NULL );
+    mcapi_wait( &request, NULL, 1001, &status );
+    sassert( MCAPI_ERR_PARAMETER, status );
+    mcapi_finalize( &status );
+}
+
 //function field of request must not be null either
 test(wait_fail_req_null)
-    mcapi_request_t request = { NULL, NULL };
     mcapi_initialize( 1, 2, 0, 0, &info, &status );
+    mcapi_request_t request = reserve_request( NULL, NULL );
     mcapi_wait( &request, NULL, 1001, &status );
     sassert( MCAPI_ERR_REQUEST_INVALID, status );
     mcapi_finalize( &status );
@@ -108,11 +108,11 @@ test(wait_fail_req_null)
 //testing timeout
 test(wait_timeout)
     mcapi_timeout_t timeout = 100;
-    mcapi_request_t request = { failFun, NULL };
     size_t size;
     struct timespec t_start, t_end;
 
     mcapi_initialize( 1, 2, 0, 0, &info, &status );
+    mcapi_request_t request = reserve_request( failFun, NULL );
     clock_gettime( CLOCK_MONOTONIC, &t_start );
     mcapi_wait( &request, &size, timeout, &status );
     clock_gettime( CLOCK_MONOTONIC, &t_end );
@@ -134,9 +134,9 @@ mcapi_boolean_t trueFun( void* data )
 
 //must return immidiately if happens immidiately
 test(wait_ok_imm)
-    mcapi_request_t request = { trueFun, NULL };
     size_t size;
     mcapi_initialize( 1, 2, 0, 0, &info, &status );
+    mcapi_request_t request = reserve_request( trueFun, NULL );
     mcapi_wait( &request, &size, 0, &status );
     sassert( MCAPI_SUCCESS, status );
     mcapi_finalize( &status );
@@ -155,9 +155,9 @@ mcapi_boolean_t delTrueFun( void* data )
 
 //must work also if it takes some time
 test(wait_ok)
-    mcapi_request_t request = { delTrueFun, NULL };
     size_t size;
     mcapi_initialize( 1, 2, 0, 0, &info, &status );
+    mcapi_request_t request = reserve_request( delTrueFun, NULL );
     mcapi_wait( &request, &size, 100, &status );
     sassert( MCAPI_SUCCESS, status );
     mcapi_finalize( &status );
@@ -176,9 +176,9 @@ mcapi_boolean_t lastTrueFun( void* data )
 
 //must work also if becomes complete in last attempt
 test(wait_last_ok)
-    mcapi_request_t request = { lastTrueFun, NULL };
     size_t size;
     mcapi_initialize( 1, 2, 0, 0, &info, &status );
+    mcapi_request_t request = reserve_request( lastTrueFun, NULL );
     mcapi_wait( &request, &size, 150, &status );
     sassert( MCAPI_SUCCESS, status );
     mcapi_finalize( &status );
@@ -199,10 +199,10 @@ mcapi_boolean_t secondTrueFun( void* data )
 
 //must return immetiately after first look
 test(test)
-    mcapi_request_t request = { secondTrueFun, NULL };
     size_t size;
     mcapi_boolean_t res;
     mcapi_initialize( 1, 2, 0, 0, &info, &status );
+    mcapi_request_t request = reserve_request( secondTrueFun, NULL );
     res = mcapi_test( &request, &size, &status );
     sassert( MCAPI_PENDING, status );
     uassert( res == MCAPI_FALSE );

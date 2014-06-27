@@ -49,6 +49,7 @@ extern "C" {
            definitions and constants 
  ******************************************************************/
 //Defines how many priority levels there may be when sending messages
+#define MCAPI_MIN_PRORITY 0
 #define MCAPI_MAX_PRIORITY 10
 
 //Defines how many messages there may be in receiving buffer before
@@ -64,14 +65,21 @@ extern "C" {
 //Used on some unimplemented features
 #define MAX_NUM_ATTRIBUTES 4
 
+//Below constraints are ineffective, but must be provided for compatibility
+#define MCAPI_MAX_PORT 1
+#define MCAPI_MAX_NODE 1
+#define MCAPI_MAX_DOMAIN 1
+
 /******************************************************************
            datatypes
 ******************************************************************/ 
 
 //The runtime data associated with an endpoint.
+//NOTICE: implementation must not change defs or its contents outside
+//node initialization! Thus locking node mutex is sufficent for access
 struct endPointData
 {
-    mqd_t msgq_id; //the messagequeue used for communication
+    mqd_t msgq_id; //the messagequeue used for message communication
     struct endPointDef* defs; //predefined constants of the end point
     char open; //1 if channel open, else not 1
     char synced; //1 if sync message is sent during operation, else not 1
@@ -80,29 +88,41 @@ struct endPointData
     char inited; //1 if initalized, else not 1
     mqd_t chan_msgq_id; //the messagequeue used for channel communication
     mca_timeout_t time_out; //timeout for operations without other timeout
+    #ifdef ALLOW_THREAD_SAFETY
+    //mutex used to make use of endpoint thread safe
+    pthread_mutex_t mutex;
+    #endif
 };
 
 //the endpoint type must be defined as something usable.
 //and we shall deem it as pointer to implementation spedific endpoint data.
-//NOTICE: as it is pointer, its size shall be 32 bits in 32 bit processes and
-//64 bits in 64 bit processes, but it should not matter.
 typedef struct endPointData* mcapi_endpoint_t;
 
-//the request handle provided to wait function. includes the function called
-//by wait to perform the actual operation pluss the data to be supplied for it
+//the request handle provided to wait function.
 struct request_data
 {
+    //the function called by wait to perform the actual operation
     mca_boolean_t (*function) (void*);
+    //pointer to the data to be supplied for above function
     void* data;
+    //true if request is complete, else not
+    mca_boolean_t complete;
+    //true if reserved, else not
+    mca_boolean_t reserved;
+    #ifdef ALLOW_THREAD_SAFETY
+    //mutex used to make use of request thread safe
+    pthread_mutex_t mutex;
+    #endif
 };
 
 //define mcapi handle as our implementation spesific handle
-typedef struct request_data mcapi_request_t;
+typedef struct request_data* mcapi_request_t;
 
 //a generic handletype. is a struct so that may be expanded
 struct handle_type
 {
-    mcapi_endpoint_t us; //the endpoint, which is "us"
+    //the endpoint, which is "us"
+    mcapi_endpoint_t us;
 };
 
 //handles used to access channels. in our implementation we use above struct

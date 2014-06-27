@@ -1,53 +1,12 @@
 #include "channel.h"
+#include "endpoint.h"
+#include "node.h"
 #include <stdio.h>
+#include <errno.h>
 
 mcapi_boolean_t mcapi_chan_wait_connect( void* data )
 {
-    //our original.
-    //NOTICE: "us" is misleading, as it is not nescessarily from our node.
-    mcapi_endpoint_t us;
-    //both endpoints must be accessible before we may consider them connected
-    mcapi_endpoint_t our_clone;
-    mcapi_endpoint_t their_clone;
-    struct endPointID usID;
-    struct endPointID themID;
-    //while not really observed, status must be provided as parameter
-    mcapi_status_t status;
-
-    //the provided data is supposed to be castable to our endpoint
-    us = (mcapi_endpoint_t)data;
-
-    //check for valid endpoint
-    if ( !mcapi_trans_valid_endpoint( us ) )
-    {
-        fprintf(stderr, "Chan connect wait provided with invalid endpoint!\n");
-        return MCAPI_FALSE;
-    }
-
-    //obtain identifiers of both ends from defs.
-    usID = us->defs->us;
-    themID = us->defs->them;
-    
-    //first us
-    our_clone = mcapi_endpoint_get( usID.domain_id, usID.node_id,
-    usID.port_id, 0, &status );
-
-    if ( our_clone == MCAPI_NULL )
-    {
-        return MCAPI_FALSE;
-    }
-    
-    //then them
-    their_clone = mcapi_endpoint_get( themID.domain_id, themID.node_id,
-    themID.port_id, 0, &status );
-
-    if ( their_clone == MCAPI_NULL )
-    {
-        return MCAPI_FALSE;
-    }
-
-    //pmq-layer handles the rest
-    return pmq_create_chan( us );
+    return MCAPI_TRUE;
 }
 
 void mcapi_chan_connect(
@@ -64,17 +23,10 @@ void mcapi_chan_connect(
         return;
     }
 
-    //must not be null
+    //request must be valid
     if ( !mcapi_trans_valid_request_handle( request ) )
     {
         *mcapi_status = MCAPI_ERR_PARAMETER;
-        return;
-    }
-
-    //check for valid endpoints
-    if ( !mcapi_trans_valid_endpoints(send_endpoint,receive_endpoint) )
-    {
-        *mcapi_status = MCAPI_ERR_ENDP_INVALID;
         return;
     }
 
@@ -85,26 +37,63 @@ void mcapi_chan_connect(
         return;
     }
 
-    //must not be pending close
-    if ( send_endpoint->pend_close == 1 || receive_endpoint->pend_close == 1 )
-    {
-        *mcapi_status = MCAPI_ERR_CHAN_CLOSEPENDING;
-        return;
-    }
+    //lock sender
+    LOCK_ENPOINT( send_endpoint );
 
-    //check they are defined to same channel
-    if ( !sameID( send_endpoint->defs->us, receive_endpoint->defs->them ) ||
-    !sameID( send_endpoint->defs->them, receive_endpoint->defs->us ) )
+    //check for valid endpoint
+    if ( !mcapi_trans_valid_endpoint(send_endpoint) )
     {
         *mcapi_status = MCAPI_ERR_ENDP_INVALID;
+        goto ret;
+    }
+
+    //must not be pending close
+    if ( send_endpoint->pend_close == 1 )
+    {
+        *mcapi_status = MCAPI_ERR_CHAN_CLOSEPENDING;
+        goto ret;
+    }
+
+    //unlock sender, lock receiver
+    UNLOCK_ENPOINT( send_endpoint );
+    LOCK_ENPOINT( receive_endpoint );
+
+    //check for valid endpoint
+    if ( !mcapi_trans_valid_endpoint(receive_endpoint) )
+    {
+        *mcapi_status = MCAPI_ERR_ENDP_INVALID;
+        goto ret;
+    }
+
+    //must not be pending close
+    if ( receive_endpoint->pend_close == 1 )
+    {
+        *mcapi_status = MCAPI_ERR_CHAN_CLOSEPENDING;
+        goto ret;
+    }
+
+    //unlock receiver
+    UNLOCK_ENPOINT( receive_endpoint );
+
+    //fill in the request
+    *request = reserve_request( mcapi_chan_wait_connect, NULL );
+
+    //no request means there was none left
+    if ( *request == MCAPI_NULL )
+    {
+        *mcapi_status = MCAPI_ERR_REQUEST_LIMIT;
         return;
     }
 
-    //fill in the request and give pend.
-    request->function = mcapi_chan_wait_connect;
-    request->data = (void*)send_endpoint;
-    
+    //give pending
     *mcapi_status = MCAPI_PENDING;
+
+    return;
+
+    //mutexes must be unlocked even if error occurs
+    ret:
+        UNLOCK_ENPOINT( send_endpoint );
+        UNLOCK_ENPOINT( receive_endpoint );
 }
 
 mcapi_boolean_t mcapi_chan_wait_open( void* data )
@@ -115,10 +104,14 @@ mcapi_boolean_t mcapi_chan_wait_open( void* data )
     mcapi_endpoint_t our_endpoint;
     //how long message we got in bytes
     size_t mslen;
-    //the buffer used to RECEIVE the open code
-    char recv_buf[MCAPI_MAX_MESSAGE_SIZE];
+    //the buffer used for open code
+    char code_buf[MCAPI_MAX_PACKET_SIZE];
     //the status code is needed by some calls
-    mcapi_status_t status;
+    mcapi_status_t mcapi_status;
+    //the value returned
+    mcapi_boolean_t ret_val;
+    //direction of channel-to-close
+    channel_dir dir;
 
     //check null
     if ( data == MCAPI_NULL )
@@ -133,90 +126,90 @@ mcapi_boolean_t mcapi_chan_wait_open( void* data )
     //we get us from handy
     our_endpoint = handy->us;
 
+    //critical section begins here
+    #ifdef ALLOW_THREAD_SAFETY
+    if ( pthread_mutex_lock(&our_endpoint->mutex) != 0 )
+    {
+        perror("When locking endpoint mutex for open");
+        return MCAPI_FALSE;
+    }
+    #endif
+
     //check for valid endpoint
     if ( !mcapi_trans_valid_endpoint(our_endpoint) )
     {
         fprintf(stderr, "Open wait provided with invalid endpoint!\n");
-        return MCAPI_FALSE;
+        ret_val = MCAPI_FALSE;
+        goto ret;
+    }
+
+    //will branch based on direction, if none, it is an error
+    dir = our_endpoint->defs->dir;
+
+    if ( dir != CHAN_DIR_SEND && dir != CHAN_DIR_RECV )
+    {
+        fprintf(stderr, "Open wait provided with invalid directory!\n");
+        ret_val = MCAPI_FALSE;
+        goto ret;
     }
 
     //already open -> return immediately
     if ( our_endpoint->open == 1 )
-        return MCAPI_TRUE;
-
-    //open the channel. failure means retry
-    if ( pmq_open_chan( our_endpoint) != MCAPI_TRUE )
     {
-        return MCAPI_FALSE;
+        ret_val = MCAPI_TRUE;
+        our_endpoint->pend_open = 0;
+        goto ret;
     }
 
-    //skip if already sent
-    if ( our_endpoint->synced != 1 )
+    if ( dir == CHAN_DIR_SEND )
     {
-        //the other endpoint of channel open
-        mcapi_endpoint_t their_endpoint;
-        //the indentifier of the oppoposing side
-        mcapi_domain_t domain_id = our_endpoint->defs->them.domain_id;
-        mcapi_node_t node_id = our_endpoint->defs->them.node_id;
-        mcapi_port_t port_id = our_endpoint->defs->them.port_id;
-        //the buffer used to SEND the open code
-        char send_buf[] = CODE_OPEN_CONNECTED;
-
-        //wait only for fixed amount of time so that this is "non-blocking"
-        their_endpoint = mcapi_endpoint_get( domain_id, node_id, port_id,
-        0, &status );
-
-        //failure means ERROR as it should exist already!
-        if ( status != MCAPI_SUCCESS )
+        //open the channel. failure means retry
+        if ( our_endpoint->chan_msgq_id == -1  &&
+        pmq_open_chan_send( our_endpoint) != MCAPI_TRUE )
         {
-            fprintf(stderr, "The other end point did not exist after \
-            connect!\n");
-            return MCAPI_FALSE;
+            ret_val = MCAPI_FALSE;
+            goto ret;
         }
 
-        //now we can send the open code!
-        //the priority is max+2, so that we are sure it is ahead
-        //any messages, packets and scalars
-        //NOTICE: the messages are now used as it serves in configures!
-        status = pmq_send( their_endpoint->msgq_id, send_buf,
-        sizeof(send_buf), MCAPI_MAX_PRIORITY+2, 0 );
-
-        //failure means once again error. should never happen.
-        if ( status != MCAPI_SUCCESS )
-        {
-            perror("mq_send opening channel");
-
-            return MCAPI_FALSE;
-        }
-
-        //mark sync
-        our_endpoint->synced = 1;
+        //and now what remains to be done is send the open code to them
+        mcapi_status = pmq_send( our_endpoint->chan_msgq_id,
+        code_buf, 1, 0, 0 );
     }
+    else
+    {
+        //open the channel. failure means retry
+        if ( our_endpoint->chan_msgq_id == -1  &&
+        pmq_open_chan_recv( our_endpoint) != MCAPI_TRUE )
+        {
+            ret_val = MCAPI_FALSE;
+            goto ret;
+        }
 
-    //and now what remains to be done is receiving the open code to us
-    //NOTICE: the messagequeue is now used as it serves in configures!
-    status = pmq_recv( our_endpoint->msgq_id, recv_buf,
-    MCAPI_MAX_MESSAGE_SIZE, &mslen, NULL, 0 );
+        //and now what remains to be done is receiving the open code to us
+        mcapi_status = pmq_recv( our_endpoint->chan_msgq_id, code_buf,
+        MCAPI_MAX_PACKET_SIZE, &mslen, NULL, 0 );
+    }
 
     //an error means failure within this iteration.
-    if ( status != MCAPI_SUCCESS )
+    if ( mcapi_status != MCAPI_SUCCESS )
     {
-        return MCAPI_FALSE;
-    }
-
-    //check for the code
-    if ( strcmp( CODE_OPEN_CONNECTED, recv_buf ) != 0 )
-    {
-        //some random turf: we shall discard it
-        fprintf(stderr, "The channel connect received invalid message!\n");
-        return MCAPI_FALSE;
+        ret_val = MCAPI_FALSE;
+        goto ret;
     }
 
     //and mark us open
     our_endpoint->open = 1;
     our_endpoint->pend_open = 0;
 
-    return MCAPI_TRUE;
+    ret:
+        #ifdef ALLOW_THREAD_SAFETY
+        if ( pthread_mutex_unlock(&our_endpoint->mutex) != 0 )
+        {
+            perror("When unlocking endpoint mutex from open");
+        }
+        #endif
+
+        return ret_val;
 }
 
 void mcapi_chan_open(
@@ -242,11 +235,14 @@ void mcapi_chan_open(
         return;
     }
 
-    //must not be null
-    if ( !request )
+    //critical section for endpoint begins here
+    LOCK_ENPOINT( endpoint );
+
+    //request must be valid
+    if ( !mcapi_trans_valid_request_handle( request ) )
     {
         *mcapi_status = MCAPI_ERR_PARAMETER;
-        return;
+        goto ret;
     }
 
     //check for valid LOCAL endpoint
@@ -254,41 +250,51 @@ void mcapi_chan_open(
     mcapi_trans_endpoint_isowner( endpoint ) == MCAPI_FALSE )
     {
         *mcapi_status = MCAPI_ERR_ENDP_INVALID;
-        return;
+        goto ret;
     }
 
     //must not be pending, one way or another!
     if ( endpoint->pend_close == 1 )
     {
         *mcapi_status = MCAPI_ERR_CHAN_CLOSEPENDING;
-        return;
+        goto ret;
     }
 
     if ( endpoint->pend_open == 1 )
     {
         *mcapi_status = MCAPI_ERR_CHAN_OPENPENDING;
-        return;
+        goto ret;
     }
 
     //must not be open already
     if ( endpoint->open == 1 )
     {
         *mcapi_status = MCAPI_ERR_CHAN_OPEN;
-        return;
+        goto ret;
     }
 
     //check for correct chan type
     if ( endpoint->defs->type != expected_type )
     {
         *mcapi_status = MCAPI_ERR_CHAN_TYPE;
-        return;
+        goto ret;
     }
 
     //check for correct chan dir
     if ( endpoint->defs->dir != expected_dir )
     {
         *mcapi_status = MCAPI_ERR_CHAN_DIRECTION;
-        return;
+        goto ret;
+    }
+
+    //fill in the request
+    *request = reserve_request( mcapi_chan_wait_open, (void*)handle );
+
+    //no request means there was none left
+    if ( *request == MCAPI_NULL )
+    {
+        *mcapi_status = MCAPI_ERR_REQUEST_LIMIT;
+        goto ret;
     }
 
     //assign handle
@@ -296,109 +302,73 @@ void mcapi_chan_open(
     //mark sync
     handle->us->synced = -1;
 
-    //fill in the request
-    request->function = mcapi_chan_wait_open;
-    request->data = (void*)handle;
-
-    *mcapi_status = MCAPI_PENDING;
     //mark pending
     handle->us->pend_open = 1;
+    *mcapi_status = MCAPI_PENDING;
+
+    //mutex must be unlocked even if error occurs
+    ret:
+        UNLOCK_ENPOINT( endpoint );
 }
 
 mcapi_boolean_t mcapi_chan_wait_close( void* data )
 {
     //the endpoint which associated channel we are closing
     mcapi_endpoint_t our_endpoint;
-    //how long message we got in bytes: significanse is in error messages
-    size_t mslen;
-    //the buffer used to RECEIVE the open code
-    char recv_buf[MCAPI_MAX_MESSAGE_SIZE];
-    //the status code is needed by some calls
-    mcapi_status_t status;
+    //the value returned
+    mcapi_boolean_t ret_val = MCAPI_FALSE;
+    //true if sending, else false
+    mcapi_boolean_t sending;
+    //direction of channel-to-close
+    channel_dir dir;
+
+    //check null
+    if ( data == MCAPI_NULL )
+    {
+        fprintf(stderr, "Close wait provided with null data!\n");
+        return MCAPI_FALSE;
+    }
 
     //the provided data is supposed to be castable to our endpoint
     our_endpoint = (mcapi_endpoint_t)data;
 
-    //check for valid endpoint
-    if ( !mcapi_trans_valid_endpoint(our_endpoint) )
+    //critical section begins here
+    #ifdef ALLOW_THREAD_SAFETY
+    if ( pthread_mutex_lock(&our_endpoint->mutex) != 0 )
+    {
+        perror("When locking endpoint mutex for close");
+        return MCAPI_FALSE;
+    }
+    #endif
+
+    //will branch based on direction, if none, it is an error
+    dir = our_endpoint->defs->dir;
+
+    //check for valid endpoint and direction
+    if ( !mcapi_trans_valid_endpoint(our_endpoint) ||
+        ( dir != CHAN_DIR_SEND && dir != CHAN_DIR_RECV ) )
     {
         fprintf(stderr, "Chan close wait provided with invalid endpoint!\n");
-        return MCAPI_FALSE;
     }
-
-    //already closed -> return immediately
-    if ( our_endpoint->open != 1 )
-        return MCAPI_TRUE;
-
-    //skip if already sent
-    if ( our_endpoint->synced != 1 )
+    else
     {
-        //and now send the syncronation message to the other endpoint!
+        //PMQ-layer does its thing
+        pmq_delete_chan( our_endpoint, dir == CHAN_DIR_RECV );
 
-        //the other endpoint of channel open
-        mcapi_endpoint_t their_endpoint;
-        //the indentifier of the oppoposing side
-        mcapi_domain_t domain_id = our_endpoint->defs->them.domain_id;
-        mcapi_node_t node_id = our_endpoint->defs->them.node_id;
-        mcapi_port_t port_id = our_endpoint->defs->them.port_id; 
-        //the buffer used to SEND the close code
-        char send_buf[] = CODE_CLOSE_CONNECTED;
+        //no longer pending
+        our_endpoint->pend_close = 0;
 
-        //wait only for fixed amount of time so that this is "non-blocking"
-        their_endpoint = mcapi_endpoint_get( domain_id, node_id, port_id,
-        0, &status );
-
-        //failure means ERROR as it should exist already!
-        if ( status != MCAPI_SUCCESS )
-        {
-            fprintf(stderr, "The other end point did not exist after \
-            close!\n");
-            return MCAPI_FALSE;
-        }
-
-        //now we can send the open code!
-        //the priority is max+2, so that we are sure it is ahead
-        //any messages, packets and scalars
-        //NOTICE: the messages are now used as it serves in configures!
-        status = pmq_send( their_endpoint->msgq_id, send_buf,
-        sizeof(send_buf), MCAPI_MAX_PRIORITY+2, 0 );
-
-        //failure means once again error. should never happen.
-        if ( status != MCAPI_SUCCESS )
-        {
-            perror("mq_send closing channel");
-
-            return MCAPI_FALSE;
-        }
-
-        //mark sync
-        our_endpoint->synced = 1;
+        ret_val = MCAPI_TRUE;
     }
 
-    //and now what remains to be done is receiving the open code to us
-    //NOTICE: the messagequeue is now used as it serves in configures!
-    status = pmq_recv( our_endpoint->msgq_id, recv_buf,
-    MCAPI_MAX_MESSAGE_SIZE, &mslen, NULL, 0 );
-
-    //an error means failure within this iteration.
-    if ( status != MCAPI_SUCCESS )
+    #ifdef ALLOW_THREAD_SAFETY
+    if ( pthread_mutex_unlock(&our_endpoint->mutex) != 0 )
     {
-        return MCAPI_FALSE;
+        perror("When unlocking endpoint mutex from close");
     }
+    #endif
 
-    //check for the code
-    if ( strcmp( CODE_CLOSE_CONNECTED, recv_buf ) != 0 )
-    {
-        //some random turf: we shall discard it
-        fprintf(stderr, "The channel close received invalid message!\n" );
-        return MCAPI_FALSE;
-    }
-
-    //yeah, its done now.
-    our_endpoint->pend_close = 0;
-    our_endpoint->open = 0;
-
-    return MCAPI_TRUE;
+    return ret_val;
 }
 
 void mcapi_chan_close(
@@ -416,80 +386,60 @@ void mcapi_chan_close(
         return;
     }
 
-    //request musnt be null
-    if ( !request )
+    //request must be valid
+    if ( !mcapi_trans_valid_request_handle( request ) )
     {
         *mcapi_status = MCAPI_ERR_PARAMETER;
         return;
     }
 
+    //critical section for channel
+    LOCK_CHANNEL( handle );
+
     //handle must be valid
     if ( !mcapi_trans_valid_endpoint( handle.us ) )
     {
         *mcapi_status = MCAPI_ERR_CHAN_INVALID;
-        return;
+        goto ret;
     }
 
-    //mustn be pending, one wy or another!
-    if ( handle.us->pend_close == 1 )
-    {
-        *mcapi_status = MCAPI_ERR_CHAN_CLOSEPENDING;
-        return;
-    }
-
-    //must not be pending open
-    if ( handle.us->pend_open == 1 )
-    {
-        *mcapi_status = MCAPI_ERR_CHAN_OPENPENDING;
-        return;
-    }
-
-    //cant close what aint open, eh?
+    //cant close if not open
     if ( handle.us->open != 1 )
     {
         *mcapi_status = MCAPI_ERR_CHAN_NOTOPEN;
-        return;
+        goto ret;
     }
 
     //check for correct chan type
     if ( handle.us->defs->type != expected_type )
     {
         *mcapi_status = MCAPI_ERR_CHAN_TYPE;
-        return;
+        goto ret;
     }
 
     //check for correct chan dir
     if ( handle.us->defs->dir != expected_dir )
     {
         *mcapi_status = MCAPI_ERR_CHAN_DIRECTION;
-        return;
+        goto ret;
     }
 
-    //PMQ-layer does its thing
-    pmq_delete_chan( handle.us );
-    //mark sync
-    handle.us->synced = -1;
+    //fill in the request
+    *request = reserve_request( mcapi_chan_wait_close, (void*)handle.us );
 
-    //yeah, pending close
+    //no request means there was none left
+    if ( *request == MCAPI_NULL )
+    {
+        *mcapi_status = MCAPI_ERR_REQUEST_LIMIT;
+        goto ret;
+    }
+
+    //closed
+    handle.us->open = 0;
     handle.us->pend_close = 1;
     *mcapi_status = MCAPI_PENDING;
 
-    //fill in the request
-    request->function = mcapi_chan_wait_close;
-    request->data = (void*)handle.us;
-}
-
-inline mcapi_uint_t mcapi_chan_available(
-    MCAPI_IN mcapi_pktchan_recv_hndl_t receive_handle,
-    MCAPI_OUT mcapi_status_t* mcapi_status )
-{
-    //check for initialization
-    if ( mcapi_trans_initialized() == MCAPI_FALSE )
-    {
-        //no init means failure
-        *mcapi_status = MCAPI_ERR_NODE_NOTINIT;
-        return MCAPI_NULL;
-    }
-
-    return pmq_avail( receive_handle.us->chan_msgq_id, mcapi_status );
+    //mutex must be unlocked even if error occurs
+    ret:
+        UNLOCK_CHANNEL( handle );
 }

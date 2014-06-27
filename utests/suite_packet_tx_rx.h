@@ -988,6 +988,81 @@ test(pkt_re_open)
     }
 }
 
+//packets must be receiviable even if the sender has closed!
+test(pkt_recv_pend_close)
+
+    strncpy(send_buf, TEST_MESSAGE, MAX_MSG_LEN);
+
+    pid = fork();
+
+    if ( pid == 0 )
+    {
+        mcapi_pktchan_send_hndl_t handy;
+        struct endPointID us_id = FOO;
+        struct endPointID them_id = BAR;
+
+        mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
+        sender = mcapi_endpoint_create( us_id.port_id, &status );
+
+        mcapi_pktchan_send_open_i( &handy, sender, &request, &status );
+        mcapi_wait( &request, &size, 1001, &status );
+        mcapi_pktchan_send( handy, send_buf, MAX_MSG_LEN, &status );
+
+        mcapi_pktchan_send( handy, send_buf, MAX_MSG_LEN, &status );
+        mcapi_pktchan_send( handy, send_buf, MAX_MSG_LEN, &status );
+        mcapi_pktchan_send( handy, send_buf, MAX_MSG_LEN, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_pktchan_send_close_i( handy, &request, &status );
+        sassert( MCAPI_PENDING, status );
+        mcapi_wait( &request, &size, 1001, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_finalize( &status );
+
+        exit(0);
+    }
+    else if ( pid != -1 )
+    {
+        mcapi_pktchan_recv_hndl_t handy;
+        struct endPointID us_id = BAR;
+        struct endPointID them_id = FOO;
+
+        mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
+        receiver = mcapi_endpoint_create( us_id.port_id, &status );
+        sender = mcapi_endpoint_get( them_id.domain_id, them_id.node_id,
+        them_id.port_id, 1000, &status );
+        
+        mcapi_pktchan_connect_i( sender, receiver, &request, &status );
+        mcapi_wait( &request, &size, 1001, &status );
+        mcapi_pktchan_recv_open_i( &handy, receiver, &request, &status );
+        mcapi_wait( &request, &size, 1000, &status );
+        sassert( MCAPI_SUCCESS, status );
+
+        usleep(1000);
+
+        mcapi_pktchan_recv( handy, &recv_buf, &size, &status );
+        mcapi_pktchan_recv( handy, &recv_buf, &size, &status );
+        mcapi_pktchan_recv( handy, &recv_buf, &size, &status );
+        sassert( MCAPI_SUCCESS, status );
+        uassert( size == MAX_MSG_LEN );
+        uassert2( 0, memcmp( send_buf, recv_buf, MAX_MSG_LEN ) );
+        mcapi_pktchan_release( recv_buf, &status );
+        sassert( MCAPI_SUCCESS, status );
+        
+        mcapi_pktchan_recv_close_i( handy, &request, &status );
+        mcapi_wait( &request, &size, 1000, &status );
+
+        wait(NULL);
+
+        mcapi_finalize( &status );
+    }
+    else
+    {
+        perror("fork");
+    }
+}
+
 //see that when close is pending, certain functions will fail
 test(pkt_close_fail_pend)
 
@@ -1010,8 +1085,6 @@ test(pkt_close_fail_pend)
 
         mcapi_pktchan_send_close_i( handy, &request, &status );
         sassert( MCAPI_PENDING, status );
-        mcapi_pktchan_send_close_i( handy, &request, &status );
-        sassert( MCAPI_ERR_CHAN_CLOSEPENDING, status );
         mcapi_pktchan_send_open_i( &handy, sender, &request, &status );
         sassert( MCAPI_ERR_CHAN_CLOSEPENDING, status );
 
@@ -1039,8 +1112,6 @@ test(pkt_close_fail_pend)
         
         mcapi_pktchan_recv_close_i( handy, &request, &status );
         sassert( MCAPI_PENDING, status );
-        mcapi_pktchan_recv_close_i( handy, &request, &status );
-        sassert( MCAPI_ERR_CHAN_CLOSEPENDING, status );
         mcapi_pktchan_recv_open_i( &handy, receiver, &request, &status );
         sassert( MCAPI_ERR_CHAN_CLOSEPENDING, status );
         mcapi_pktchan_connect_i( sender, receiver, &request, &status );
@@ -1473,7 +1544,7 @@ test(pkt_re_open_del)
     }
 }
 
-//see if channel may be properly reused after delete on open
+//cannot delete if open
 test(pkt_re_open_del_mid)
 
     strncpy(send_buf, TEST_MESSAGE, MAX_MSG_LEN);
@@ -1493,18 +1564,12 @@ test(pkt_re_open_del_mid)
         sassert( MCAPI_SUCCESS, status );
 
         mcapi_pktchan_send_open_i( &handy, sender, &request, &status );
-
-        mcapi_endpoint_delete( sender, &status );
-        sassert( MCAPI_SUCCESS, status );
-        sender = mcapi_endpoint_create( us_id.port_id, &status );
-        sassert( MCAPI_SUCCESS, status );
-
-        mcapi_pktchan_send_open_i( &handy, sender, &request, &status );
         sassert( MCAPI_PENDING, status );
         mcapi_wait( &request, &size, 1001, &status );
         sassert( MCAPI_SUCCESS, status );
-        mcapi_pktchan_send( handy, send_buf, MAX_MSG_LEN, &status );
-        sassert( MCAPI_SUCCESS, status );
+
+        mcapi_endpoint_delete( sender, &status );
+        sassert( MCAPI_ERR_CHAN_CONNECTED, status );
 
         mcapi_finalize( &status );
 
@@ -1527,23 +1592,12 @@ test(pkt_re_open_del_mid)
         mcapi_pktchan_connect_i( sender, receiver, &request, &status );
         mcapi_wait( &request, &size, 1001, &status );
         mcapi_pktchan_recv_open_i( &handy, receiver, &request, &status );
-
-        mcapi_endpoint_delete( receiver, &status );
-        sassert( MCAPI_SUCCESS, status );
-        receiver = mcapi_endpoint_create( us_id.port_id, &status );
-        sassert( MCAPI_SUCCESS, status );
-        
-        mcapi_pktchan_recv_open_i( &handy, receiver, &request, &status );
         sassert( MCAPI_PENDING, status );
         mcapi_wait( &request, &size, 1000, &status );
         sassert( MCAPI_SUCCESS, status );
 
-        mcapi_pktchan_recv( handy, &recv_buf, &size, &status );
-        sassert( MCAPI_SUCCESS, status );
-        uassert( size == MAX_MSG_LEN );
-        uassert2( 0, memcmp( send_buf, recv_buf, MAX_MSG_LEN ) );
-        mcapi_pktchan_release( recv_buf, &status );
-        sassert( MCAPI_SUCCESS, status );
+        mcapi_endpoint_delete( receiver, &status );
+        sassert( MCAPI_ERR_CHAN_CONNECTED, status );
         
         wait(NULL);
 
@@ -1577,6 +1631,7 @@ void suite_packet_tx_rx()
     dotest(pkt_close)
     dotest(pkt_buffer_stress)
     dotest(pkt_re_open)
+    dotest(pkt_recv_pend_close)
     dotest(pkt_close_fail_pend)
     dotest(pkt_third_party_con)
     dotest(pkt_avail)

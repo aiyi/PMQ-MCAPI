@@ -36,11 +36,6 @@ void mcapi_chan_close(
     MCAPI_IN channel_type expected_type,
     MCAPI_IN channel_dir expected_dir);
 
-//used to check how many items the channel has ready for retrieval
-mcapi_uint_t mcapi_chan_available(
-    MCAPI_IN mcapi_pktchan_recv_hndl_t receive_handle,
-    MCAPI_OUT mcapi_status_t* mcapi_status );
-
 /* checks if the given channel handle is valid */
 extern mcapi_boolean_t mcapi_trans_valid_pktchan_send_handle( mcapi_pktchan_send_hndl_t handle );
 extern mcapi_boolean_t mcapi_trans_valid_pktchan_recv_handle( mcapi_pktchan_recv_hndl_t handle );

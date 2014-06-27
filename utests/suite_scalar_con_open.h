@@ -95,47 +95,6 @@ test(scl_conn_fail_def_inva)
     mcapi_finalize( &status );
 }
 
-//the endpoints must use scalars of same size
-test(scl_conn_fail_def_bits)
-    pid = fork();
-
-    if ( pid == 0 )
-    {
-        struct endPointID us_id = SSCL;
-        struct endPointID them_id = RSCL;
-
-        mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
-
-        sender = mcapi_endpoint_create( us_id.port_id, &status );
-        receiver =  mcapi_endpoint_get( them_id.domain_id, them_id.node_id,
-        them_id.port_id, 1000, &status );
-        sender->defs->scalar_size = 7;
-
-        mcapi_sclchan_connect_i( sender, receiver, &request, &status );
-        sassert( MCAPI_ERR_ATTR_INCOMPATIBLE, status );
-
-        mcapi_finalize( &status );
-        exit(0);
-    }
-    else if ( pid != -1 )
-    {
-        struct endPointID us_id = RSCL;
-        struct endPointID them_id = SSCL;
-
-        mcapi_initialize( us_id.domain_id, us_id.node_id, 0, 0, &info, &status );
-
-        receiver = mcapi_endpoint_create( us_id.port_id, &status );
-
-        wait(NULL);
-
-        mcapi_finalize( &status );
-    }
-    else
-    {
-        perror("fork");
-    }
-}
-
 //must not work if node is not initialized
 test(scl_open_fail_init)
     mcapi_sclchan_recv_open_i( NULL, sender, &request, &status );
@@ -357,7 +316,6 @@ void suite_scalar_con_open()
     dotest(scl_conn_fail_endp_same)
     dotest(scl_conn_fail_def_null)
     dotest(scl_conn_fail_def_inva)
-    dotest(scl_conn_fail_def_bits)
     dotest(scl_open_fail_init)
     dotest(scl_open_fail_handy)
     dotest(scl_open_fail_init)

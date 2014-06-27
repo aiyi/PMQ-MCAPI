@@ -3,6 +3,7 @@
 #include <string.h>
 #include <mcapi.h>
 #include "pmq_layer.h"
+#include "endpoint.h"
 
 void mcapi_msg_send(
     MCAPI_IN mcapi_endpoint_t send_endpoint, 
@@ -20,46 +21,59 @@ void mcapi_msg_send(
         return;
     }
 
+    //critical section for send endpoint begins here
+    LOCK_ENPOINT( send_endpoint );
+
     //check for valid endpoint
-    if ( mcapi_trans_valid_endpoints( send_endpoint, receive_endpoint )
-    == MCAPI_FALSE || !mcapi_trans_endpoint_isowner( send_endpoint ) )
+    if ( mcapi_trans_valid_endpoint( send_endpoint ) == MCAPI_FALSE ||
+    !mcapi_trans_endpoint_isowner( send_endpoint ) )
     {
         *mcapi_status = MCAPI_ERR_ENDP_INVALID;
-        return;
+        goto ret;
     }
 
-    //must not be channeled
-    if ( receive_endpoint->defs != MCAPI_NULL &&
-        receive_endpoint->defs->type != MCAPI_NO_CHAN )
+    //send endpoint is no locnger needed
+    UNLOCK_ENPOINT( send_endpoint );
+
+    //critical section for receive endpoint begins here
+    LOCK_ENPOINT( receive_endpoint );
+
+    //check for valid endpoint
+    if ( !mcapi_trans_valid_endpoint( receive_endpoint ) )
     {
-        *mcapi_status = MCAPI_ERR_GENERAL;
-        return;
+        *mcapi_status = MCAPI_ERR_ENDP_INVALID;
+        goto ret;
     }
 
     //check for priority
     if ( mcapi_trans_valid_priority( priority ) == MCAPI_FALSE )
     {
         *mcapi_status = MCAPI_ERR_PRIORITY;
-        return;
+        goto ret;
     }
 
     //check for buffer
     if ( mcapi_trans_valid_buffer_param(buffer) == MCAPI_FALSE )
     {
         *mcapi_status = MCAPI_ERR_PARAMETER;
-        return;
+        goto ret;
     }
 
     //check for size
     if ( buffer_size > MCAPI_MAX_MESSAGE_SIZE )
     {
         *mcapi_status = MCAPI_ERR_MSG_SIZE;
-        return;
+        goto ret;
     }
 
     //POSIX will handle the rest, timeout of sending endpoint is used
     *mcapi_status = pmq_send( receive_endpoint->msgq_id, buffer, buffer_size,
     MCAPI_MAX_PRIORITY - priority, send_endpoint->time_out );
+
+    //mutex must be unlocked even if error occurs
+    ret:
+        UNLOCK_ENPOINT( send_endpoint );
+        UNLOCK_ENPOINT( receive_endpoint );
 }
 
 void mcapi_msg_recv(
@@ -84,51 +98,41 @@ void mcapi_msg_recv(
         return;
     }
 
+    //critical section for endpoint begins here
+    LOCK_ENPOINT( receive_endpoint );
+
     //check for valid endpoint
     if ( mcapi_trans_valid_endpoint( receive_endpoint ) == MCAPI_FALSE ||
     !mcapi_trans_endpoint_isowner( receive_endpoint ) )
     {
         *mcapi_status = MCAPI_ERR_ENDP_INVALID;
-        return;
+        goto ret;
     }
 
     //check for buffer
     if ( mcapi_trans_valid_buffer_param(buffer) == MCAPI_FALSE )
     {
         *mcapi_status = MCAPI_ERR_PARAMETER;
-        return;
+        goto ret;
     }
 
     //check for received size
     if ( received_size == NULL )
     {
         *mcapi_status = MCAPI_ERR_PARAMETER;
-        return;
-    }
-
-    //must not be channeled
-    if ( receive_endpoint->defs != MCAPI_NULL &&
-        receive_endpoint->defs->type != MCAPI_NO_CHAN )
-    {
-        *mcapi_status = MCAPI_ERR_GENERAL;
-        return;
+        goto ret;
     }
 
     //POSIX will handle the recv, timeout of receiving endpoint is used
     *mcapi_status = pmq_recv( receive_endpoint->msgq_id, recv_buf, 
     MCAPI_MAX_MESSAGE_SIZE, &mslen, &msg_prio, receive_endpoint->time_out );
 
+    //critical section ends
+    UNLOCK_ENPOINT( receive_endpoint );
+
+    //did not work -> skip further processing
     if ( *mcapi_status != MCAPI_SUCCESS )
     {
-        return;
-    }
-
-    //pardon? wrong priority indicates wrong sort of traffic
-    if( msg_prio < 0 || msg_prio > MCAPI_MAX_PRIORITY )
-    {
-        fprintf(stderr,"Received message with wrong priority!");
-        *mcapi_status = MCAPI_ERR_GENERAL;
-
         return;
     }
 
@@ -147,12 +151,21 @@ void mcapi_msg_recv(
 
     //finally, copy the intermediate buffer to the output buffer
     memcpy( buffer, recv_buf, *received_size );
+
+    return;
+
+    //mutex must be unlocked even if error occurs
+    ret:
+        UNLOCK_ENPOINT( receive_endpoint );
 }
 
 mcapi_uint_t mcapi_msg_available(
     MCAPI_IN mcapi_endpoint_t receive_endpoint,
     MCAPI_OUT mcapi_status_t* mcapi_status )
 {
+    //return value
+    mcapi_uint_t to_ret = MCAPI_NULL;
+
     //check for initialization
     if ( mcapi_trans_initialized() == MCAPI_FALSE )
     {
@@ -160,6 +173,8 @@ mcapi_uint_t mcapi_msg_available(
         *mcapi_status = MCAPI_ERR_NODE_NOTINIT;
         return MCAPI_NULL;
     }
+
+    UNLOCK_ENPOINT( receive_endpoint );
 
     //check for valid endpoint
     if ( mcapi_trans_valid_endpoint( receive_endpoint ) == MCAPI_FALSE ||
@@ -169,5 +184,9 @@ mcapi_uint_t mcapi_msg_available(
         return MCAPI_NULL;
     }
 
-    return pmq_avail( receive_endpoint->msgq_id, mcapi_status );
+    to_ret = pmq_avail( receive_endpoint->msgq_id, mcapi_status );
+
+    UNLOCK_ENPOINT( receive_endpoint );
+
+    return to_ret;
 }

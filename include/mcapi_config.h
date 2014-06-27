@@ -13,20 +13,24 @@
 #define MCAPI_MAX_BUFFERS 32
 #endif
 
+//Maximum number of simulaenous non-blocking requests
+#ifndef MCAPI_MAX_REQUESTS
+#define MCAPI_MAX_REQUESTS 32
+#endif
+
 //Maximum lenght of a message in bytes. NOTICE: must not be shorter than
 //string defines in channel.h or channel open and close shall fail.
 #ifndef MCAPI_MAX_MESSAGE_SIZE
 #define MCAPI_MAX_MESSAGE_SIZE 128
 #endif
 
-//Maximum length of a packet in bytes
+//Maximum length of a packet in bytes. NOTICE: must not be shorter than
+//eight (8) bytes!
 #ifndef MCAPI_MAX_PACKET_SIZE
 #define MCAPI_MAX_PACKET_SIZE 1024
 #endif
 
-//Below constraints are ineffective, but must be provided for compatibility
-#define MCAPI_MAX_PORT 1
-#define MCAPI_MAX_NODE 1
-#define MCAPI_MAX_DOMAIN 1
+//Uncomment to allow thread safety. WILL LIKELY AFFECT PERFORMANCE
+//#define ALLOW_THREAD_SAFETY
 
 #endif

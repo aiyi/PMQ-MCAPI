@@ -57,7 +57,7 @@ if [ -f $hitlist ]; then
 fi
 
 #And finally remove the old hitlist before new one is generated
-rm $hitlist
+rm $hitlist &> /dev/null
 
 #run the cleaner before processes: it is mandatory
 ./cleaner

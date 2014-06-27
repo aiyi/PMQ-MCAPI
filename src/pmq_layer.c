@@ -27,11 +27,11 @@
     time_limit.tv_nsec = time_limit.tv_nsec%NANO_IN_ONE;
 
 inline mcapi_status_t pmq_send(
-    MCAPI_IN mqd_t msgq_id, 
-    MCAPI_IN void* buffer, 
-    MCAPI_IN size_t buffer_size, 
-    MCAPI_IN mcapi_priority_t priority,
-    MCAPI_IN mcapi_timeout_t timeout )
+    mqd_t msgq_id, 
+    void* buffer, 
+    size_t buffer_size, 
+    mcapi_priority_t priority,
+    mcapi_timeout_t timeout )
 {
     //the result of action
     mqd_t result = -1;
@@ -71,12 +71,12 @@ inline mcapi_status_t pmq_send(
 }
 
 inline mcapi_status_t pmq_recv(
-    MCAPI_IN mqd_t msgq_id, 
-    MCAPI_OUT void* buffer, 
-    MCAPI_IN size_t buffer_size,
-    MCAPI_OUT size_t* received_size, 
-    MCAPI_OUT mcapi_priority_t* priority,
-    MCAPI_IN mcapi_timeout_t timeout )
+    mqd_t msgq_id, 
+    void* buffer, 
+    size_t buffer_size,
+    size_t* received_size, 
+    mcapi_priority_t* priority,
+    mcapi_timeout_t timeout )
 {
     if ( timeout == MCAPI_TIMEOUT_INFINITE )
     {
@@ -113,8 +113,8 @@ inline mcapi_status_t pmq_recv(
 }
 
 inline mcapi_uint_t pmq_avail(
-    MCAPI_IN mqd_t msgq_id,
-    MCAPI_OUT mcapi_status_t* mcapi_status )
+    mqd_t msgq_id,
+    mcapi_status_t* mcapi_status )
 {
     //the retrieved attributes are obtained here for the check
     struct mq_attr uattr;
@@ -135,7 +135,7 @@ inline mcapi_uint_t pmq_avail(
 }
 
 inline mcapi_status_t pmq_create_epd(
-    MCAPI_IN mcapi_endpoint_t endpoint )
+    mcapi_endpoint_t endpoint )
 {
     //the queue created for endpoint
     mqd_t msgq_id;
@@ -179,8 +179,8 @@ inline mcapi_status_t pmq_create_epd(
 }
 
 inline mcapi_status_t pmq_open_epd(
-    MCAPI_IN mcapi_endpoint_t endpoint, 
-	MCAPI_IN mcapi_timeout_t timeout )
+    mcapi_endpoint_t endpoint, 
+	mcapi_timeout_t timeout )
 {
     //the queue to be obtained
     mqd_t msgq_id = -1;
@@ -219,7 +219,7 @@ inline mcapi_status_t pmq_open_epd(
 }
 
 inline void pmq_delete_epd(
-    MCAPI_IN mcapi_endpoint_t endpoint )
+    mcapi_endpoint_t endpoint )
 {
     //needed for the receive call
     char recv_buf[MCAPI_MAX_MESSAGE_SIZE];
@@ -242,7 +242,7 @@ inline void pmq_delete_epd(
     endpoint->msgq_id = -1;
 }
 
-inline mcapi_boolean_t pmq_create_chan( mcapi_endpoint_t us )
+inline mcapi_boolean_t pmq_open_chan_recv( mcapi_endpoint_t us )
 {
     //Blocking, maximum number of msgs, their max size and current number
     struct mq_attr attr = { 0, MAX_QUEUE_ELEMENTS, 0, 0 };
@@ -267,7 +267,7 @@ inline mcapi_boolean_t pmq_create_chan( mcapi_endpoint_t us )
     }
     else
     {
-        fprintf(stderr, "Channel connect provided with null chan type!\n");
+        fprintf(stderr, "Channel recv open provided with null chan type!\n");
         return MCAPI_FALSE;
     }
     
@@ -278,7 +278,8 @@ inline mcapi_boolean_t pmq_create_chan( mcapi_endpoint_t us )
     //if did not work, then its an error
     if ( msgq_id == -1 )
     {
-        perror("When opening msq from connect");getchar();
+        perror("When opening msq from recv open");
+
         return MCAPI_FALSE;
     }
 
@@ -288,26 +289,23 @@ inline mcapi_boolean_t pmq_create_chan( mcapi_endpoint_t us )
         perror("When obtaining channel msq attributes for check");
         return MCAPI_FALSE;
     }
-
-    //Close this end of the queue so that no residual is left in any case.
-    //In the other hand, if this node needs it later, it shall reopen it
-    //at open-calls.
-    mq_close( msgq_id );
     
     //...and check if match
     if ( attr.mq_flags != uattr.mq_flags || attr.mq_maxmsg != uattr.mq_maxmsg
     || attr.mq_msgsize != uattr.mq_msgsize )
     {
-        fprintf(stderr, "Set channel sq attributes do not match!\n");
+        fprintf(stderr, "Set channel msq attributes do not match!\n");
         return MCAPI_FALSE;
     }
+
+    //success! assign channel to handle
+    us->chan_msgq_id = msgq_id;
 
     //done
     return MCAPI_TRUE;
 }
 
-inline mcapi_boolean_t pmq_open_chan(
-    MCAPI_IN mcapi_endpoint_t our_endpoint )
+inline mcapi_boolean_t pmq_open_chan_send( mcapi_endpoint_t our_endpoint )
 {
     //the queue to be obtained
     mqd_t msgq_id;
@@ -323,7 +321,7 @@ inline mcapi_boolean_t pmq_open_chan(
         {
             //print only if not non-existing, as we expect it.
             if ( errno != ENOENT )
-                perror( "when obtaining channel queue");
+                perror( "when obtaining channel queue for send");
 
             return MCAPI_FALSE;
         }
@@ -336,11 +334,14 @@ inline mcapi_boolean_t pmq_open_chan(
 }
 
 inline void pmq_delete_chan(
-    MCAPI_IN mcapi_endpoint_t endpoint )
+    mcapi_endpoint_t endpoint,
+    mcapi_boolean_t unlink )
 {
     //close and unlink the queue
     mq_close( endpoint->chan_msgq_id );
-    mq_unlink( endpoint->defs->chan_name );
+
+    if ( unlink == MCAPI_TRUE )
+        mq_unlink( endpoint->defs->chan_name );
 
     //nullify the mgsq_id
     endpoint->chan_msgq_id = -1;

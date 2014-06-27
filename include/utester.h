@@ -21,7 +21,7 @@ void clean();
 #define test(NAME) \
 void utest##NAME() \
 { \
-    char names[] = #NAME;\
+    char names[] = #NAME; \
     print_test( names ); \
     addUTest(); \
     clean();

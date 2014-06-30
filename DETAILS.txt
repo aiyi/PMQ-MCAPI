@@ -34,11 +34,14 @@ LICENSE.txt     | THE LICENSE OF THIS SOFTWARE
 README.txt      | Instructions for running the provided "hello world" example
 DETAILS.txt     | This document: Contains more detailed information about this
                   MCAPI implementation and provided files.
-launcher.sh     | Script to build and launch application processes.
+launch.sh       | Script to build application processes.
+                  More details in chapter LAUNCHING PROCESSES
+launcher.sh     | Script to launch application processes.
                   More details in chapter LAUNCHING PROCESSES
 makefile.mcapi  | Script to build the implementation object files
                   More details in chapter BUILDING THE IMPLEMENTATION
 makefile.cleaner| Script to build and run the cleaner executable.
+                  More details in chapter CLEANER
 
 FOLDERS:
 
@@ -54,39 +57,34 @@ FOLDERS:
 
 ***LAUNCHING PROCESSES***
 
-It is highly recommended to use launcher.sh or other script to
-launch processes in correct order, with correct parameters and with correct
-priority. Furthermore, the cleaner executable should be always ran before or
-after application processes as it will unlink any residual message queues left
-by previous runs of the application. If such residuals exist when application
-is launched again, it will result undefined behavior. Below example illustrates
-how the launcher script is executed.
+It is highly recommended to use launch.sh or other script to launch processes.
+While launch.sh is supposed to be called by user, launcher.sh is used by
+launch.sh. Below example illustrates how the launcher script is executed.
 
-    example: ./launcher.sh
+    example: ./launch.sh
 
 If one application process crashes or exits, the other processes should also 
 should also do so before restart. The provided script helps with that by
 killing the old processes. You should not execute the launcher again before the
-previous instance have launched the application processes, which is indicated with print "PROCESSES LAUNCHED".
+previous instance have launched the application processes, which is indicated 
+with print "PROCESSES LAUNCHED". Furthermore, launcher.sh runs the required
+cleaner executable. See chapter CLEANER for more details.
 
-While the launcher.sh is executed, it inserts the names of launched processes
+When the launch.sh is executed, names of the launched processes are inserted
 to a file called "hitlist.txt". When the script is ran again, the script goes 
 over the list and kills the listed processes. For this reason, you may want
-make sure that no process use the same name when launched.
+make sure that no two processes use the same name when launched. Signal SIGTSTP
+(Ctrl + Z) will also kill the processes, but it will not work before processes 
+are launched.
 
-In beginning of launcher.sh there is place for application executables.
-Insert them there along with the parameters.
+In beginning of launch.sh there is place for application executables.
+Insert them there.
 
-    example: PROCESSES=(ITcyan.exe 'ITblue.exe 32')
+    example: PROCESSES=(ITcyan.exe ITblue.exe)
 
-Within the line below, you will notice niceness, it is an optional feature
-allowing to influence the priorities of launched processes. Smaller niceness
-mean higher priority. Within the development environment (see chapter TEST ENVIRONMENTS) the minimum niceness for most processes was 10.
-
-The next two lines allows to choose if niceness is used and executables are
-built while executing the script. Not all platforms support niceness and some
-need cross compilation. The section for build rules is further below within the
-script. See more details in chapter BUILDING THE IMPLEMENTATION.
+The next line allows to choose if executables are built while executing the 
+script. The section for build rules is further below within the script. See
+more details in chapter BUILDING THE IMPLEMENTATION.
 
 ***DEFINING ENDPOINTS***
 
@@ -175,6 +173,8 @@ message queues used by defined endpoints and call "mq_unlink" with said
 name as a parameter. This will remove the name, but the message queue proper
 will still exist if any process uses it. Thus, executing the cleaner while
 application processes are running will result in undefined behavior.
+Futhermore, if cleaner is not ran before application processes, they may be
+unable to open the new POSIX message queues properly.
 
 Since the cleaner needs access to said defined endpoints, it needs to be
 recompiled every time they are changed. A makefile, "makefile.cleaner",
@@ -228,7 +228,7 @@ ENVIRONMENTS. Flag -lrt must be provided to GCC so that it will be able to
 access the POSIX message queues. The implementation expects that the comment 
 notation "//" is supported by the compiler. Also usleep, clock_gettime and 
 CLOCK_REALTIME are used. Files sys/stat.h and sys/fcntl.h are needed for some 
-defines.
+defines. POSIX semaphores are needed for thread safe implementation.
 
 ***INTERNAL STRUCTURE OF IMPLEMENTATION***
 
@@ -266,15 +266,16 @@ Within this implementation each node is supposed to be one process. Domains are
 user defined, but within the same processor. Endpoints must be defined before
 compilation. See chapter DEFINING ENDPOINTS for more details.
 
-Most of of the non-blocking functions are not implemented. Notable exceptions
-are calls oriented with connecting, opening and closing channels.
-
 This implementation allows use of channel endpoints for message based
 communication, even if both ends of channels are open and connected.
 Communication between scalar endpoints of different size may be allowed,
 but is strongly discouraged. Channels may work even without connection.
-NOTICE: none of these relaxations to specification should be utilized, as
+
+NOTICE: none of above relaxations to specification should be utilized, as
 it will result in non-portable application.
+
+Most of of the non-blocking functions are not implemented. Notable exceptions
+are calls oriented with connecting, opening and closing channels.
 
 The only supported endpoint attribute is MCAPI_ENDP_ATTR_TIMEOUT, which will
 set the timeout for the blocking send and receive calls. As such, the only
@@ -345,7 +346,7 @@ first in the list was also the implementation environment.
 
 SYSTEM #1:
     Operating system: CentOS Release 6.5 (Final)
-    Kernel: Linux 2.6.32-431.5.1.el6.x86_64
+    Kernel: Linux 2.6.32-431.17.1.el6.x86_64
 
     Processor: 4x Intel(R) Core(TM)2 Quad CPU Q9650 @ 3.00GHZ
     Memory: 3.6 Gib

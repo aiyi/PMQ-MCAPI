@@ -18,8 +18,7 @@
 #define MCAPI_MAX_REQUESTS 32
 #endif
 
-//Maximum lenght of a message in bytes. NOTICE: must not be shorter than
-//string defines in channel.h or channel open and close shall fail.
+//Maximum lenght of a message in bytes.
 #ifndef MCAPI_MAX_MESSAGE_SIZE
 #define MCAPI_MAX_MESSAGE_SIZE 128
 #endif

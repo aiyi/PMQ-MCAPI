@@ -1,6 +1,6 @@
-HOW TO BUILD AND RUN THE EXAMPLE: ./launcher
+HOW TO BUILD AND RUN THE EXAMPLE: ./launch
 
-Get started by calling "./launcher" in the folder of this file. This will build
+Get started by calling "./launch" in the folder of this file. This will build
 and run the example application found in directory "example", which contains a
 process sending scalar to another and print about it. A cleaner is built and
 ran before the actual application processes.

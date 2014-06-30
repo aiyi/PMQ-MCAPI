@@ -1,4 +1,4 @@
-CALL "./launcher"
+CALL "./launch"
 
 ...and the script will compile and run integration tests. Also the cleaner
 program is compiled and ran. Some integration test executables are dependent on

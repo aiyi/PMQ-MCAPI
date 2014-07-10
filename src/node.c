@@ -332,6 +332,7 @@ mcapi_boolean_t mcapi_wait(
         //the operation is complete -> ready to return with success
         *mcapi_status = MCAPI_SUCCESS;
         (*request)->complete = MCAPI_TRUE;
+        (*request)->reserved = MCAPI_FALSE;
     }
 
     #ifdef ALLOW_THREAD_SAFETY

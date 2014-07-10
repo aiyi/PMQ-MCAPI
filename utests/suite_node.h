@@ -81,6 +81,15 @@ test(wait_fail_req)
     mcapi_finalize( &status );
 }
 
+//stuff pointing from request paramater must not be null
+test(wait_fail_req2)
+    mcapi_initialize( 1, 2, 0, 0, &info, &status );
+    mcapi_request_t request = MCAPI_NULL;
+    mcapi_wait( &request, NULL, 1001, &status );
+    sassert( MCAPI_ERR_REQUEST_INVALID, status );
+    mcapi_finalize( &status );
+}
+
 //used below
 mcapi_boolean_t failFun( void* data )
 {
@@ -197,6 +206,44 @@ mcapi_boolean_t secondTrueFun( void* data )
     return MCAPI_TRUE;
 }
 
+//test if every request possible may be obtained, then released and then obtained
+//again. Will not release second time, as next initialization will free everthing.
+test(wait_stress)
+    mcapi_request_t request[MCAPI_MAX_REQUESTS];
+    mcapi_request_t request_fail;
+    int i = 0;
+    size_t size;
+
+    mcapi_initialize( 1, 2, 0, 0, &info, &status );
+
+    for ( i = 0; i < MCAPI_MAX_REQUESTS; ++i )
+    {
+        request[i] = reserve_request( trueFun, NULL );
+        uassert( request[i] != MCAPI_NULL );
+    }
+
+    request_fail = reserve_request( trueFun, NULL );
+    uassert( request_fail == MCAPI_NULL );
+
+    for ( i = 0; i < MCAPI_MAX_REQUESTS; ++i )
+    {
+        mcapi_wait( &request[i], &size, 150, &status );
+        sassert( MCAPI_SUCCESS, status );
+    }
+
+    for ( i = 0; i < MCAPI_MAX_REQUESTS; ++i )
+    {
+        request[i] = reserve_request( trueFun, NULL );
+        uassert( request[i] != MCAPI_NULL );
+    }
+
+    request_fail = reserve_request( trueFun, NULL );
+    uassert( request_fail == MCAPI_NULL );
+
+    mcapi_finalize( &status );
+}
+
+
 //must return immetiately after first look
 test(test)
     size_t size;
@@ -242,12 +289,14 @@ void suite_node()
     dotest(fail_finalize)
     dotest(wait_fail_init)
     dotest(wait_fail_req)
+    dotest(wait_fail_req2)
     dotest(wait_fail_size)
     dotest(wait_fail_req_null)
     dotest(wait_timeout)
     dotest(wait_ok_imm)
     dotest(wait_ok)
     dotest(wait_last_ok)
+    dotest(wait_stress)
     dotest(test)
     dotest(status_off_limit)
     dotest(status_null_term_short)

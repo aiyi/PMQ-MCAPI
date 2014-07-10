@@ -52,10 +52,6 @@ extern "C" {
 #define MCAPI_MIN_PRORITY 0
 #define MCAPI_MAX_PRIORITY 10
 
-//Defines how many messages there may be in receiving buffer before
-//sender will block.
-#define MAX_QUEUE_ELEMENTS 10 
-
 //The ID of implementing organization
 #define MCAPI_ORG_ID 33720
 

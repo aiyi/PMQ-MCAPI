@@ -5,6 +5,8 @@
 #include <mcapi.h>
 #include <mqueue.h>
 
+void givewals( unsigned long* before, unsigned long* after );
+
 //sends a message via posix message queue
 //mqd_t msgq_id: the identifier of the receiving queue
 //void* buffer: the buffer containing the message

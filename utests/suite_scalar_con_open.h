@@ -222,7 +222,7 @@ test(scl_open_fail_req_null)
 }
 
 //channel type must be right
-test(scl_open_fail_chan)
+test(scl_open_fail_chan_type)
     mcapi_sclchan_send_hndl_t handy;
     struct endPointID us_id = SSCL;
     struct endPointID them_id = RSCL;
@@ -322,6 +322,7 @@ void suite_scalar_con_open()
     dotest(scl_open_fail_dir)
     dotest(scl_open_fail_endp)
     dotest(scl_open_fail_req_null)
-    dotest(scl_open_fail_chan)
+    dotest(scl_open_fail_chan_type)
+    dotest(scl_open_fail_open)
     dotest(scl_open_fail_timeout_endp)
 }

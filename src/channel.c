@@ -30,6 +30,9 @@ void mcapi_chan_connect(
         return;
     }
 
+    //allocate zero request handle
+    *request = MCAPI_NULL;
+
     //endpoints musnt be same
     if ( send_endpoint == receive_endpoint )
     {
@@ -228,6 +231,16 @@ void mcapi_chan_open(
         return;
     }
 
+    //request must be valid
+    if ( !mcapi_trans_valid_request_handle( request ) )
+    {
+        *mcapi_status = MCAPI_ERR_PARAMETER;
+        goto ret;
+    }
+
+    //allocate zero request handle
+    *request = MCAPI_NULL;
+
     //must not be null
     if ( !handle )
     {
@@ -237,13 +250,6 @@ void mcapi_chan_open(
 
     //critical section for endpoint begins here
     LOCK_ENPOINT( endpoint );
-
-    //request must be valid
-    if ( !mcapi_trans_valid_request_handle( request ) )
-    {
-        *mcapi_status = MCAPI_ERR_PARAMETER;
-        goto ret;
-    }
 
     //check for valid LOCAL endpoint
     if ( !mcapi_trans_valid_endpoint(endpoint) || 
@@ -392,6 +398,9 @@ void mcapi_chan_close(
         *mcapi_status = MCAPI_ERR_PARAMETER;
         return;
     }
+
+    //allocate zero request handle
+    *request = MCAPI_NULL;
 
     //critical section for channel
     LOCK_CHANNEL( handle );

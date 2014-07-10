@@ -6,6 +6,12 @@
 #ifndef MCAPI_CONFIG
 #define MCAPI_CONFIG
 
+//Defines how many messages there may be in POSIX message queue at time.
+//Sender will block if full.
+#ifndef MAX_QUEUE_ELEMENTS
+#define MAX_QUEUE_ELEMENTS 10
+#endif
+
 //How many buffers there are in total availiable for packet receive.
 //As a fist rule, one for each receiving packet endpoint, but only if
 //previously obtained buffer is released before receive is called again.

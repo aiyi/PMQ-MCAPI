@@ -266,7 +266,7 @@ test(pkt_open_fail_req_null)
 }
 
 //channel type must be valid
-test(pkt_open_fail_chan)
+test(pkt_open_fail_chan_type)
     mcapi_pktchan_send_hndl_t handy;
     struct endPointID us_id = SEND;
     struct endPointID them_id = RECV;
@@ -629,7 +629,7 @@ void suite_packet_con_open()
     dotest(pkt_open_fail_pend)
     dotest(pkt_open_fail_endp)
     dotest(pkt_open_fail_req_null)
-    dotest(pkt_open_fail_chan)
+    dotest(pkt_open_fail_chan_type)
     dotest(pkt_open_fail_timeout_endp)
     dotest(pkt_open_fail_open)
     dotest(pkt_chan_msg_ban)

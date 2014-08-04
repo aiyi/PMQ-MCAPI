@@ -1,5 +1,5 @@
 //functions in this module are used internally by both channel types
-//channel type spesific functions are on their respective modules
+//channel type specific functions are on their respective modules
 #ifndef CHANNEL_H
 #define CHANNEL_H
 

@@ -32,7 +32,7 @@ void mcapi_msg_send(
         goto ret;
     }
 
-    //send endpoint is no locnger needed
+    //send endpoint is no longer needed
     UNLOCK_ENPOINT( send_endpoint );
 
     //critical section for receive endpoint begins here
@@ -67,6 +67,7 @@ void mcapi_msg_send(
     }
 
     //POSIX will handle the rest, timeout of sending endpoint is used
+    //Priority is ascending in pmq, and thus inversed
     *mcapi_status = pmq_send( receive_endpoint->msgq_id, buffer, buffer_size,
     MCAPI_MAX_PRIORITY - priority, send_endpoint->time_out );
 

@@ -79,10 +79,10 @@ struct endPointData
     struct endPointDef* defs; //predefined constants of the end point
     char open; //1 if channel open, else not 1
     char synced; //1 if sync message is sent during operation, else not 1
-    char pend_open; //1 if penging open, else not 1
-    char pend_close; //1 if penging close, else not 1
-    char inited; //1 if initalized, else not 1
-    mqd_t chan_msgq_id; //the messagequeue used for channel communication
+    char pend_open; //1 if pending open, else not 1
+    char pend_close; //1 if pending close, else not 1
+    char inited; //1 if initialized, else not 1
+    mqd_t chan_msgq_id; //the message queue used for channel communication
     mca_timeout_t time_out; //timeout for operations without other timeout
     #ifdef ALLOW_THREAD_SAFETY
     //mutex used to make use of endpoint thread safe
@@ -91,7 +91,7 @@ struct endPointData
 };
 
 //the endpoint type must be defined as something usable.
-//and we shall deem it as pointer to implementation spedific endpoint data.
+//and we shall deem it as pointer to implementation specific endpoint data.
 typedef struct endPointData* mcapi_endpoint_t;
 
 //the request handle provided to wait function.
@@ -111,10 +111,10 @@ struct request_data
     #endif
 };
 
-//define mcapi handle as our implementation spesific handle
+//define mcapi handle as our implementation specific handle
 typedef struct request_data* mcapi_request_t;
 
-//a generic handletype. is a struct so that may be expanded
+//a generic handle type. is a struct so that may be expanded
 struct handle_type
 {
     //the endpoint, which is "us"

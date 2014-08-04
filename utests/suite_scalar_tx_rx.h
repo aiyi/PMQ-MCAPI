@@ -643,7 +643,7 @@ test(scl_send_recv_32bits)
     }
 }
 
-//a scalar availiable
+//a scalar available
 test(scl_avail)
 
     pid = fork();
@@ -719,7 +719,7 @@ test(scl_avail)
     }
 }
 
-//a scalar availiable
+//a scalar available
 test(scl_not_avail)
 
     pid = fork();

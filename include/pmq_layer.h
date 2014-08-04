@@ -53,7 +53,7 @@ inline mcapi_uint_t pmq_avail(
 inline mcapi_status_t pmq_create_epd(
     mcapi_endpoint_t endpoint );
 
-//sets messagequeue for the given remote endpoint
+//sets message queue for the given remote endpoint
 //mcapi_timeout_t timeout: the timeout in milliseconds
 //if set to MCAPI_TIMEOUT_INFINITE, there is no timeout
 //RETURNS MCAPI_SUCCESS on success, else error or timeout
@@ -66,7 +66,7 @@ inline void pmq_delete_epd(
     mcapi_endpoint_t endpoint );
 
 //opens channel message queue for the given local endpoint
-//sending and reseiving ends have their own functions for this
+//sending and receiving ends have their own functions for this
 //RETURNS MCAPI_TRUE on success or MCAPI_FALSE on failure
 inline mcapi_boolean_t pmq_open_chan_recv( mcapi_endpoint_t us );
 inline mcapi_boolean_t pmq_open_chan_send( mcapi_endpoint_t us );

@@ -177,7 +177,7 @@ Futhermore, if cleaner is not ran before application processes, they may be
 unable to open the new POSIX message queues properly.
 
 Since the cleaner needs access to said defined endpoints, it needs to be
-recompiled every time they are changed. A makefile, "makefile.cleaner",
+rebuilt every time they are changed. A makefile, "makefile.cleaner",
 contains instructions to build and run the cleaner.
 
     example: ./clean
@@ -206,7 +206,7 @@ able to access the POSIX message queues.
 The include/mcapi_config.h is a file containing configurations definable by
 application. This includes amount of packet receive buffers and maximum sizes
 for both messages and packets. Both implementation and application must be
-recompiled every time these values are changed or undefined behavior will
+rebuilt every time these values are changed or undefined behavior will
 occur. The file contains more details about each define.
 
 ***THREAD SAFETY***
@@ -341,7 +341,7 @@ mcapi_sclchan_available:
 
 ***TEST ENVIRONMENTS***
 
-The tests were successfully executed in the test environments listed below. The 
+The tests were successfully executed in the test environments listed below. The
 first in the list was also the implementation environment.
 
 SYSTEM #1:
@@ -352,7 +352,7 @@ SYSTEM #1:
     Memory: 3.6 Gib
 
     Compiler: gcc (GCC) 4.8.1
-    Make: GNU Make 3.81
+    Build automation: GNU Make 3.81
 
 SYSTEM #2:
     Additional layer: Oracle VM VirtualBox 4.2.6 Edition
@@ -363,7 +363,7 @@ SYSTEM #2:
     Memory: 2051 MB
 
     Compiler: gcc (Ubuntu/Linaro 4.7.2-2ubuntu1) 4.7.2
-    Make: GNU Make 3.81
+    Build automation: GNU Make 3.81
 
 SYSTEM #3:
     Operating system: Linux Mint 15 Olivia
@@ -373,7 +373,7 @@ SYSTEM #3:
     Memory: 8 Gib
 
     Compiler: gcc (Ubuntu/Linaro 4.7.3-1ubuntu1) 4.7.3
-    Make: GNU Make 3.81
+    Build automation: GNU Make 3.81
 
 SYSTEM #4:
     Operating system: Ubuntu 13.04
@@ -383,7 +383,7 @@ SYSTEM #4:
     Memory: 3.9 GiB
 
     Compiler: gcc (Ubuntu/Linaro 4.7.3-1ubuntu1) 4.7.3
-    Make: GNU Make 3.81
+    Build automation: GNU Make 3.81
 
 SYSTEM #5:
     Additional layer: Oracle VM VirtualBox 4.1.16 Edition
@@ -394,7 +394,7 @@ SYSTEM #5:
     Memory: 496.4 MiB
 
     Compiler: gcc (Ubuntu/Linaro 4.7.2-2ubuntu1) 4.7.2
-    Make: GNU Make 3.81
+    Build automation: GNU Make 3.81
 
 SYSTEM #6:
     Additional layer: Cygwin 1.7.28
@@ -404,7 +404,7 @@ SYSTEM #6:
     Memory: 3066 MiB
 
     Compiler: gcc (GCC) 4.8.2
-    Make: GNU Make 4.0
+    Build automation: GNU Make 4.0
 
 SYSTEM #7:
     Operating system: Red Hat Enterprise Linux Server release 5.10
@@ -414,7 +414,7 @@ SYSTEM #7:
     Memory: 14.4 GiB
 
     Compiler: gcc (GCC) 4.8.1
-    Make: GNU Make 3.81
+    Build automation: GNU Make 3.81
 
 SYSTEM #8:
     Operating system: Red Hat Enterprise Linux Workstation release 6.5
@@ -424,7 +424,7 @@ SYSTEM #8:
     Memory: 3.6 GiB
 
     Compiler: gcc (GCC) 4.8.1
-    Make: GNU Make 3.81
+    Build automation: GNU Make 3.81
 
 SYSTEM #9:
     Additional layer: Oracle VM VirtualBox 4.3.6 Edition
@@ -435,7 +435,7 @@ SYSTEM #9:
     Memory: 1 GiB
 
     Compiler: gcc (GCC) 4.8.2 20140206 (prerelease)
-    Make: GNU Make 4.0
+    Build automation: GNU Make 4.0
 
 SYSTEM #10:
     Additional layer: Oracle VM VirtualBox 4.3.6 Edition
@@ -446,17 +446,16 @@ SYSTEM #10:
     Memory: 1 GiB
 
     Compiler: gcc (Ubuntu/Linaro 4.8.1-10ubuntu8) 4.8.1
-    Make: GNU Make 3.81
+    Build automation: GNU Make 3.81
 
 SYSTEM #11:
+    Name: Cyclone V SOC Development Board
     Operating system: Linux socfpga 
     Kernel: 3.9.0
     
     Processor: ARM Cortex-A9 MPCore
     Memory: 1 GiB
 
-    Compiler: arm-linux-gnueabihf-gcc (crosstool-NG
-    linaro-1.13.1-4.7-2012.11-20121123 - Linaro GCC 2012.11) 4.7.3 20121106
-    (prerelease)
-    Make: GNU Make 3.81
+    Compiler: Linaro GCC 4.7.3
+    Build automation: GNU Make 3.81
     NOTICE: Was cross compiled on SYSTEM #1 and thus Make is the same

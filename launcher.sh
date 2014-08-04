@@ -4,7 +4,7 @@ echo ${PROCESSES[@]}
 #Killing old processes before starting new ones
 
 commit_hits () {
-    #filename for old processes to be killed
+    #file name for old processes to be killed
     hitlist=hitlist.txt
 
     #skip if does not exist
@@ -23,7 +23,7 @@ commit_hits () {
 
 commit_hits
 
-#And finally remove the old hitlist before new one is generated
+#And finally remove the old hit list before new one is generated
 rm $hitlist &> /dev/null
 
 #run the cleaner before processes: it is mandatory
@@ -57,7 +57,7 @@ echo ""
 echo "PROCESSES LAUNCHED"
 echo ""
 
-#wait for the processes until yhtey are finished or terminated
+#wait for the processes until they are finished or terminated
 wait $pids
 
 echo ""

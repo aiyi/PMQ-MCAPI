@@ -26,7 +26,7 @@ void clean()
         //and connectionless messages
         struct endPointID us = e->us;
 
-        //construct name for the messagequeue of the endpoint
+        //construct name for the message queue of the endpoint
         if ( sprintf( msg_name, MSGQ_NAME_FORMAT, us.domain_id, us.node_id,
         us.port_id ) < 0 )
         {

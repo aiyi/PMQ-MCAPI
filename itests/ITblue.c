@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     unsigned int i = 0;
     //request handle is used to operate wait-calls
     mcapi_request_t request;
-    //size parameter required in somecalls
+    //size parameter required in some calls
     size_t size = 1;
     //send-handle used in channel-messaging
     mcapi_sclchan_send_hndl_t handy;
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
         //start to send our stuff
         for ( j = 0; j < count; ++j )
         {
-            //paramater should be cast and transformed to get nicer results
+            //parameter should be cast and transformed to get nicer results
             double param = (double)j * 3.14159265 / 18;
             //the value produced by sin
             double cosval = cos( param );

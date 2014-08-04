@@ -12,14 +12,14 @@
 #define MAX_QUEUE_ELEMENTS 10
 #endif
 
-//How many buffers there are in total availiable for packet receive.
+//How many buffers there are in total available for packet receive.
 //As a fist rule, one for each receiving packet endpoint, but only if
 //previously obtained buffer is released before receive is called again.
 #ifndef MCAPI_MAX_BUFFERS
 #define MCAPI_MAX_BUFFERS 32
 #endif
 
-//Maximum number of simulaenous non-blocking requests
+//Maximum number of simultaneous non-blocking requests
 #ifndef MCAPI_MAX_REQUESTS
 #define MCAPI_MAX_REQUESTS 32
 #endif

@@ -42,7 +42,7 @@ test(pkt_send_recv_fail_init)
     sassert( MCAPI_ERR_NODE_NOTINIT, status );
 }
 
-//successfull send & receive
+//successful send & receive
 test(pkt_send_recv)
 
     strncpy(send_buf, TEST_MESSAGE, MAX_MSG_LEN);
@@ -750,7 +750,7 @@ test(pkt_send_recv_inva_chan)
 }
 
 //test if every buffer possible may be obtained, then released and then obtained
-//again. Will not release second time, as next initialization will free everthing.
+//again. Will not release second time, as next initialization will free everything
 test(pkt_buffer_stress)
 
     strncpy(send_buf, TEST_MESSAGE, MAX_MSG_LEN);
@@ -988,7 +988,7 @@ test(pkt_re_open)
     }
 }
 
-//packets must be receiviable even if the sender has closed!
+//packets must be receivable even if the sender has closed!
 test(pkt_recv_pend_close)
 
     strncpy(send_buf, TEST_MESSAGE, MAX_MSG_LEN);
@@ -1221,7 +1221,7 @@ test(pkt_third_party_con)
     }
 }
 
-//packet availiable
+//packet available
 test(pkt_avail)
 
     strncpy(send_buf, TEST_MESSAGE, MAX_MSG_LEN);
@@ -1294,7 +1294,7 @@ test(pkt_avail)
     }
 }
 
-//packet not availiable
+//packet not available
 test(pkt_no_avail)
 
     strncpy(send_buf, TEST_MESSAGE, MAX_MSG_LEN);

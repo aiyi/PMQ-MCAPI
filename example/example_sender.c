@@ -30,7 +30,7 @@ int main()
     //sleep to better illustrate the communication
     usleep( 3000000 );
 
-    //We are sender! Onitialize with our domain id and node id
+    //We are sender! Initialize with our domain id and node id
     mcapi_initialize( THE_DOMAIN, RED_NODE, 0, 0, &info,
     &status );
 

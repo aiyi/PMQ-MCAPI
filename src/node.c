@@ -5,9 +5,9 @@
 
 //1 = is initialized, else not
 static char nodeInitialized_ = 0;
-//pointer to the nodeData stored
+//pointer to the local node data
 static struct nodeData nodeData_;
-//all availiable request handles
+//all available request handles
 static struct request_data requestPool[MCAPI_MAX_REQUESTS];
 //iterator used to index above array
 static unsigned int request_iter = 0;
@@ -70,7 +70,7 @@ void mcapi_initialize(MCAPI_IN mcapi_domain_t domain_id,
     nodeData_.domain_id = domain_id;
     nodeData_.node_id = node_id;
 
-    //mark endpoints initally non-initialized, since they are
+    //mark endpoints initially non-initialized, since they are
     for ( x = 0; x < ENDPOINT_COUNT; ++x )
     {
         #ifdef ALLOW_THREAD_SAFETY
@@ -191,7 +191,7 @@ void mcapi_finalize( MCAPI_OUT mcapi_status_t* mcapi_status)
         goto ret;
     }
 
-    //unlink and close the messagequeues
+    //unlink and close the message queues
     for ( x = 0; x < ENDPOINT_COUNT; ++x )
     {
         struct endPointData* epd = &nodeData_.endPoints[x];
@@ -240,11 +240,11 @@ mcapi_boolean_t mcapi_test(
     MCAPI_OUT size_t* size,
     MCAPI_OUT mcapi_status_t* mcapi_status )
 {
-    //NOTICE: in princible, should not work correctly, but it does  since
+    //NOTICE: in principle, should not work correctly, but it does  since
     //non-blocking calls of this implementation are limited anyway.
     mcapi_boolean_t ret_val = mcapi_wait( request, size, 0, mcapi_status );
 
-    //fix the status, as accordingly spedicification, should work that way
+    //fix the status, as accordingly specification, should work that way
     if ( *mcapi_status == MCAPI_TIMEOUT )
         *mcapi_status = MCAPI_PENDING;
 
@@ -257,7 +257,7 @@ mcapi_boolean_t mcapi_wait(
     MCAPI_IN mcapi_timeout_t timeout,
     MCAPI_OUT mcapi_status_t* mcapi_status)
 {
-    //becomes true, if compeleted
+    //becomes true, if completed
     mcapi_boolean_t complete;
     //how close we are to timeout
     mcapi_timeout_t ticks = 0;
@@ -308,7 +308,7 @@ mcapi_boolean_t mcapi_wait(
     }
     #endif
 
-    //inital value of completeness is taken from request handle
+    //initial value of completeness is taken from request handle
     complete = (*request)->complete;
 
     while ( complete != MCAPI_TRUE && ( timeout == MCAPI_TIMEOUT_INFINITE ||
@@ -413,7 +413,7 @@ char* mcapi_display_status(
     //pointer to the buffer
     char* message;
 
-    //switch-casing shall be simpliest way to branch between possibilities.
+    //switch-casing shall be simplest way to branch between possibilities.
     //in case off unidentified code, a null is returned.
     switch (status) {
         STATUS_CASE (MCAPI_SUCCESS)
@@ -559,7 +559,7 @@ mcapi_boolean_t mcapi_trans_initialized ()
     //wacha we return
     mcapi_boolean_t retval = MCAPI_FALSE;
 
-    //is true is inited
+    //is true if inited
     if ( nodeInitialized_ == 1 )
     {
         retval = MCAPI_TRUE;

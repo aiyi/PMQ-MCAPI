@@ -4,7 +4,7 @@
 #include "channel.h"
 #include "endpoint.h"
 
-//keyvalue-pair used in buffer handling
+//key value -pair used in buffer handling
 struct bufObject
 {
     //the endpoint currently using the buffer: MCAPI_NULL if unused
@@ -133,7 +133,7 @@ struct bufObject* bufFindEmpty( mcapi_endpoint_t endpoint,
 
         if ( to_ret == MCAPI_NULL )
         {
-            //no luck: sleep mllisecond
+            //no luck: sleep millisecond
             usleep(1000);
         }
         else
@@ -353,7 +353,7 @@ void mcapi_pktchan_release(
     MCAPI_IN void* buffer,
     MCAPI_OUT mcapi_status_t* mcapi_status)
 {   
-    //location variable used to extract metadata
+    //location variable used to extract meta data
     MCAPI_IN void* loc;
     //the buffer object associated with the actual buffer
     struct bufObject* bo;
@@ -449,6 +449,7 @@ mcapi_uint_t mcapi_pktchan_available(
     return to_ret;
 }
 
+//return MCAPI_TRUE is given packet channel handle is a valid send handle
 mcapi_boolean_t mcapi_trans_valid_pktchan_send_handle( mcapi_pktchan_send_hndl_t handle)
 {
     if ( handle.us == MCAPI_NULL || handle.us->inited != 1 ||
@@ -461,6 +462,7 @@ mcapi_boolean_t mcapi_trans_valid_pktchan_send_handle( mcapi_pktchan_send_hndl_t
     return MCAPI_TRUE;
 }
 
+//return MCAPI_TRUE is given packet channel handle is a valid recv handle
 mcapi_boolean_t mcapi_trans_valid_pktchan_recv_handle( mcapi_pktchan_recv_hndl_t handle)
 {
     if ( handle.us == MCAPI_NULL || handle.us->inited != 1 ||

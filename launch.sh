@@ -38,7 +38,7 @@ if [ $BUILDEXES -eq 1 ]; then
     #BUILD RULES END HERE
 fi
 
-#must be catched to avoid queer functionality
+#must be cached to avoid queer functionality
 trap "exit" SIGTSTP
 
 #now, application specific stuff ends here. launching the launcher proper

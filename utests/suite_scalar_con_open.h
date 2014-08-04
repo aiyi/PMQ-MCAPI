@@ -11,7 +11,7 @@ static size_t size;
 static pid_t pid;
 static mcapi_request_t request;
 
-//must not work if node is noty initialized
+//must not work if node is not initialized
 test(scl_conn_fail_init)
     mcapi_sclchan_connect_i( sender, receiver, &request, &status );
     sassert( MCAPI_ERR_NODE_NOTINIT, status );

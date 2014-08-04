@@ -80,7 +80,7 @@ inline void mcapi_sclchan_send(
         send_handle.us->time_out );
     }
 
-    //critical secntion ends
+    //critical section ends
     UNLOCK_CHANNEL( send_handle );
 }
 

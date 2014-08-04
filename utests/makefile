@@ -1,6 +1,6 @@
 #compiler used
 CC=gcc
-#flags: includes, unit tests, posix message queue, include unit-test spesific stuff
+#flags: includes, unit tests, posix message queue, include unit-test specific stuff
 CFLAGS=-I$(IDIR) -I$(UTDIR) -lrt -DUTEST
 #name of the unittester executable
 UEXE = utest

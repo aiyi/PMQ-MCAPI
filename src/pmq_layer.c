@@ -5,7 +5,7 @@
 #include <sys/fcntl.h>
 #include <stdio.h>
 
-//how many nanos in milli
+//how many nanos in a milli
 #define NANO_IN_MILLI 1000000
 
 //how many nanos in one
@@ -14,7 +14,7 @@
 //how many millis in one
 #define MILLI_IN_ONE 1000
 
-//how many micros in milli
+//how many micros in a milli
 #define MICRO_IN_MILLI 1000
 
 //this macro sets current time to given time_spec and then adds given
@@ -38,7 +38,7 @@ inline mcapi_status_t pmq_send(
 
     if ( timeout == MCAPI_TIMEOUT_INFINITE )
     {
-        //sending the data, priority is ascending in msgq
+        //sending the data
         result = mq_send( msgq_id, buffer, buffer_size, priority );
     }
     else
@@ -49,7 +49,7 @@ inline mcapi_status_t pmq_send(
         //specify timeout for the call
         ADD_MILLIS_TO_NOW( time_limit, timeout );
 
-        //sending the data, priority is ascending in msgq
+        //sending the data
         result = mq_timedsend( msgq_id, buffer, buffer_size,
         priority, &time_limit );
     }
@@ -170,9 +170,9 @@ inline mcapi_status_t pmq_create_epd(
         return MCAPI_ERR_GENERAL;
     }
 
-    //now, set its messagequeue
+    //now, set its message queue
     endpoint->msgq_id = msgq_id;
-    //but un-set the channel messagequeue
+    //but un-set the channel message queue
     endpoint->chan_msgq_id = -1;
 
     return MCAPI_SUCCESS;
@@ -212,7 +212,7 @@ inline mcapi_status_t pmq_open_epd(
         return MCAPI_TIMEOUT;
     }
 
-    //now, set the messagequeue
+    //now, set the message queue
     endpoint->msgq_id = msgq_id;
 
     return MCAPI_SUCCESS;
@@ -225,7 +225,7 @@ inline void pmq_delete_epd(
     char recv_buf[MCAPI_MAX_MESSAGE_SIZE];
     //result of received
     size_t mslen;
-    //zero timelimit for immediate return
+    //zero time limit for immediate return
     struct timespec time_limit = { 0, 0 };
 
     //read out all messages from queue
@@ -310,7 +310,7 @@ inline mcapi_boolean_t pmq_open_chan_send( mcapi_endpoint_t our_endpoint )
     //the queue to be obtained
     mqd_t msgq_id;
 
-    //no -1 means we already has an messagequeue
+    //no -1 means we already has an message queue
     if ( our_endpoint->chan_msgq_id == -1 )
     {
         //try to open, but do not create it

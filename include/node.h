@@ -1,4 +1,4 @@
-//Module includes node spesific data and functions to manipulate them
+//Module includes node specific data and functions to manipulate them
 //Also some general functions.
 #ifndef NODE_H
 #define NODE_H
@@ -33,7 +33,7 @@
     #define UNLOCK_NODE( node ) ;
 #endif
 
-//variables assosiated with one MCAPI node entity
+//variables associated with one MCAPI node entity
 //effectively a singleton, as a node represents a process
 struct nodeData
 {
@@ -47,7 +47,7 @@ struct nodeData
     #endif
 };
 
-//returns pointer to the nodedata
+//returns pointer to the node data
 struct nodeData* getNodeData();
 
 //tries to reserve and return a request. It will be filled with given

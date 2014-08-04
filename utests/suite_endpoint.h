@@ -31,7 +31,7 @@ test(delete_null_fail)
     mcapi_finalize( &status );
 }
 
-//endpoint beign deleted must be inited
+//endpoint being deleted must be inited
 test(delete_invalid_fail)
     mcapi_initialize( 1, 2, 0, 0, &info, &status );
 
@@ -74,7 +74,7 @@ test(delete_own_fail_domain)
     mcapi_finalize( &status );
 }
 
-//successfull deletion of endpoint
+//successful deletion of endpoint
 test(end_delete)
     mcapi_initialize( 1, 2, 0, 0, &info, &status );
 

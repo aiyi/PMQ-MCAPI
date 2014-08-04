@@ -30,11 +30,11 @@ int main(int argc, char *argv[])
     unsigned int i = 0;
     //request handle is used to operate wait-calls
     mcapi_request_t request;
-    //size parameter required in somecalls
+    //size parameter required in some calls
     size_t size = 1;
     //send-handle used in channel-messaging
     mcapi_sclchan_send_hndl_t handy;
-    //how many scalars we are goint to send
+    //how many scalars we are going to send
     char count = 17;
 
     //the endpoints used in message-oriented communication
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
     check( MCAPI_SUCCESS, status );
 
     printf(COLOR "start-up messaging\n");
-    //...and thus create our message precense
+    //...and thus create our message endpoint
     red_msg_point = mcapi_endpoint_create( RED_MSG, &status );
     check( MCAPI_SUCCESS, status );
     //obtain the yellow message point

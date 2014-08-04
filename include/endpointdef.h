@@ -1,5 +1,5 @@
 //Includes data types used to define endpoints statically. Features also
-//some support functions, mostly used in initalizations.
+//some support functions, mostly used in initializations.
 #ifndef ENDPOINTDEFS_H
 #define ENDPOINTDEFS_H
 
@@ -13,7 +13,7 @@
     #include "endpointlist.h"
 #endif
 
-//struct used to tuple the endpoint indentifier
+//struct used to tuple the endpoint identifier
 struct endPointID
 {
     mca_domain_t domain_id; //domain where the node belong to

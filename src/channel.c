@@ -33,7 +33,7 @@ void mcapi_chan_connect(
     //allocate zero request handle
     *request = MCAPI_NULL;
 
-    //endpoints musnt be same
+    //endpoints musn't be same
     if ( send_endpoint == receive_endpoint )
     {
         *mcapi_status = MCAPI_ERR_ENDP_INVALID;
@@ -103,7 +103,7 @@ mcapi_boolean_t mcapi_chan_wait_open( void* data )
 {
     //the handle for channel coms
     struct handle_type* handy;
-    //the endpoint we are opening for packet communication!
+    //the endpoint we are opening for channel communication
     mcapi_endpoint_t our_endpoint;
     //how long message we got in bytes
     size_t mslen;
@@ -113,7 +113,7 @@ mcapi_boolean_t mcapi_chan_wait_open( void* data )
     mcapi_status_t mcapi_status;
     //the value returned
     mcapi_boolean_t ret_val;
-    //direction of channel-to-close
+    //direction of the channel
     channel_dir dir;
 
     //check null
@@ -325,7 +325,7 @@ mcapi_boolean_t mcapi_chan_wait_close( void* data )
     mcapi_boolean_t ret_val = MCAPI_FALSE;
     //true if sending, else false
     mcapi_boolean_t sending;
-    //direction of channel-to-close
+    //direction of the channel
     channel_dir dir;
 
     //check null

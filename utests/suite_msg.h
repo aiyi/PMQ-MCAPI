@@ -12,7 +12,7 @@ static struct endPointData iepd;
 static mcapi_info_t info;
 static mcapi_status_t status;
 
-//succesful send and receive
+//successful send and receive
 test(msg_send_recv)
     mcapi_endpoint_t sender;
     mcapi_endpoint_t receiver;
@@ -361,7 +361,7 @@ test(msg_send_recv_small)
     mcapi_finalize( &status );
 }
 
-//tests if message reaching the upper lenght limit still works
+//tests if message reaching the upper length limit still works
 test(msg_send_recv_big)
     mcapi_endpoint_t sender;
     mcapi_endpoint_t receiver;
@@ -398,7 +398,7 @@ test(msg_send_recv_big)
     mcapi_finalize( &status );
 }
 
-//was avaibliable
+//was available
 test(msg_send_avail)
     mcapi_endpoint_t sender;
     mcapi_endpoint_t receiver;
@@ -422,7 +422,7 @@ test(msg_send_avail)
     mcapi_finalize( &status );
 }
 
-//was not avaibliable
+//was not available
 test(msg_send_not_avail)
     mcapi_endpoint_t ureceiver;
     char count;
@@ -437,7 +437,7 @@ test(msg_send_not_avail)
     mcapi_finalize( &status );
 }
 
-//was no longer avaibliable after recreation
+//was no longer available after recreation
 test(msg_recreate_send_not_avail)
     mcapi_endpoint_t sender;
     mcapi_endpoint_t receiver;
@@ -467,7 +467,7 @@ test(msg_recreate_send_not_avail)
     mcapi_finalize( &status );
 }
 
-//succesful after recreation
+//successful after recreation
 test(msg_recreate_send_recv)
     mcapi_endpoint_t sender;
     mcapi_endpoint_t receiver;

@@ -1,7 +1,7 @@
 #include "endpoint.h"
 #include "node.h"
 
-/* checks if the endpoint handle refers to a valid endpoint */
+//checks if the endpoint handle refers to a valid endpoint
 mcapi_boolean_t mcapi_trans_valid_endpoint (mcapi_endpoint_t endpoint)
 {
     if ( endpoint == MCAPI_NULL || endpoint->inited != 1 ||
@@ -13,6 +13,7 @@ mcapi_boolean_t mcapi_trans_valid_endpoint (mcapi_endpoint_t endpoint)
     return MCAPI_TRUE;
 }
 
+//checks if given endpoint handles refer to a valid endpoints
 mcapi_boolean_t mcapi_trans_valid_endpoints
 (mcapi_endpoint_t endpoint1, mcapi_endpoint_t endpoint2)
 {
@@ -26,6 +27,7 @@ mcapi_boolean_t mcapi_trans_valid_endpoints
     return MCAPI_TRUE;
 }
 
+//checks if local endpoint of given port exists
 mcapi_boolean_t mcapi_trans_endpoint_exists ( uint32_t port_num )
 {
     struct nodeData* nd = getNodeData();
@@ -39,7 +41,7 @@ mcapi_boolean_t mcapi_trans_endpoint_exists ( uint32_t port_num )
     return MCAPI_TRUE;
 }
 
-/* checks if the given endpoint is owned by the given node */
+//checks if the given endpoint is owned by the given node
 mcapi_boolean_t mcapi_trans_endpoint_isowner (mcapi_endpoint_t endpoint)
 {
     struct nodeData* nd = getNodeData();
@@ -53,12 +55,11 @@ mcapi_boolean_t mcapi_trans_endpoint_isowner (mcapi_endpoint_t endpoint)
     return MCAPI_TRUE;
 }
 
-/* create endpoint <node_num,port_num> and return it's handle */
 mcapi_endpoint_t mcapi_endpoint_create(
  	MCAPI_IN mcapi_port_t port_id, 
  	MCAPI_OUT mcapi_status_t* mcapi_status)
 {
-    //pointer to local node spesific data
+    //pointer to local node specific data
     struct nodeData* nd = getNodeData();
     //the associated data of the would-be-endpoint
     struct endPointData* epd = MCAPI_NULL;
@@ -120,7 +121,6 @@ mcapi_endpoint_t mcapi_endpoint_create(
         return epd;
 }
 
-/* blocking get endpoint for the given <node_num,port_num> and return it's handle */
 mcapi_endpoint_t mcapi_endpoint_get(
     MCAPI_IN mcapi_domain_t domain_id,
  	MCAPI_IN mcapi_node_t node_id, 
@@ -178,7 +178,7 @@ mcapi_endpoint_t mcapi_endpoint_get(
     epd->inited = 1;
     //name was already assigned before, in the construction
 
-    //upon the succesfull completion, return the endpoint data, as it the type
+    //upon the successful completion, return the endpoint data, as it the type
     *mcapi_status = MCAPI_SUCCESS;
 
     //mutex must be unlocked even if error occurs
@@ -186,18 +186,17 @@ mcapi_endpoint_t mcapi_endpoint_get(
         UNLOCK_NODE( nd );
         UNLOCK_ENPOINT( epd );
 
-        //return the pointer, as it is the endpointtype
+        //return the pointer, as it is the endpoint type
         return epd;
 }
 
-/* delete the given endpoint */
 void mcapi_endpoint_delete(
  	MCAPI_IN mcapi_endpoint_t endpoint, 
  	MCAPI_OUT mcapi_status_t* mcapi_status)
 {
     //iterator
     unsigned int i;
-    //data of the node from witch endpoint shall be unassosiated
+    //data of the node from witch endpoint shall be unassociated
     struct nodeData* nd = getNodeData();
     //we need receive buffer to empty the message queue somewhere
     char recv_buf[MCAPI_MAX_MESSAGE_SIZE];
@@ -268,7 +267,7 @@ void mcapi_endpoint_set_attribute(
     MCAPI_IN size_t attribute_size,
     MCAPI_OUT mcapi_status_t* mcapi_status )
 {
-    //data of the node from witch endpoint shall be unassosiated
+    //data of the node from witch endpoint shall be unassociated
     struct nodeData* nd = getNodeData();
 
     //check for initialization

@@ -478,7 +478,7 @@ test(pkt_open_con_del)
     }
 }
 
-//reusig a request
+//reusing a request
 test(pkt_chan_re_request)
 
     pid = fork();

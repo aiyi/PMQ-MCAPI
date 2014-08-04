@@ -6,14 +6,14 @@
 static mcapi_info_t info;
 static mcapi_status_t status;
 
-//normal, successfull init
+//normal, successful init
 test(basic_init)
     mcapi_initialize( 1, 2, 0, 0, &info, &status );
     sassert( MCAPI_SUCCESS, status );
     mcapi_finalize( &status );
 }
 
-//testing that info paramater produces something intelligible
+//testing that info parameter produces something intelligible
 test(init_info)
     mcapi_initialize( 1, 2, 0, 0, &info, &status );
     sassert( MCAPI_SUCCESS, status );
@@ -81,7 +81,7 @@ test(wait_fail_req)
     mcapi_finalize( &status );
 }
 
-//stuff pointing from request paramater must not be null
+//stuff pointing from request parameter must not be null
 test(wait_fail_req2)
     mcapi_initialize( 1, 2, 0, 0, &info, &status );
     mcapi_request_t request = MCAPI_NULL;
@@ -141,7 +141,7 @@ mcapi_boolean_t trueFun( void* data )
     return MCAPI_TRUE;
 }
 
-//must return immidiately if happens immidiately
+//must return immediately if happens immediately
 test(wait_ok_imm)
     size_t size;
     mcapi_initialize( 1, 2, 0, 0, &info, &status );
@@ -207,7 +207,7 @@ mcapi_boolean_t secondTrueFun( void* data )
 }
 
 //test if every request possible may be obtained, then released and then obtained
-//again. Will not release second time, as next initialization will free everthing.
+//again. Will not release second time, as next initialization will free everything
 test(wait_stress)
     mcapi_request_t request[MCAPI_MAX_REQUESTS];
     mcapi_request_t request_fail;
@@ -244,7 +244,7 @@ test(wait_stress)
 }
 
 
-//must return immetiately after first look
+//must return immediately after first look
 test(test)
     size_t size;
     mcapi_boolean_t res;
@@ -256,7 +256,7 @@ test(test)
     mcapi_finalize( &status );
 }
 
-//an off-limit status code is supposed to yield null mesage
+//an off-limit status code is supposed to yield null message
 test(status_off_limit)
     char* res = mcapi_display_status( MCAPI_STATUSCODE_END+1, NULL, 0 );
     uassert( res == NULL );

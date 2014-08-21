@@ -3,8 +3,11 @@
 #include <stdio.h>
 
 //Wait about five seconds before timeout
-#define TIMEOUT 15000
+#define TIMEOUT 5000
 //NOTICE: other defines, like THE_DOMAIN are defines in file ../include/endpointlist.h!
+
+//The name of the node
+#define NAME "SEND: "
 
 int main()
 {
@@ -26,7 +29,7 @@ int main()
     mcapi_endpoint_t send_point;
     mcapi_endpoint_t recv_point;
 
-    printf( "Node 0: Sender here!\n");
+    printf( NAME "Sender here!\n");
     //sleep to better illustrate the communication
     usleep( 3000000 );
 
@@ -37,43 +40,43 @@ int main()
     //THIS IS HOW YOU CONVERT STATUS CODE TO STRING:
     mcapi_display_status( status, status_msg, MCAPI_MAX_STATUS_MSG_LEN );
     //print it:
-    printf( "Node 0: Result of initialization: %s\n", status_msg );
+    printf( NAME "Result of initialization: %s\n", status_msg );
     usleep( 1500000 );
 
-    printf( "Node 0: creating sending endpoint\n" );
+    printf( NAME "creating sending endpoint\n" );
     usleep( 1500000 );
 
     //create our channel endpoint with our port id
     send_point = mcapi_endpoint_create( RED_SIN, &status );
     //get their channel message endpoint, with their domain, node and port id
-    printf( "Node 0: obtaining receiving endpoint\n" );
+    printf( NAME "obtaining receiving endpoint\n" );
     recv_point = mcapi_endpoint_get( THE_DOMAIN, YELLOW_NODE, YELLOW_SIN,
     TIMEOUT, &status );
     usleep( 1500000 );
 
     //form the scalar channel
-    printf( "Node 0: connecting the channel\n" );
+    printf( NAME "connecting the channel\n" );
     mcapi_sclchan_connect_i( send_point, recv_point, &request, &status );
     //wait for it to happen
     mcapi_wait( &request, &size, TIMEOUT, &status );
     //open our end of it
     usleep( 1500000 );
-    printf( "Node 0: opening the sending end of the channel\n" );
+    printf( NAME "opening the sending end of the channel\n" );
     mcapi_sclchan_send_open_i( &handy, send_point, &request, &status );
     //wait for it to happen
     mcapi_wait( &request, &size, TIMEOUT, &status );
 
-    printf( "Node 0: sending 0x%hX\n", value );
+    printf( NAME "sending 0x%hX\n", value );
     usleep( 1500000 );
     
     //send the scalar value via channel
     mcapi_sclchan_send_uint16( handy, value, &status );
 
-    printf( "Node 0: sent\n" );
+    printf( NAME "sent\n" );
 
     usleep( 3000000 );
 
-    printf( "Node 0: closing!\n" );
+    printf( NAME "closing!\n" );
 
     //close our end
     mcapi_sclchan_send_close_i( handy, &request, &status );
@@ -81,7 +84,7 @@ int main()
     mcapi_wait( &request, &size, TIMEOUT, &status );
 
     usleep( 1000000 );
-    printf( "Node 0: closed!\n" );
+    printf( NAME "closed!\n" );
 
     //finalize at the end
     mcapi_finalize( &status );

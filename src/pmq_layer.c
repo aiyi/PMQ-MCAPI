@@ -263,7 +263,16 @@ inline mcapi_boolean_t pmq_open_chan_recv( mcapi_endpoint_t us )
     else if ( us->defs->type == MCAPI_SCL_CHAN )
     {
         //in case of scalar channel, the channel defined size is used
-        attr.mq_msgsize = us->defs->scalar_size;
+        size_t scalar_size = us->defs->scalar_size;
+        attr.mq_msgsize = scalar_size;
+
+        //Warn if not standard
+        if ( scalar_size != 1 && scalar_size != 2 &&
+            scalar_size != 4 && scalar_size != 8 )
+        {
+            fprintf(stderr, "Trying to open scalar channel with "    
+            "invalid size!\n");
+        }
     }
     else
     {
